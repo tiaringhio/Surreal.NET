@@ -7,6 +7,11 @@
   <p align="center">
     An (unofficial) .NET wrapper around SurrealDB REST API.
   </p>
+  <p align="center">
+    NOTE: SurrealDB is not my idea, I'm just a guy trying to use it in my own projects. You can find everything about the project at SurrealDB's website (https://surrealdb.com).
+  </p>
+
+
 
 ## Table of contents
 
