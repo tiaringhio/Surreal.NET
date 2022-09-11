@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace Surreal.NET;
 
+/// <summary>
+/// Common interface for interacting with a SurrealDB instance
+/// </summary>
 public interface ISurrealClient
 {
     /// <summary>
@@ -38,17 +41,26 @@ public interface ISurrealClient
     /// Signs in to a specific authentication scope.
     /// </summary>
     /// <param name="auth">Variables used in a signin query.</param>
+    /// <remarks>
+    /// This updates the internal <see cref="SurrealConfig"/>.
+    /// </remarks>
     public Task Signin(string auth, CancellationToken ct = default);
 
     /// <summary>
     /// Invalidates the authentication for the current connection.
     /// </summary>
+    /// <remarks>
+    /// This updates the internal <see cref="SurrealConfig"/>.
+    /// </remarks>
     public Task Invalidate(CancellationToken ct = default);
 
     /// <summary>
     /// Authenticates the current connection with a JWT token.
     /// </summary>
     /// <param name="token"> The JWT authentication token.</param>
+    /// <remarks>
+    /// This updates the internal <see cref="SurrealConfig"/>.
+    /// </remarks>
     public Task Authenticate(string token, CancellationToken ct = default);
 
     /// <summary>
