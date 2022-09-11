@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
@@ -27,9 +28,9 @@ public struct SurrealConfig
     public bool IsValidated => _validated;
     
     /// <summary>
-    /// Remote database server url to connect to.
+    /// Remote database server endpoint (address and port) to connect to.
     /// </summary>
-    public IPAddress? Remote { get; set; }
+    public IPEndPoint? Remote { get; set; }
     
     /// <summary>
     /// Optional: The database to export the data from.
@@ -73,6 +74,15 @@ public struct SurrealConfig
     public void MarkAsValidated()
     {
         _validated = true;
+    }
+    
+    [Pure]
+    public void ThrowIfInvalid()
+    {
+        if (!_validated)
+        {
+            throw new InvalidConfigException("The configuration is not marked as valid.");
+        }
     }
 }
 
@@ -153,29 +163,84 @@ public static class SurrealConfigBuilder
         public IConfigBuilder? Parent { get; }
 
         /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public IPAddress? Remote { get; set; }
+        public IPEndPoint? Remote { get; set; }
 
         /// <inheritdoc cref="SurrealConfig.Database"/>
         public string? Database { get; set; }
 
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
         public string? Namespace { get; set; }
+        
+        /// <inheritdoc cref="SurrealConfig.Remote"/>
+        public Endpoint WithRemote(IPEndPoint remote)
+        {
+            Remote = remote;
+            return this;
+        }
 
         /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public Endpoint WithRemote(in ReadOnlySpan<char> address, Func<IPAddress>? fallback = default)
+        public Endpoint WithRemote(in ReadOnlySpan<char> endpoint, Func<IPEndPoint>? fallback = default)
         {
             if (fallback is null)
             {
-                Remote = IPAddress.Parse(address);
+                Remote = IPEndPoint.Parse(endpoint);
                 return this;
             }
 
-            if (!IPAddress.TryParse(address, out IPAddress? ip))
+            if (!IPEndPoint.TryParse(endpoint, out IPEndPoint? ip))
             {
                 ip = fallback();
             }
 
-            Remote = ip;
+            return WithRemote(ip);
+        }
+
+
+        /// <inheritdoc cref="SurrealConfig.Remote"/>
+        public Endpoint WithAddress(IPAddress address)
+        {
+            if (Remote is null)
+            {
+                Remote = new(address, 0);
+            }
+            else
+            {
+                Remote.Address = address;
+            }
+            
+            return this;
+        }
+        
+
+        /// <inheritdoc cref="SurrealConfig.Remote"/>
+        public Endpoint WithAddress(in ReadOnlySpan<char> address, Func<IPAddress>? fallback = default)
+        {
+            IPAddress? ip;
+            if (fallback is null)
+            {
+                ip = IPAddress.Parse(address);
+            }
+            else if (!IPAddress.TryParse(address, out ip))
+            {
+                ip = fallback();
+            }
+
+            return WithAddress(ip);
+        }
+        
+
+        /// <inheritdoc cref="SurrealConfig.Remote"/>
+        public Endpoint WithPort(in int port)
+        {
+            if (Remote is null)
+            {
+                Remote = new(IPAddress.Loopback, port);
+            }
+            else
+            {
+                Remote.Port = port;
+            }
+
             return this;
         }
 
