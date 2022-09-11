@@ -80,31 +80,51 @@ internal sealed class RpcClient : IDisposable
 
 internal struct RpcError
 {
-    [JsonPropertyName("code")] public int Code { get; set; }
-    [JsonPropertyName("message")] public string Message { get; set; }
+    [JsonPropertyName("code")]
+    public int Code { get; set; }
+
+    [JsonPropertyName("message"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] 
+    public string? Message { get; set; } = null;
 }
 
 internal struct RpcRequest
 {
-    [JsonPropertyName("id")] public int Id { get; set; }
-    [JsonPropertyName("async")] public bool Async { get; set; }
-    [JsonPropertyName("method")] public string Method { get; set; }
-    [JsonPropertyName("params")] public IList<object?> Params { get; set; }
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("async"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public bool Async { get; set; } = false;
+    
+    [JsonPropertyName("method")]
+    public string Method { get; set; }
+
+    [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public IList<object?>? Params { get; set; } = null;
 }
 
 
 internal struct RpcResponse
 {
-    [JsonPropertyName("id")] public int Id { get; set; }
-    [JsonPropertyName("error")] public RpcError? Error { get; set; }
-    [JsonPropertyName("result")] public JsonDocument Result { get; set; }
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+
+    [JsonPropertyName("error"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public RpcError? Error { get; set; } = null;
+
+    [JsonPropertyName("result"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public JsonDocument? Result { get; set; } = null;
 }
 
 internal struct RpcNotification
 {
-    [JsonPropertyName("id")] public int Id { get; set; }
-    [JsonPropertyName("method")] public string Method { get; set; }
-    [JsonPropertyName("params")] public IList<object?> Params { get; set; }
+    [JsonPropertyName("id")]
+    public int Id { get; set; }
+    
+    [JsonPropertyName("method")]
+    public string Method { get; set; }
+
+    [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
+    public IList<object?>? Params { get; set; } = null;
 }
 
 [JsonSerializable(typeof(RpcError))]
