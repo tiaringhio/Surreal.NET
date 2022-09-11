@@ -4,7 +4,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
-using System.Text.Json.Serialization;
 
 namespace Surreal.NET;
 
@@ -20,10 +19,12 @@ public enum Auth : byte
 
 public struct SurrealConfig
 {
+    private bool _validated;
+
     /// <summary>
-    /// Internal flag indicating a validated config.
+    /// Flag indicating a validated config.
     /// </summary>
-    internal bool Validated;
+    public bool IsValidated => _validated;
     
     /// <summary>
     /// Remote database server url to connect to.
@@ -71,7 +72,7 @@ public struct SurrealConfig
     /// </summary>
     public void MarkAsValidated()
     {
-        Validated = true;
+        _validated = true;
     }
 }
 
