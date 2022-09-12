@@ -9,7 +9,10 @@ using System.Threading.Tasks;
 
 namespace Surreal.NET;
 
-internal sealed class RpcClient : IDisposable
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+sealed class RpcClient : IDisposable
 {
     private TcpClient? _ws;
 
@@ -44,11 +47,11 @@ internal sealed class RpcClient : IDisposable
         ThrowIfDisconnected();
         string id = Id.GetRandom(16);
         NetworkStream stream = _ws!.GetStream();
-        await JsonSerializer.SerializeAsync(stream, req, typeof(RpcRequest), SourceGenerationContext.Default, ct);
+        await JsonSerializer.SerializeAsync(stream, req, SourceGenerationContext.Default.RpcRequest, ct);
         
         await stream.FlushAsync(ct);
 
-        var rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, typeof(RpcResponse), SourceGenerationContext.Default, ct);
+        var rsp = await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.Default.RpcResponse, ct);
         return rsp;
     }
 
@@ -78,44 +81,58 @@ internal sealed class RpcClient : IDisposable
     }
 }
 
-internal struct RpcError
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+struct RpcError
 {
     [JsonPropertyName("code")]
     public int Code { get; set; }
 
     [JsonPropertyName("message"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] 
-    public string? Message { get; set; } = null;
+    public string? Message { get; set; }
+    
+    
 }
 
-internal struct RpcRequest
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+struct RpcRequest
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
     [JsonPropertyName("async"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public bool Async { get; set; } = false;
+    public bool Async { get; set; }
     
     [JsonPropertyName("method")]
     public string Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public IList<object?>? Params { get; set; } = null;
+    public IList<object?>? Params { get; set; }
 }
 
 
-internal struct RpcResponse
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+struct RpcResponse
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }
 
     [JsonPropertyName("error"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public RpcError? Error { get; set; } = null;
+    public RpcError? Error { get; set; }
 
     [JsonPropertyName("result"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonDocument? Result { get; set; } = null;
+    public JsonDocument? Result { get; set; }
 }
 
-internal struct RpcNotification
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+struct RpcNotification
 {
     [JsonPropertyName("id")]
     public int Id { get; set; }
@@ -124,13 +141,17 @@ internal struct RpcNotification
     public string Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public IList<object?>? Params { get; set; } = null;
+    public IList<object?>? Params { get; set; }
 }
 
 [JsonSerializable(typeof(RpcError))]
 [JsonSerializable(typeof(RpcRequest))]
 [JsonSerializable(typeof(RpcResponse))]
 [JsonSerializable(typeof(RpcNotification))]
-internal partial class SourceGenerationContext : JsonSerializerContext
+
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+partial class SourceGenerationContext : JsonSerializerContext
 {
 }
