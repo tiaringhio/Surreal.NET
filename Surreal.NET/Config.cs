@@ -152,7 +152,7 @@ public static class SurrealConfigBuilder
     /// <summary>
     /// The remote, database and namespace of the <see cref="SurrealConfig"/>
     /// </summary>
-    public class Endpoint : IConfigBuilder
+    public sealed class Endpoint : IConfigBuilder
     {
         internal Endpoint(IConfigBuilder? parent)
         {
@@ -282,7 +282,7 @@ public static class SurrealConfigBuilder
     /// Do not ever use this on a client sided application!
     /// The password is stored in plaintext in the heap, and can be obtained by a 3rd party!
     /// </remarks>
-    public class BasicAuth : IConfigBuilder
+    public sealed class BasicAuth : IConfigBuilder
     {
         internal BasicAuth(IConfigBuilder? parent)
         {
@@ -331,7 +331,7 @@ public static class SurrealConfigBuilder
     /// <summary>
     /// Configures the <see cref="SurrealConfig"/> with Json Web Token Authentication
     /// </summary>
-    public class JwtAuth : IConfigBuilder
+    public sealed class JwtAuth : IConfigBuilder
     {
         internal JwtAuth(IConfigBuilder? parent)
         {
@@ -364,7 +364,7 @@ public static class SurrealConfigBuilder
 /// <summary>
 /// Exception thrown if a <see cref="IConfigBuilder"/> contained invalid configuration.
 /// </summary>
-public class InvalidConfigException : Exception
+public sealed class InvalidConfigException : Exception
 {
     public string? PropertyName { get; set; }
 
