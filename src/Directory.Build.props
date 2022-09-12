@@ -1,0 +1,6 @@
+﻿<Project>
+    <PropertyGroup>
+        <SurrealCoreVersion>1.0.2</SurrealCoreVersion>
+        
+    </PropertyGroup>
+</Project>

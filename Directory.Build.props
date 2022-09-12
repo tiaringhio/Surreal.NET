@@ -1,0 +1,14 @@
+<Project>
+  <PropertyGroup Label="Package Info">
+    <Authors>ProphetLamb</Authors>
+    <Owners>ProphetLamb</Owners>
+
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+    <Copyright>Copyright (c) ProhetLamb 2022</Copyright>
+
+    <PackageProjectUrl>https://github.com/ProphetLamb/Surreal.NET</PackageProjectUrl>
+    <RepositoryType>git</RepositoryType>
+    <RepositoryUrl>https://github.com/ProphetLamb/Surreal.NET.git</RepositoryUrl>
+  </PropertyGroup>
+</Project>

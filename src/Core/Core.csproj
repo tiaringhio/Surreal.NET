@@ -6,14 +6,11 @@
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <Description>Core project for the C# Surreal client SDK.</Description>
-	<PackageVersion>1.0.2</PackageVersion>
-	<RootNamespace>Surreal.Net</RootNamespace>
+        <PackageVersion>$(SurrealCoreVersion)</PackageVersion>
+        <RootNamespace>Surreal.Net</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-      <PackageReference Include="RestSharp" Version="108.0.1" />
-      <PackageReference Include="WebSocketSharp" Version="1.0.3-rc11" />
     </ItemGroup>
 
 </Project>
