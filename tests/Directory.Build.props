@@ -1,2 +1,5 @@
 <Project>
+    <PropertyGroup>
+        <DefineConstants>$(DefineConstants);SURREAL_NET_INTERNAL</DefineConstants>
+    </PropertyGroup>
 </Project>
