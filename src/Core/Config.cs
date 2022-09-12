@@ -370,7 +370,7 @@ public sealed class InvalidConfigException : Exception
     {
     }
 
-    protected InvalidConfigException(SerializationInfo info, StreamingContext context) : base(info, context)
+    private InvalidConfigException(SerializationInfo info, StreamingContext context) : base(info, context)
     {
     }
 
