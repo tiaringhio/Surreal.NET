@@ -10,7 +10,4 @@
         <RootNamespace>Surreal.Net</RootNamespace>
     </PropertyGroup>
 
-    <ItemGroup>
-    </ItemGroup>
-
 </Project>

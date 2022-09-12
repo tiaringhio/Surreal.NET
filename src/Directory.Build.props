@@ -3,4 +3,8 @@
         <SurrealCoreVersion>1.0.2</SurrealCoreVersion>
         
     </PropertyGroup>
+
+    <PropertyGroup Condition="$(Configuration)=='Debug'">
+        <DefineConstants>$(DefineConstants);SURREAL_NET_INTERNAL</DefineConstants>
+    </PropertyGroup>
 </Project>
