@@ -1,13 +1,8 @@
-﻿using System;
-using System.Buffers;
-using System.Collections.Generic;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using System.Threading;
-using System.Threading.Tasks;
 
-namespace Surreal.NET;
+namespace Surreal.Net;
 
 #if SURREAL_NET_INTERNAL
     public

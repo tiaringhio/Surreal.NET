@@ -1,8 +1,4 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-
-namespace Surreal.NET;
+﻿namespace Surreal.Net;
 
 /// <summary>
 /// Common interface for interacting with a SurrealDB instance

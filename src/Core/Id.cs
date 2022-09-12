@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Surreal.NET;
+﻿namespace Surreal.Net;
 
 public static class Id
 {
