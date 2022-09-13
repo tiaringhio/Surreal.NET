@@ -28,7 +28,7 @@ public struct SurrealConfig
     /// <summary>
     /// Remote database server endpoint (address and port) to connect to.
     /// </summary>
-    public IPEndPoint? Remote { get; set; }
+    public IPEndPoint? Endpoint { get; set; }
     
     /// <summary>
     /// Optional: The database to export the data from.
@@ -64,7 +64,7 @@ public struct SurrealConfig
     /// Begins configuration of a <see cref="SurrealConfig"/> with fluent api.
     /// </summary>
     /// <returns></returns>
-    public static SurrealConfigBuilder.Endpoint Create() => SurrealConfigBuilder.Create();
+    public static SurrealConfigBuilder.Remote Create() => SurrealConfigBuilder.Create();
     
     /// <summary>
     /// Marks the configuration as validated. 
@@ -112,7 +112,7 @@ public static class SurrealConfigBuilder
     /// <summary>
     /// Begins configuration of a <see cref="SurrealConfig"/> with fluent api.
     /// </summary>
-    public static Endpoint Create() => new(null);
+    public static Remote Create() => new(null);
     
     /// <summary>
     /// Returns the configured <see cref="SurrealConfig"/> by applying the entire <see cref="IConfigBuilder"/> chain.
@@ -142,17 +142,17 @@ public static class SurrealConfigBuilder
     }
 
     /// <inheritdoc cref="BasicAuth"/>
-    public static BasicAuth WithBasicAuth(this Endpoint config) => new(config);
+    public static BasicAuth WithBasicAuth(this Remote config) => new(config);
 
     /// <inheritdoc cref="JwtAuth"/>
-    public static JwtAuth WithJwtAuth(this Endpoint config, string? token = null) => new JwtAuth(config).WithToken(token);
+    public static JwtAuth WithJwtAuth(this Remote config, string? token = null) => new JwtAuth(config).WithToken(token);
     
     /// <summary>
     /// The remote, database and namespace of the <see cref="SurrealConfig"/>
     /// </summary>
-    public sealed class Endpoint : IConfigBuilder
+    public sealed class Remote : IConfigBuilder
     {
-        internal Endpoint(IConfigBuilder? parent)
+        internal Remote(IConfigBuilder? parent)
         {
             Parent = parent;
         }
@@ -160,8 +160,8 @@ public static class SurrealConfigBuilder
         /// <inheritdoc />
         public IConfigBuilder? Parent { get; }
 
-        /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public IPEndPoint? Remote { get; set; }
+        /// <inheritdoc cref="SurrealConfig.Endpoint"/>
+        public IPEndPoint? Endpoint { get; set; }
 
         /// <inheritdoc cref="SurrealConfig.Database"/>
         public string? Database { get; set; }
@@ -169,19 +169,19 @@ public static class SurrealConfigBuilder
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
         public string? Namespace { get; set; }
         
-        /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public Endpoint WithRemote(IPEndPoint remote)
+        /// <inheritdoc cref="SurrealConfig.Endpoint"/>
+        public Remote WithEndpoint(IPEndPoint endpoint)
         {
-            Remote = remote;
+            Endpoint = endpoint;
             return this;
         }
 
-        /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public Endpoint WithRemote(in ReadOnlySpan<char> endpoint, Func<IPEndPoint>? fallback = default)
+        /// <inheritdoc cref="SurrealConfig.Endpoint"/>
+        public Remote WithEndpoint(in ReadOnlySpan<char> endpoint, Func<IPEndPoint>? fallback = default)
         {
             if (fallback is null)
             {
-                Remote = IPEndPoint.Parse(endpoint);
+                Endpoint = IPEndPoint.Parse(endpoint);
                 return this;
             }
 
@@ -190,28 +190,28 @@ public static class SurrealConfigBuilder
                 ip = fallback();
             }
 
-            return WithRemote(ip);
+            return WithEndpoint(ip);
         }
 
 
-        /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public Endpoint WithAddress(IPAddress address)
+        /// <inheritdoc cref="SurrealConfig.Endpoint"/>
+        public Remote WithAddress(IPAddress address)
         {
-            if (Remote is null)
+            if (Endpoint is null)
             {
-                Remote = new(address, 0);
+                Endpoint = new(address, 0);
             }
             else
             {
-                Remote.Address = address;
+                Endpoint.Address = address;
             }
             
             return this;
         }
         
 
-        /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public Endpoint WithAddress(in ReadOnlySpan<char> address, Func<IPAddress>? fallback = default)
+        /// <inheritdoc cref="SurrealConfig.Endpoint"/>
+        public Remote WithAddress(in ReadOnlySpan<char> address, Func<IPAddress>? fallback = default)
         {
             IPAddress? ip;
             if (fallback is null)
@@ -227,46 +227,46 @@ public static class SurrealConfigBuilder
         }
         
 
-        /// <inheritdoc cref="SurrealConfig.Remote"/>
-        public Endpoint WithPort(in int port)
+        /// <inheritdoc cref="SurrealConfig.Endpoint"/>
+        public Remote WithPort(in int port)
         {
-            if (Remote is null)
+            if (Endpoint is null)
             {
-                Remote = new(IPAddress.Loopback, port);
+                Endpoint = new(IPAddress.Loopback, port);
             }
             else
             {
-                Remote.Port = port;
+                Endpoint.Port = port;
             }
 
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Database"/>
-        public Endpoint WithDatabase(string database)
+        public Remote WithDatabase(string database)
         {
             Database = database;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Database"/>
-        public Endpoint WithDatabase(in ReadOnlySpan<char> database) => WithDatabase(database.ToString());
+        public Remote WithDatabase(in ReadOnlySpan<char> database) => WithDatabase(database.ToString());
         
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
-        public Endpoint WithNamespace(string ns)
+        public Remote WithNamespace(string ns)
         {
             Namespace = ns;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
-        public Endpoint WithNamespace(in ReadOnlySpan<char> ns) => WithDatabase(ns.ToString());
+        public Remote WithNamespace(in ReadOnlySpan<char> ns) => WithDatabase(ns.ToString());
 
         /// <inheritdoc />
         public void Configure(ref SurrealConfig config)
         {
-            InvalidConfigException.ThrowIfNull(Remote, "Remote cannot be null");
-            config.Remote = Remote;
+            InvalidConfigException.ThrowIfNull(Endpoint, "Remote cannot be null");
+            config.Endpoint = Endpoint;
             config.Database = Database;
             config.Namespace = Namespace;
         }
