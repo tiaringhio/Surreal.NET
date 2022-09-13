@@ -1,4 +1,5 @@
 ﻿using System.Net.WebSockets;
+using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -12,6 +13,22 @@ public
 #endif
     sealed class RpcClient : IDisposable, IAsyncDisposable
 {
+    internal static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
+    {
+        AllowTrailingCommas = true,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        DictionaryKeyPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
+        NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
+        PropertyNameCaseInsensitive = true,
+        PropertyNamingPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+        WriteIndented = false
+    };
+    
+    internal const int DefaultBufferSize = 16 * 1024;
+    
     private ClientWebSocket? _ws;
 
     /// <summary>
@@ -22,7 +39,7 @@ public
     /// <summary>
     /// The <see cref="JsonSerializerOptions"/> used for serialization.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; } = new();
+    public JsonSerializerOptions SerializerOptions { get; } = DefaultJsonSerializerOptions;
 
     /// <summary>
     /// Generates a random base64 string of the length specified.
@@ -84,18 +101,16 @@ public
         return _ws is null ? default : new(Close());
     }
 
-    private static readonly int PageSize = Environment.SystemPageSize;
-    
     /// <summary>
     /// Sends the specified request to the Surreal server, and returns the response.
     /// </summary>
     /// <param name="req">The request to send</param>
-    public async Task<RpcResponse<U>> Send<T, U>(RpcRequest<T> req, CancellationToken ct = default)
+    public async Task<RpcResponse> Send(RpcRequest req, CancellationToken ct = default)
     {
         ThrowIfDisconnected();
         req.Id ??= GetRandomId(6);
 
-        await using PooledMemoryStream stream = new(PageSize);
+        await using PooledMemoryStream stream = new(DefaultBufferSize);
         
         await JsonSerializer.SerializeAsync(stream, req, SerializerOptions, ct);
         await _ws!.SendAsync(stream.GetConsumedBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
@@ -104,15 +119,15 @@ public
         ValueWebSocketReceiveResult res;
         do
         {
-            res = await _ws.ReceiveAsync(stream.InternalReadMemory(PageSize), ct);
+            res = await _ws.ReceiveAsync(stream.InternalReadMemory(DefaultBufferSize), ct);
         } while (!res.EndOfMessage);
         
         // Swap from write to read mode
-        long len = stream.Position - PageSize + res.Count;
+        long len = stream.Position - DefaultBufferSize + res.Count;
         stream.Position = 0;
         stream.SetLength(len);
         
-        var rsp = await JsonSerializer.DeserializeAsync<RpcResponse<U>>(stream, SerializerOptions, ct);
+        var rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, SerializerOptions, ct);
         return rsp;
     }
 
@@ -147,7 +162,7 @@ public
 #if SURREAL_NET_INTERNAL
 public
 #endif
-    struct RpcRequest<T>
+    struct RpcRequest
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
@@ -157,14 +172,14 @@ public
     [JsonPropertyName("method")] public string? Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<T>? Params { get; set; }
+    public List<object?>? Params { get; set; }
 }
 
 
 #if SURREAL_NET_INTERNAL
 public
 #endif
-    struct RpcResponse<T>
+    struct RpcResponse
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
@@ -172,20 +187,20 @@ public
     public RpcError? Error { get; set; }
 
     [JsonPropertyName("result"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public T Result { get; set; }
+    public object? Result { get; set; }
 }
 
 #if SURREAL_NET_INTERNAL
 public
 #endif
-    struct RpcNotification<T>
+    struct RpcNotification
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
     [JsonPropertyName("method")] public string? Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<T>? Params { get; set; }
+    public List<object?>? Params { get; set; }
 }
 
 // // Serialization for rpc messages

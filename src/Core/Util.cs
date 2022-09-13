@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Json;
 
 namespace Surreal.Net;
 
@@ -786,5 +787,48 @@ public sealed class PooledMemoryStream : Stream
     public string GetString(Encoding? encoding = null)
     {
         return (encoding ?? Encoding.Default).GetString(GetBufferSpan(0, _position));
+    }
+}
+
+/// <summary>
+/// Converts keys to lower_snake_case for json serialization.
+/// </summary>
+/// <remarks>
+/// Source: https://www.rickvandenbosch.net/blog/creating-a-custom-jsonnamingpolicy/
+/// </remarks>
+public sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
+{
+    private static readonly Lazy<JsonLowerSnakeCaseNamingPolicy> _instance = new(() => new());
+    
+    public static JsonLowerSnakeCaseNamingPolicy Instance => _instance.Value;
+
+    public override string ConvertName(string name)
+    {
+        if (name == null)
+        {
+            throw new ArgumentNullException(nameof(name));
+        }
+        var result = new StringBuilder();
+        for (var i = 0; i < name.Length; i++)
+        {
+            var c = name[i];
+            if (i == 0)
+            {
+                result.Append(char.ToLower(c));
+            }
+            else
+            {
+                if (char.IsUpper(c))
+                {
+                    result.Append('_');
+                    result.Append(char.ToLower(c));
+                }
+                else
+                {
+                    result.Append(c);
+                }
+            }
+        }
+        return result.ToString();
     }
 }
