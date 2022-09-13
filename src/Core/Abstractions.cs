@@ -1,4 +1,7 @@
-﻿using System.Text.Json;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
+using System.Runtime.CompilerServices;
+using System.Text.Json;
 
 namespace Surreal.Net;
 
@@ -12,10 +15,10 @@ public readonly struct SurrealThing
 {
     private readonly int _split;
     public string Thing { get; }
-    
+
     public ReadOnlySpan<char> Table => Thing.AsSpan(0, _split);
     public ReadOnlySpan<char> Key => Thing.AsSpan(_split + 1);
-    
+
 #if SURREAL_NET_INTERNAL
     public
 #endif
@@ -26,10 +29,11 @@ public readonly struct SurrealThing
     }
 
     public override string ToString() => Thing;
-    
+
     public static SurrealThing From(string thing) => new(thing.IndexOf(':'), thing);
 
-    public static SurrealThing From(in ReadOnlySpan<char> table, in ReadOnlySpan<char> key) => new(table.Length, $"{table}:{key}");
+    public static SurrealThing From(in ReadOnlySpan<char> table, in ReadOnlySpan<char> key) =>
+        new(table.Length, $"{table}:{key}");
 
     public static implicit operator SurrealThing(in string thing) => From(thing);
 
@@ -57,123 +61,401 @@ public readonly struct SurrealThing
 }
 
 /// <summary>
-/// The result from a query to the Surreal database. 
+/// The response from a query to the Surreal database. 
 /// </summary>
-public readonly struct SurrealResult
+public readonly struct SurrealResponse
 {
-    private readonly SurrealResponse _response;
+    private readonly string _id;
+    private readonly SurrealResult _result;
     private readonly SurrealError _error;
 
 #if SURREAL_NET_INTERNAL
     public
 #endif
-        SurrealResult(SurrealError error, SurrealResponse response)
+        SurrealResponse(string id, SurrealError error, SurrealResult result)
     {
+        _id = id;
         _error = error;
-        _response = response;
+        _result = result;
     }
+
+    public string Id => _id;
 
     public bool IsOk => _error.Code == 0;
     public bool IsError => _error.Code != 0;
-    
-    public SurrealResponse UncheckedResponse => _response;
+
+    public SurrealResult UncheckedResult => _result;
     public SurrealError UncheckedError => _error;
-    
+
     public bool TryGetError(out SurrealError error)
     {
         error = _error;
         return IsError;
     }
-    
-    public bool TryGetResult(out SurrealResponse result)
+
+    public bool TryGetResult(out SurrealResult result)
     {
-        result = _response;
+        result = _result;
         return IsOk;
     }
-    
-    public bool TryGetResult(out SurrealResponse result, out SurrealError error)
+
+    public bool TryGetResult(out SurrealResult result, out SurrealError error)
     {
-        result = _response;
+        result = _result;
         error = _error;
         return IsOk;
     }
 
-    public void Deconstruct(out SurrealResponse result, out SurrealError error) => (result, error) = (_response, _error);
+    public void Deconstruct(out SurrealResult result, out SurrealError error) => (result, error) = (_result, _error);
+
+    public static SurrealResponse From(in RpcResponse rsp)
+    {
+        if (rsp.Id is null)
+        {
+            ThrowIdMissing();
+        }
+
+        if (rsp.Error.HasValue)
+        {
+            var err = rsp.Error.Value;
+            return new(rsp.Id, new(err.Code, err.Message), default);
+        }
+
+        return new(rsp.Id, default, SurrealResult.From(rsp.Result));
+    }
+
+    [DoesNotReturn]
+    private static void ThrowIdMissing()
+    {
+        throw new InvalidOperationException("Response does not have an id.");
+    }
+    
+    public static implicit operator SurrealResponse(in RpcResponse rsp) => From(in rsp);
+}
+
+public enum SurrealResultKind : byte
+{
+    Object,
+    Document,
+    None,
+    String,
+    SignedInteger,
+    UnsignedInteger,
+    Float,
+    Boolean,
 }
 
 /// <summary>
-/// The response from a query to the Surreal database.
+/// The result of a successful query to the Surreal database.
 /// </summary>
-public readonly struct SurrealResponse
+public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<SurrealResult>
 {
-    private readonly SurrealResponseKind _kind;
     private readonly JsonElement _json;
-    private readonly string? _id;
-    private readonly string? _text;
+    private readonly object? _sentinelOrValue;
+    private readonly long _int64ValueField;
 
 #if SURREAL_NET_INTERNAL
     public
 #endif
-    SurrealResponse(SurrealResponseKind kind, JsonElement json, string? id, string? text)
+        SurrealResult(JsonElement json, object? sentinelOrValue)
     {
-        _kind = kind;
         _json = json;
-        _id = id;
-        _text = text;
+        _sentinelOrValue = sentinelOrValue;
+        _int64ValueField = 0;
     }
 
-    public SurrealResponseKind Kind => _kind;
-    public JsonElement UncheckedJson => _json;
-    public string? UncheckedId => _id;
-    public string? UncheckedText => _text;
-    
-    public bool TryGetObject(out JsonElement json)
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+        SurrealResult(JsonElement json, object? sentinelOrValue, long int64ValueField)
     {
-        json = _json;
-        return _kind is SurrealResponseKind.DocumentWithId or SurrealResponseKind.Object;
+        _json = json;
+        _sentinelOrValue = sentinelOrValue;
+        _int64ValueField = int64ValueField;
     }
-    
-    public bool TryGetDocumentWithId(out string? id, out JsonElement json)
+
+    public JsonElement Inner => _json;
+
+    public bool TryGetObject(out JsonElement document)
     {
-        id = _id;
-        json = _json;
-        return _kind is SurrealResponseKind.DocumentWithId;
+        document = _json;
+        return GetKind() == SurrealResultKind.Object;
     }
-    
-    public bool TryGetText(out string? text)
+
+    public bool TryGetDocument(out string? id, out JsonElement document)
     {
-        text = _text;
-        return _kind is SurrealResponseKind.Text;
+        document = _json;
+        bool isDoc = GetKind() == SurrealResultKind.Document;
+        id = isDoc ? (string) _sentinelOrValue! : null;
+        return isDoc;
+    }
+
+    public bool TryGetValue(out string? value)
+    {
+        bool isString = GetKind() == SurrealResultKind.String;
+        value = isString ? (string) _sentinelOrValue! : null;
+        return isString;
+    }
+
+    public bool TryGetValue(out long value)
+    {
+        bool isInt = GetKind() == SurrealResultKind.SignedInteger;
+        value = isInt ? _int64ValueField : 0;
+        return isInt;
+    }
+
+    public bool TryGetValue(out ulong value)
+    {
+        bool isInt = GetKind() == SurrealResultKind.SignedInteger;
+        long data = _int64ValueField;
+        value = isInt ? Unsafe.As<long, ulong>(ref data) : 0;
+        return isInt;
+    }
+
+    public bool TryGetValue(out double value)
+    {
+        bool isFloat = GetKind() == SurrealResultKind.Float;
+        long data = _int64ValueField;
+        value = isFloat ? Unsafe.As<long, double>(ref data) : 0;
+        return isFloat;
+    }
+
+    public bool TryGetValue(out bool value)
+    {
+        bool isBoolean = GetKind() == SurrealResultKind.Boolean;
+        value = isBoolean && _int64ValueField != FalseValue;
+        return value;
+    }
+
+    // Below is the logic determining the type of the boxed value in the result.
+    // The type is primarily determined by the presence of a sentinel.
+    // Both strings and documents make use of the sentinel field as a value field,
+    // In this case the valueField determines the type.
+    private static object NoneSentinel = new();
+    private static object SignedIntegerSentinel = new();
+    private static object UnsignedIntegerSentinel = new();
+    private static object FloatSentinel = new();
+    private static object BooleanSentinel = new();
+
+    private const long DocumentValue = 3;
+    private const long TrueValue = 1;
+    private const long FalseValue = 0;
+
+    public static SurrealResult From(in JsonElement json)
+    {
+        return json.ValueKind switch
+        {
+            JsonValueKind.Undefined => new(json, NoneSentinel),
+            JsonValueKind.Object => FromObject(json),
+            JsonValueKind.Array => new(json, null),
+            JsonValueKind.String => new(json, json.GetString()),
+            JsonValueKind.Number => FromNumber(json),
+            JsonValueKind.True => new(json, BooleanSentinel, TrueValue),
+            JsonValueKind.False => new(json, BooleanSentinel, FalseValue),
+            JsonValueKind.Null => new(json, NoneSentinel),
+            _ => ThrowUnknownJsonValueKind(json)
+        };
+    }
+
+    private static SurrealResult FromObject(in JsonElement json)
+    {
+        if (json.ValueKind == JsonValueKind.String)
+        {
+            return new(json, json.GetString());
+        }
+
+        // A Document is requires the first property to be a string named "id".
+        if (json.TryGetProperty("id", out var id) && id.ValueKind == JsonValueKind.String)
+        {
+            return new(json, id.GetString(), DocumentValue);
+        }
+
+        return new(json, null);
+    }
+
+    private static SurrealResult FromNumber(in JsonElement json)
+    {
+        if (json.TryGetInt64(out long signed))
+        {
+            return new(json, SignedIntegerSentinel, signed);
+        }
+
+        if (json.TryGetUInt64(out ulong unsigned))
+        {
+            return new(json, UnsignedIntegerSentinel, Unsafe.As<ulong, long>(ref unsigned));
+        }
+
+        if (json.TryGetDouble(out double dbl))
+        {
+            return new(json, FloatSentinel, Unsafe.As<double, long>(ref dbl));
+        }
+
+        return new(json, NoneSentinel);
+    }
+
+    private SurrealResultKind GetKind()
+    {
+        if (Object.ReferenceEquals(null, _sentinelOrValue))
+        {
+            return SurrealResultKind.Object;
+        }
+
+        if (_sentinelOrValue is string)
+        {
+            return _int64ValueField == DocumentValue ? SurrealResultKind.Document : SurrealResultKind.String;
+        }
+
+        if (Object.ReferenceEquals(NoneSentinel, _sentinelOrValue))
+        {
+            return SurrealResultKind.None;
+        }
+
+        if (Object.ReferenceEquals(SignedIntegerSentinel, _sentinelOrValue))
+        {
+            return SurrealResultKind.SignedInteger;
+        }
+
+        if (Object.ReferenceEquals(UnsignedIntegerSentinel, _sentinelOrValue))
+        {
+            return SurrealResultKind.UnsignedInteger;
+        }
+
+        if (Object.ReferenceEquals(FloatSentinel, _sentinelOrValue))
+        {
+            return SurrealResultKind.Float;
+        }
+
+        if (Object.ReferenceEquals(BooleanSentinel, _sentinelOrValue))
+        {
+            return SurrealResultKind.Boolean;
+        }
+
+        Debug.Assert(false); // Should not happen, but is not fatal; None covers all edge cases.
+        return SurrealResultKind.None;
+    }
+
+    [DoesNotReturn, DebuggerStepThrough]
+    private static SurrealResult ThrowUnknownJsonValueKind(JsonElement json)
+    {
+        throw new ArgumentOutOfRangeException(nameof(json), json.ValueKind, "Unknown value kind.");
+    }
+
+    // Below is the implementation for the comparison and equality logic,
+    // as well as operator overloads and conversion logic for IConvertible.
+
+    public bool Equals(in SurrealResult other)
+    {
+        // Fastest check for inequality, is via the value field.
+        if (_int64ValueField != other._int64ValueField)
+        {
+            return false;
+        }
+
+        // More expensive check for the type of the boxed value.
+        SurrealResultKind kind = GetKind();
+
+        // Most expensive check requires unboxing of the value.
+        return kind == other.GetKind() && EqualsUnboxed(in other, in kind);
+    }
+
+    private bool EqualsUnboxed(in SurrealResult other, in SurrealResultKind kind)
+    {
+        return kind switch
+        {
+            SurrealResultKind.Object or SurrealResultKind.None => EqualityComparer<JsonElement>.Default.Equals(_json,
+                other._json),
+            // Documents are equal if the ids are equal, no matter the backing json value!
+            SurrealResultKind.Document or SurrealResultKind.String =>
+                String.Equals((string) _sentinelOrValue!, (string) other._sentinelOrValue!),
+            // Due to the unsafe case we are still able to use the operator and do not need to cast to compare structs.
+            _ => _int64ValueField == other._int64ValueField,
+        };
+    }
+
+    // The struct is big, do not copy if not necessary!
+    bool IEquatable<SurrealResult>.Equals(SurrealResult other) => Equals(in other);
+
+    public override bool Equals(object? obj)
+    {
+        return obj is SurrealResult other && Equals(other);
+    }
+
+    public override int GetHashCode()
+    {
+        return HashCode.Combine(_json.ValueKind, _sentinelOrValue, _int64ValueField);
+    }
+
+    public static bool operator ==(in SurrealResult left, in SurrealResult right) => left.Equals(in right);
+    public static bool operator !=(in SurrealResult left, in SurrealResult right) => !left.Equals(in right);
+
+
+    public int CompareTo(in SurrealResult other)
+    {
+        SurrealResultKind thisKind = GetKind();
+        SurrealResultKind otherKind = other.GetKind();
+
+        long thisValue = _int64ValueField;
+        long otherValue = other._int64ValueField;
+
+        return (thisKind, otherKind) switch
+        {
+            (SurrealResultKind.SignedInteger, SurrealResultKind.SignedInteger) => thisValue.CompareTo(otherValue),
+            (SurrealResultKind.SignedInteger, SurrealResultKind.UnsignedInteger) =>
+                ((double) thisValue).CompareTo((double) Unsafe.As<long, ulong>(ref otherValue)),
+            (SurrealResultKind.SignedInteger, SurrealResultKind.Float) =>
+                ((double) thisValue).CompareTo(Unsafe.As<long, double>(ref otherValue)),
+            
+            (SurrealResultKind.UnsignedInteger, SurrealResultKind.SignedInteger) =>
+                ((double)Unsafe.As<long, ulong>(ref thisValue)).CompareTo((double)otherValue),
+            (SurrealResultKind.UnsignedInteger, SurrealResultKind.UnsignedInteger) =>
+                Unsafe.As<long, ulong>(ref thisValue).CompareTo(Unsafe.As<long, ulong>(ref otherValue)),
+            (SurrealResultKind.UnsignedInteger, SurrealResultKind.Float) =>
+                ((double) Unsafe.As<long, ulong>(ref thisValue)).CompareTo(Unsafe.As<long, double>(ref otherValue)),
+            
+            (SurrealResultKind.Float, SurrealResultKind.SignedInteger) => 
+                Unsafe.As<long, double>(ref thisValue).CompareTo((double)otherValue),
+            (SurrealResultKind.Float, SurrealResultKind.UnsignedInteger) =>
+                Unsafe.As<long, double>(ref thisValue).CompareTo((double)Unsafe.As<long, ulong>(ref otherValue)),
+            (SurrealResultKind.Float, SurrealResultKind.Float) =>
+                Unsafe.As<long, double>(ref thisValue).CompareTo(Unsafe.As<long, double>(ref otherValue)),
+            
+            _ => ThrowInvalidCompareTypes(),
+                 
+        };
+    }
+
+    // The struct is big, do not copy if not necessary!
+    int IComparable<SurrealResult>.CompareTo(SurrealResult other) => CompareTo(in other);
+    
+    public static bool operator <(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) < 0;
+    public static bool operator <=(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) <= 0;
+    public static bool operator >(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) > 0;
+    public static bool operator >=(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) >= 0;
+    
+    
+    [DoesNotReturn, DebuggerStepThrough]
+    private static int ThrowInvalidCompareTypes()
+    {
+        throw new InvalidOperationException("Cannot compare SurrealResult of different types, if one or more is not numeric..");
     }
 }
 
 /// <summary>
-/// Indicates the type of response from the Surreal database.
-/// </summary>
-public enum SurrealResponseKind : byte
-{
-    None,
-    Text,
-    DocumentWithId,
-    Object,
-}
-
-/// <summary>
-/// The error from a query to the Surreal database.
+/// The result of a failed query to the Surreal database.
 /// </summary>
 public readonly struct SurrealError
 {
 #if SURREAL_NET_INTERNAL
     public
 #endif
-    SurrealError(int code, string message)
+        SurrealError(int code, string? message)
     {
         Code = code;
         Message = message;
     }
 
     public int Code { get; }
-    public string Message { get; }
+    public string? Message { get; }
 }
 
 public sealed class SurrealAuthentication
@@ -186,43 +468,43 @@ public sealed class SurrealAuthentication
 }
 
 /// <summary>
-/// Common interface for interacting with a SurrealDB instance
+/// Common interface for interacting with a Surreal database instance
 /// </summary>
 public interface ISurrealClient
 {
     /// <summary>
-    /// Opens the connection to a SurrealDB instance using the provided configuration.
+    /// Returns a copy of the current configuration.
+    /// </summary>
+    public SurrealConfig GetConfig();
+    
+    /// <summary>
+    /// Opens the connection to a Surreal database instance using the provided configuration.
     /// Configures the client with all applicable settings.
     /// </summary>
     public Task Open(SurrealConfig config, CancellationToken ct = default);
 
     /// <summary>
-    /// Returns a copy of the current configuration.
+    /// Closes the open connection the the Surreal database.
     /// </summary>
-    public SurrealConfig GetConfig();
-
-    /// <summary>
-    /// Closes the open connection the the SurrealDB.
-    /// </summary>
-    public void Close();
+    public Task Close();
 
     /// <summary>
     /// Retrieves the current session information.
     /// </summary>
-    public Task<SurrealResult> Info();
+    public Task<SurrealResponse> Info();
 
     /// <summary>
     /// Switch to a specific namespace and database.
     /// </summary>
     /// <param name="db">Switches to a specific namespace.</param>
     /// <param name="ns">Switches to a specific database.</param>
-    public Task<SurrealResult> Use(string db, string ns, CancellationToken ct = default);
+    public Task<SurrealResponse> Use(string db, string ns, CancellationToken ct = default);
 
     /// <summary>
     /// Signs up to a specific authentication scope.
     /// </summary>
     /// <param name="auth">Variables used in a signin query.</param>
-    public Task<SurrealResult> Signup(SurrealAuthentication auth, CancellationToken ct = default);
+    public Task<SurrealResponse> Signup(SurrealAuthentication auth, CancellationToken ct = default);
 
     /// <summary>
     /// Signs in to a specific authentication scope.
@@ -231,7 +513,7 @@ public interface ISurrealClient
     /// <remarks>
     /// This updates the internal <see cref="SurrealConfig"/>.
     /// </remarks>
-    public Task<SurrealResult> Signin(SurrealAuthentication auth, CancellationToken ct = default);
+    public Task<SurrealResponse> Signin(SurrealAuthentication auth, CancellationToken ct = default);
 
     /// <summary>
     /// Invalidates the authentication for the current connection.
@@ -239,7 +521,7 @@ public interface ISurrealClient
     /// <remarks>
     /// This updates the internal <see cref="SurrealConfig"/>.
     /// </remarks>
-    public Task<SurrealResult> Invalidate(CancellationToken ct = default);
+    public Task<SurrealResponse> Invalidate(CancellationToken ct = default);
 
     /// <summary>
     /// Authenticates the current connection with a JWT token.
@@ -248,21 +530,21 @@ public interface ISurrealClient
     /// <remarks>
     /// This updates the internal <see cref="SurrealConfig"/>.
     /// </remarks>
-    public Task<SurrealResult> Authenticate(string token, CancellationToken ct = default);
+    public Task<SurrealResponse> Authenticate(string token, CancellationToken ct = default);
 
     /// <summary>
     /// Assigns a value as a parameter for this connection.
     /// </summary>
     /// <param name="key">Specifies the name of the variable.</param>
     /// <param name="value">Assigns the value to the variable name.</param>
-    public Task<SurrealResult> Let(string key, object? value, CancellationToken ct = default);
+    public Task<SurrealResponse> Let(string key, object? value, CancellationToken ct = default);
 
     /// <summary>
     /// Runs a set of SurrealQL statements against the database.
     /// </summary>#
     /// <param name="sql">Specifies the SurrealQL statements.</param>
     /// <param name="vars">Assigns variables which can be used in the query.</param>
-    public Task<SurrealResult> Query(string sql, object? vars, CancellationToken ct = default);
+    public Task<SurrealResponse> Query(string sql, object? vars, CancellationToken ct = default);
 
     /// <summary>
     /// Selects all records in a table, or a specific record, from the database.
@@ -272,7 +554,7 @@ public interface ISurrealClient
     /// This function will run the following query in the database:
     /// <code>SELECT * FROM $thing;</code>
     /// </remarks>
-    public Task<SurrealResult> Select(SurrealThing thing, CancellationToken ct = default);
+    public Task<SurrealResponse> Select(SurrealThing thing, CancellationToken ct = default);
 
     /// <summary>
     /// Creates a record in the database.
@@ -283,7 +565,7 @@ public interface ISurrealClient
     /// This function will run the following query in the database:
     /// <code>CREATE $thing CONTENT $data;</code>
     /// </remarks>
-    public Task<SurrealResult> Create(SurrealThing thing, object data, CancellationToken ct = default);
+    public Task<SurrealResponse> Create(SurrealThing thing, object data, CancellationToken ct = default);
 
     /// <summary>
     /// Updates all records in a table, or a specific record, in the database.
@@ -296,7 +578,7 @@ public interface ISurrealClient
     /// This function will run the following query in the database:
     /// <code>UPDATE $thing CONTENT $data;</code>
     /// </remarks>
-    public Task<SurrealResult> Update(SurrealThing thing, object data, CancellationToken ct = default);
+    public Task<SurrealResponse> Update(SurrealThing thing, object data, CancellationToken ct = default);
 
     /// <summary>
     /// Modifies all records in a table, or a specific record, in the database.
@@ -309,7 +591,7 @@ public interface ISurrealClient
     /// This function will run the following query in the database:
     /// <code>UPDATE $thing MERGE $data;</code>
     /// </remarks>
-    public Task<SurrealResult> Change(SurrealThing thing, object data, CancellationToken ct = default);
+    public Task<SurrealResponse> Change(SurrealThing thing, object data, CancellationToken ct = default);
 
     /// <summary>
     /// Applies  <see href="https://jsonpatch.com/">JSON Patch</see> changes to all records, or a specific record, in the database.
@@ -322,7 +604,7 @@ public interface ISurrealClient
     /// This function will run the following query in the database:
     /// <code>UPDATE $thing PATCH $data;</code>
     /// </remarks>
-    public Task<SurrealResult> Modify(SurrealThing thing, object data, CancellationToken ct = default);
+    public Task<SurrealResponse> Modify(SurrealThing thing, object data, CancellationToken ct = default);
 
     /// <summary>
     /// Deletes all records in a table, or a specific record, from the database.
@@ -332,5 +614,5 @@ public interface ISurrealClient
     /// This function will run the following query in the database:
     /// <code>DELETE * FROM $thing;</code>
     /// </remarks>
-    public Task<SurrealResult> Delete(SurrealThing thing, CancellationToken ct = default);
+    public Task<SurrealResponse> Delete(SurrealThing thing, CancellationToken ct = default);
 }
