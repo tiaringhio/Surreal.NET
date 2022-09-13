@@ -13,7 +13,7 @@ public
 #endif
     sealed class RpcClient : IDisposable, IAsyncDisposable
 {
-    internal static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
+    public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
         AllowTrailingCommas = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.Never,
@@ -27,7 +27,7 @@ public
         WriteIndented = false
     };
     
-    internal const int DefaultBufferSize = 16 * 1024;
+    public const int DefaultBufferSize = 16 * 1024;
     
     private ClientWebSocket? _ws;
 
@@ -187,7 +187,7 @@ public
     public RpcError? Error { get; set; }
 
     [JsonPropertyName("result"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public object? Result { get; set; }
+    public JsonElement Result { get; set; }
 }
 
 #if SURREAL_NET_INTERNAL

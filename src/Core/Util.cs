@@ -14,7 +14,10 @@ namespace Surreal.Net;
 /// <remarks>
 /// Source: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Threading/Tasks/CachedCompletedInt32Task.cs
 /// </remarks>
-internal struct CachedCompletedInt32Task
+#if SURREAL_NET_INTERNAL
+public
+#endif
+    struct CachedCompletedInt32Task
 {
     private Task<int>? _task;
 
@@ -43,7 +46,10 @@ internal struct CachedCompletedInt32Task
 /// <remarks>
 /// Based on: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/IO/MemoryStream.cs
 /// </remarks>
-public sealed class PooledMemoryStream : Stream
+#if SURREAL_NET_INTERNAL
+public
+#endif
+    sealed class PooledMemoryStream : Stream
 {
     private readonly MemoryPool<byte> _pool;
     private IMemoryOwner<byte> _buffer; // Either allocated internally or externally.
@@ -796,7 +802,10 @@ public sealed class PooledMemoryStream : Stream
 /// <remarks>
 /// Source: https://www.rickvandenbosch.net/blog/creating-a-custom-jsonnamingpolicy/
 /// </remarks>
-public sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
+#if SURREAL_NET_INTERNAL
+public
+#endif
+    sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
 {
     private static readonly Lazy<JsonLowerSnakeCaseNamingPolicy> _instance = new(() => new());
     
