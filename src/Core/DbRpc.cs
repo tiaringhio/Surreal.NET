@@ -29,7 +29,7 @@ public
         new(auth.Namespace, auth.Database, auth.Scope, auth.Username, auth.Password, auth.Email, auth.Interests?.ToArray());
 }
 
-public sealed class Database : ISurrealClient
+public sealed class DbRpc : ISurrealClient
 {
     private readonly JsonRpcClient _client = new();
     private SurrealConfig _config;
@@ -42,8 +42,8 @@ public sealed class Database : ISurrealClient
     {
         config.ThrowIfInvalid();
         // Open connection
-        InvalidConfigException.ThrowIfNull(config.RpcUrl);
-        await _client.Open(config.RpcUrl!, ct);
+        InvalidConfigException.ThrowIfNull(config.RpcEndpoint);
+        await _client.Open(config.RpcEndpoint!, ct);
 
         // Authenticate
         await (config.Authentication switch

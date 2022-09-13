@@ -9,7 +9,7 @@ public class DatabaseTests
     [Fact]
     public async Task DatabaseTestSuite()
     {
-        await DatabaseTestDriver.Run<Database>();
+        await DatabaseTestDriver.Run<DbRpc>();
     }
 }
 
@@ -40,12 +40,11 @@ public sealed class DatabaseTestDriver
         AssertOk(await _client.Use(ConfigHelper.Database, ConfigHelper.Namespace));
         AssertOk(await _client.Info());
 
-        AssertOk(await _client.Signup(new()
+        AssertOk(await _client.Signin(new()
         {
             Namespace = ConfigHelper.Namespace,
-            Database = ConfigHelper.Database,
-            Username = "user2",
-            Password = "user2",
+            Username = ConfigHelper.User,
+            Password = ConfigHelper.Pass,
         }));
         AssertOk(await _client.Invalidate());
 

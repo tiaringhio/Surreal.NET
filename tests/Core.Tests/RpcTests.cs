@@ -9,7 +9,7 @@ public class RpcClientTests
     [Fact]
     public async Task Open()
     {
-        await Client.Open(ConfigHelper.Default.RpcUrl!);
+        await Client.Open(ConfigHelper.Default.RpcEndpoint!);
     }
     
     [Fact]
