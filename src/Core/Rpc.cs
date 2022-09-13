@@ -11,7 +11,7 @@ namespace Surreal.Net;
 #if SURREAL_NET_INTERNAL
 public
 #endif
-    sealed class RpcClient : IDisposable, IAsyncDisposable
+    sealed class JsonRpcClient : IDisposable, IAsyncDisposable
 {
     public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
