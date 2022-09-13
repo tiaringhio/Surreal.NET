@@ -1,3 +1,5 @@
+using System.Text.Json.Serialization;
+
 namespace Surreal.Net.Tests;
 
 public class RpcClientTests
@@ -14,17 +16,15 @@ public class RpcClientTests
     {
         RpcClient client = new();
         await client.Open(ConfigHelper.Default.RpcUrl!);
-        await client.Send(new()
+        var rsp = await client.Send<SigninReq, string>(new()
         {
             Method = "signin",
-            Params = new List<object?>{ 
-                new Dictionary<string, object?>()
-                {
-                    ["user"] = ConfigHelper.Default.Username,
-                    ["pass"] = ConfigHelper.Default.Password
-                }
+            Params = new()
+            {
+                new(ConfigHelper.Default.Username, ConfigHelper.Default.Password)
             }
         });
     }
 
+    record SigninReq(string? user, string? pass);
 }

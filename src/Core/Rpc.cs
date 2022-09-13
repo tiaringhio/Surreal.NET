@@ -90,7 +90,7 @@ public
     /// Sends the specified request to the Surreal server, and returns the response.
     /// </summary>
     /// <param name="req">The request to send</param>
-    public async Task<RpcResponse> Send(RpcRequest req, CancellationToken ct = default)
+    public async Task<RpcResponse<U>> Send<T, U>(RpcRequest<T> req, CancellationToken ct = default)
     {
         ThrowIfDisconnected();
         req.Id ??= GetRandomId(6);
@@ -112,7 +112,7 @@ public
         stream.Position = 0;
         stream.SetLength(len);
         
-        var rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, SerializerOptions, ct);
+        var rsp = await JsonSerializer.DeserializeAsync<RpcResponse<U>>(stream, SerializerOptions, ct);
         return rsp;
     }
 
@@ -147,7 +147,7 @@ public
 #if SURREAL_NET_INTERNAL
 public
 #endif
-    struct RpcRequest
+    struct RpcRequest<T>
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
@@ -157,14 +157,14 @@ public
     [JsonPropertyName("method")] public string? Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<object?>? Params { get; set; }
+    public List<T>? Params { get; set; }
 }
 
 
 #if SURREAL_NET_INTERNAL
 public
 #endif
-    struct RpcResponse
+    struct RpcResponse<T>
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
@@ -172,20 +172,20 @@ public
     public RpcError? Error { get; set; }
 
     [JsonPropertyName("result"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public object? Result { get; set; }
+    public T Result { get; set; }
 }
 
 #if SURREAL_NET_INTERNAL
 public
 #endif
-    struct RpcNotification
+    struct RpcNotification<T>
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
     [JsonPropertyName("method")] public string? Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<object?>? Params { get; set; }
+    public List<T>? Params { get; set; }
 }
 
 // // Serialization for rpc messages
