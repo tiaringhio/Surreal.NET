@@ -32,4 +32,19 @@ ws.send(req)
 rsp = ws.recv()
 print(json.loads(rsp))
 
+req=json.dumps({'id':'ASzXY80R','method':'change','params':[
+  'person:jamie',
+  {
+    'marketing': True
+  }
+]})
+ws.send(req)
+rsp = ws.recv()
+print(json.loads(rsp))
+
+req=json.dumps({'id':'ASzXY80R','method':'info','params':[]})
+ws.send(req)
+rsp = ws.recv()
+print(json.loads(rsp))
+
 ws.close()

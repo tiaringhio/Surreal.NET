@@ -16,6 +16,17 @@ public static class ConfigHelper
         endpoint.Port.Should().Be(Port);
     }
 
+    public static SurrealAuthentication Authentication => GetAuthentication(User, Pass);
+    
+    public static SurrealAuthentication GetAuthentication(string user, string pass) => new()
+    {
+        Namespace = Namespace,
+        Database = Database,
+        Username = user,
+        Email = $"{user}@{Namespace}.com",
+        Password = pass
+    };
+
     public static SurrealConfig Default => SurrealConfig.Create()
         .WithAddress(Loopback)
         .WithPort(Port)
@@ -24,4 +35,5 @@ public static class ConfigHelper
         .WithRpc(insecure: true)
         .WithBasicAuth(User, Pass)
         .Build();
+
 }
