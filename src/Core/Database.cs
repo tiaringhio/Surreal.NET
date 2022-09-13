@@ -1,5 +1,29 @@
 ﻿namespace Surreal.Net;
 
+#if SURREAL_NET_INTERNAL
+public
+#endif
+    readonly struct AuthDto
+{
+    public AuthDto(string? ns, string? db, string? sc, string? pass, string? email)
+    {
+        Ns = ns;
+        Db = db;
+        Sc = sc;
+        Pass = pass;
+        Email = email;
+    }
+
+    public string? Ns { get; }
+    public string? Db { get; }
+    public string? Sc { get; }
+    public string? Pass { get; }
+    public string? Email { get; }
+
+    public static AuthDto FromSurreal(SurrealAuthentication auth) =>
+        new(auth.Namespace, auth.Database, auth.Username, auth.Password, auth.Email);
+}
+
 public sealed class Database : ISurrealClient
 {
     private readonly JsonRpcClient _client = new();
@@ -69,7 +93,7 @@ public sealed class Database : ISurrealClient
         return await _client.Send(new()
         {
             Method = "signup",
-            Params = new() { auth }
+            Params = new() { AuthDto.FromSurreal(auth) }
         }, ct);
     }
 
@@ -79,7 +103,7 @@ public sealed class Database : ISurrealClient
         return await _client.Send(new()
         {
             Method = "signin",
-            Params = new() { auth }
+            Params = new() { AuthDto.FromSurreal(auth) }
         }, ct);
     }
 
