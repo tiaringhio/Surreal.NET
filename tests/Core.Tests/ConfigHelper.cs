@@ -21,6 +21,7 @@ public static class ConfigHelper
         .WithPort(Port)
         .WithNamespace(Namespace)
         .WithDatabase(Database)
+        .WithRpc(insecure: true)
         .WithBasicAuth(User, Pass)
         .Build();
 }
