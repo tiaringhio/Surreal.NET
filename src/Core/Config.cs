@@ -1,4 +1,5 @@
-﻿using System.Diagnostics.CodeAnalysis;
+﻿using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using System.Net;
 using System.Runtime.CompilerServices;
@@ -456,21 +457,30 @@ public sealed class InvalidConfigException : Exception
         PropertyName = propertyName;
     }
 
+    [DebuggerStepThrough]
     public static void ThrowIf([DoesNotReturnIf(true)] bool condition, string propertyName,
         string? message = null, Exception? innerException = null)
     {
         if (condition)
         {
-            throw new InvalidConfigException(propertyName, message, innerException);
+            Throw(propertyName, message, innerException);
         }
     }
 
+    [DoesNotReturn, DebuggerStepThrough]
+    public static void Throw(string propertyName, string? message = null, Exception? innerException = null)
+    {
+        throw new InvalidConfigException(propertyName, message, innerException);
+    }
+
+    [DebuggerStepThrough]
     public static void ThrowIfNull(object? value, string? message = null, Exception? innerException = null,
         [CallerArgumentExpression("value")] string propertyName = "")
     {
         ThrowIf(value is null, propertyName, message ?? $"{value} cannot be null", innerException);
     }
     
+    [DebuggerStepThrough]
     public static void ThrowIfNullOrWhitespace(string? value, string? message = null, Exception? innerException = null,
         [CallerArgumentExpression("value")] string propertyName = "")
     {
