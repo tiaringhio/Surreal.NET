@@ -1,7 +1,4 @@
-﻿using System.Buffers;
-using System.Net;
-using System.Net.Sockets;
-using System.Net.WebSockets;
+﻿using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
@@ -28,15 +25,6 @@ public
     public JsonSerializerOptions SerializerOptions { get; } = new();
 
     /// <summary>
-    /// Creates the <see cref="Uri"/> used for the rpc websocket based on the specified <see cref="EndPoint"/>. 
-    /// </summary>
-    /// <param name="endPoint">The endpoint</param>
-    /// <param name="insecure">Whether to secure the connection via TLS.</param>
-    public static Uri GetRpcUri(EndPoint endPoint, bool insecure = false) => insecure
-        ? new Uri($"ws://{endPoint}/rpc/")
-        : new Uri($"wss://{endPoint}/rpc/");
-
-    /// <summary>
     /// Generates a random base64 string of the length specified.
     /// </summary>
     public static string GetRandomId(int length)
@@ -49,15 +37,13 @@ public
     /// <summary>
     /// Opens the connection to the Surreal server.
     /// </summary>
-    /// <param name="endpoint">The endpoint of the Surreal server</param>
-    /// <param name="insecure">Whether to secure the connection via TLS.</param>
-    public async Task Open(IPEndPoint endpoint, bool insecure = false, CancellationToken ct = default)
+    public async Task Open(Uri url, CancellationToken ct = default)
     {
         ThrowIfConnected();
         try
         {
             _ws = new ClientWebSocket();
-            await _ws.ConnectAsync(GetRpcUri(endpoint, insecure), ct);
+            await _ws.ConnectAsync(url, ct);
         }
         catch
         {

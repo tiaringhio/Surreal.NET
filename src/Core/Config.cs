@@ -59,12 +59,21 @@ public struct SurrealConfig
     /// Database authentication Json Web Token to use when connecting.
     /// </summary>
     public string? JsonWebToken { get; set; }
+    
+    /// <summary>
+    /// Optional: Defines the RPC endpoint to use
+    /// </summary>
+    /// <remarks>
+    /// If not specified computed using <see cref="Endpoint"/>.
+    /// This option can be used to override the computed value. 
+    /// </remarks>
+    public Uri? RpcUrl { get; set; }
 
     /// <summary>
     /// Begins configuration of a <see cref="SurrealConfig"/> with fluent api.
     /// </summary>
     /// <returns></returns>
-    public static SurrealConfigBuilder.Remote Create() => SurrealConfigBuilder.Create();
+    public static SurrealConfigBuilder.Basic Create() => SurrealConfigBuilder.Create();
     
     /// <summary>
     /// Marks the configuration as validated. 
@@ -112,7 +121,7 @@ public static class SurrealConfigBuilder
     /// <summary>
     /// Begins configuration of a <see cref="SurrealConfig"/> with fluent api.
     /// </summary>
-    public static Remote Create() => new(null);
+    public static Basic Create() => new(null);
     
     /// <summary>
     /// Returns the configured <see cref="SurrealConfig"/> by applying the entire <see cref="IConfigBuilder"/> chain.
@@ -142,17 +151,20 @@ public static class SurrealConfigBuilder
     }
 
     /// <inheritdoc cref="BasicAuth"/>
-    public static BasicAuth WithBasicAuth(this Remote config) => new(config);
+    public static BasicAuth WithBasicAuth(this IConfigBuilder config, string? username = null, string? password = null) => new(config) { Username = username, Password = password };
 
     /// <inheritdoc cref="JwtAuth"/>
-    public static JwtAuth WithJwtAuth(this Remote config, string? token = null) => new JwtAuth(config).WithToken(token);
+    public static JwtAuth WithJwtAuth(this IConfigBuilder config, string? token = null) => new(config) { Token = token };
+    
+    /// <inheritdoc cref="UseRpc"/>
+    public static UseRpc WithRpc(this IConfigBuilder config, bool insecure = false) => new(config) { Insecure = insecure };
     
     /// <summary>
-    /// The remote, database and namespace of the <see cref="SurrealConfig"/>
+    /// Basic options, such as the remote, database and namespace of the <see cref="SurrealConfig"/>
     /// </summary>
-    public sealed class Remote : IConfigBuilder
+    public sealed class Basic : IConfigBuilder
     {
-        internal Remote(IConfigBuilder? parent)
+        internal Basic(IConfigBuilder? parent)
         {
             Parent = parent;
         }
@@ -170,14 +182,14 @@ public static class SurrealConfigBuilder
         public string? Namespace { get; set; }
         
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
-        public Remote WithEndpoint(IPEndPoint endpoint)
+        public Basic WithEndpoint(IPEndPoint endpoint)
         {
             Endpoint = endpoint;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
-        public Remote WithEndpoint(in ReadOnlySpan<char> endpoint, Func<IPEndPoint>? fallback = default)
+        public Basic WithEndpoint(in ReadOnlySpan<char> endpoint, Func<IPEndPoint>? fallback = default)
         {
             if (fallback is null)
             {
@@ -195,7 +207,7 @@ public static class SurrealConfigBuilder
 
 
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
-        public Remote WithAddress(IPAddress address)
+        public Basic WithAddress(IPAddress address)
         {
             if (Endpoint is null)
             {
@@ -211,7 +223,7 @@ public static class SurrealConfigBuilder
         
 
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
-        public Remote WithAddress(in ReadOnlySpan<char> address, Func<IPAddress>? fallback = default)
+        public Basic WithAddress(in ReadOnlySpan<char> address, Func<IPAddress>? fallback = default)
         {
             IPAddress? ip;
             if (fallback is null)
@@ -228,7 +240,7 @@ public static class SurrealConfigBuilder
         
 
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
-        public Remote WithPort(in int port)
+        public Basic WithPort(in int port)
         {
             if (Endpoint is null)
             {
@@ -243,24 +255,24 @@ public static class SurrealConfigBuilder
         }
 
         /// <inheritdoc cref="SurrealConfig.Database"/>
-        public Remote WithDatabase(string database)
+        public Basic WithDatabase(string database)
         {
             Database = database;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Database"/>
-        public Remote WithDatabase(in ReadOnlySpan<char> database) => WithDatabase(database.ToString());
+        public Basic WithDatabase(in ReadOnlySpan<char> database) => WithDatabase(database.ToString());
         
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
-        public Remote WithNamespace(string ns)
+        public Basic WithNamespace(string ns)
         {
             Namespace = ns;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
-        public Remote WithNamespace(in ReadOnlySpan<char> ns) => WithDatabase(ns.ToString());
+        public Basic WithNamespace(in ReadOnlySpan<char> ns) => WithDatabase(ns.ToString());
 
         /// <inheritdoc />
         public void Configure(ref SurrealConfig config)
@@ -357,6 +369,58 @@ public static class SurrealConfigBuilder
             config.JsonWebToken = Token;
         }
     }
+
+    /// <summary>
+    /// Configures the <see cref="SurrealConfig"/> to use the rpc endpoint
+    /// </summary>
+    public sealed class UseRpc : IConfigBuilder
+    {
+        internal UseRpc(IConfigBuilder? parent)
+        {
+            Parent = parent;
+        }
+
+        public IConfigBuilder? Parent { get; }
+        
+        /// <summary>
+        /// Optional: Determines whether to disable TLS for the RPC connection.
+        /// `false` uses the `wss` protocol, `true` uses `ws`.
+        /// </summary>
+        /// <remarks>
+        /// This is not recommended, and should only be used for testing purposes
+        /// </remarks>
+        public bool Insecure { get; set; }
+        
+        /// <inheritdoc cref="SurrealConfig.RpcUrl" />
+        public Uri? RpcUrl { get; set; }
+        
+        /// <inheritdoc cref="SurrealConfig.RpcUrl"/>
+        public UseRpc WithRpcUrl(Uri rpcUrl)
+        {
+            RpcUrl = rpcUrl;
+            return this;
+        }
+        
+        /// <inheritdoc cref="Insecure" />
+        public UseRpc WithRpcInsecure(bool insecure)
+        {
+            Insecure = insecure;
+            return this;
+        }
+        
+        /// <summary>
+        /// Creates the <see cref="Uri"/> used for the rpc websocket based on the specified <see cref="EndPoint"/>. 
+        /// </summary>
+        public static Uri GetUri(EndPoint endPoint, bool insecure = false) => insecure
+            ? new Uri($"ws://{endPoint}/rpc/")
+            : new Uri($"wss://{endPoint}/rpc/");
+
+        
+        public void Configure(ref SurrealConfig config)
+        {
+            config.RpcUrl = RpcUrl ?? GetUri(config.Endpoint!, Insecure);
+        }
+    }
 }
 
 /// <summary>
@@ -404,12 +468,12 @@ public sealed class InvalidConfigException : Exception
     public static void ThrowIfNull(object? value, string? message = null, Exception? innerException = null,
         [CallerArgumentExpression("value")] string propertyName = "")
     {
-        ThrowIf(value is null, propertyName, message, innerException);
+        ThrowIf(value is null, propertyName, message ?? $"{value} cannot be null", innerException);
     }
     
     public static void ThrowIfNullOrWhitespace(string? value, string? message = null, Exception? innerException = null,
         [CallerArgumentExpression("value")] string propertyName = "")
     {
-        ThrowIf(String.IsNullOrWhiteSpace(value), propertyName, message, innerException);
+        ThrowIf(String.IsNullOrWhiteSpace(value), propertyName, message ?? $"{value} cannot be null or whitespace", innerException);
     }
 }
