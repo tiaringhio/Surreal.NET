@@ -16,6 +16,11 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{84F225EC
 		tests\Directory.Build.props = tests\Directory.Build.props
 	EndProjectSection
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "db", "db", "{639B3E0A-F721-4B77-B14B-D4660DB205DE}"
+	ProjectSection(SolutionItems) = preProject
+		tests\db\docker-compose.yml = tests\db\docker-compose.yml
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -34,5 +39,6 @@ Global
 	GlobalSection(NestedProjects) = preSolution
 		{4376F0D2-91E2-4417-BA23-7C0398C434B1} = {75FF3A83-918D-49F9-94BD-4B871E0619F4}
 		{CBB7A8CF-B04B-4801-9D5A-FEE013880463} = {84F225EC-1895-45C0-A2EE-C61DC3DC5D0F}
+		{639B3E0A-F721-4B77-B14B-D4660DB205DE} = {84F225EC-1895-45C0-A2EE-C61DC3DC5D0F}
 	EndGlobalSection
 EndGlobal
