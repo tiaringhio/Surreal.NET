@@ -3,23 +3,35 @@ using System.Text.Json;
 
 namespace Surreal.Net.Tests;
 
-public class ClientTests
+public class DatabaseTests
 {
+    [Fact]
+    public async Task DatabaseTestSuite()
+    {
+        await DatabaseTestDriver.Run<Database>();
+    }
 }
 
 /// <summary>
 /// The test driver executes the testsuite on the client.
 /// </summary>
-public sealed class ClientTestDriver
+public sealed class DatabaseTestDriver
 {
     private ISurrealClient _client;
 
-    public ClientTestDriver(ISurrealClient client)
+    public DatabaseTestDriver(ISurrealClient client)
     {
         _client = client;
     }
+    
+    public static async Task Run<T>() 
+        where T: ISurrealClient, new()
+    {
+        DatabaseTestDriver driver = new(new T());
+        await driver.Run();
+    }
 
-    public async Task Run()
+    private async Task Run()
     {
         await _client.Open(ConfigHelper.Default);
         _client.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
@@ -33,7 +45,7 @@ public sealed class ClientTestDriver
         AssertOk(await _client.Signin(auth));
 
         var (id1, id2) = ("", "");
-        SurrealResult res1 = await _client.Create("person", new
+        SurrealResponse res1 = await _client.Create("person", new
         {
             Title = "Founder & CEO",
             Name = new
@@ -44,9 +56,9 @@ public sealed class ClientTestDriver
             Marketing = true,
             Identifier = Random.Shared.Next(),
         });
-        (res1.TryGetResult(out SurrealResponse rsp1) && rsp1.TryGetDocumentWithId(out id1, out JsonElement _)).Should().BeTrue();
+        (res1.TryGetResult(out SurrealResult rsp1) && rsp1.TryGetDocument(out id1, out JsonElement _)).Should().BeTrue();
 
-        SurrealResult res2 = await _client.Create("person", new
+        SurrealResponse res2 = await _client.Create("person", new
         {
             Title = "Contributor",
             Name = new
@@ -57,7 +69,7 @@ public sealed class ClientTestDriver
             Marketing = false,
             Identifier = Random.Shared.Next(),
         });
-        (res2.TryGetResult(out SurrealResponse rsp2) && rsp2.TryGetDocumentWithId(out id2, out JsonElement _)).Should().BeTrue();
+        (res2.TryGetResult(out SurrealResult rsp2) && rsp2.TryGetDocument(out id2, out JsonElement _)).Should().BeTrue();
 
         var thing2 = SurrealThing.From("person", id2);
         AssertOk(await _client.Update(thing2, new
@@ -96,12 +108,12 @@ public sealed class ClientTestDriver
             Title = newTitle,
         }));
 
-        _client.Close();
+        await _client.Close();
     }
 
-    private static void AssertOk(in SurrealResult rsp, [CallerArgumentExpression("rsp")] string caller = "")
+    private static void AssertOk(in SurrealResponse response, [CallerArgumentExpression("response")] string caller = "")
     {
-        if (rsp.TryGetError(out var err))
+        if (response.TryGetError(out var err))
         {
             throw new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
         }
