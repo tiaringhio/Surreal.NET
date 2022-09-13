@@ -1,6 +1,6 @@
 namespace Surreal.Net.Tests;
 
-public class UnitTest1
+public class RpcClientTests
 {
     [Fact]
     public void TestRpcClient()
