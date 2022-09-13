@@ -1,52 +1,132 @@
-﻿using System.Net.Sockets;
+﻿using System.Buffers;
+using System.Net;
+using System.Net.Sockets;
+using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
 namespace Surreal.Net;
 
+/// <summary>
+/// The client used to connect to the Surreal server via JSON RPC.
+/// </summary>
 #if SURREAL_NET_INTERNAL
-    public
+public
 #endif
-sealed class RpcClient : IDisposable
+    sealed class RpcClient : IDisposable, IAsyncDisposable
 {
-    private TcpClient? _ws;
+    private ClientWebSocket? _ws;
 
-    public bool Connected => _ws is not null && _ws.Connected;
+    /// <summary>
+    /// Indicates whether the client is connected or not.
+    /// </summary>
+    public bool Connected => _ws is not null && _ws.State == WebSocketState.Open;
 
-    public async Task Open(SurrealConfig config, CancellationToken ct = default)
+    /// <summary>
+    /// The <see cref="JsonSerializerOptions"/> used for serialization.
+    /// </summary>
+    public JsonSerializerOptions SerializerOptions { get; } = new();
+
+    /// <summary>
+    /// Creates the <see cref="Uri"/> used for the rpc websocket based on the specified <see cref="EndPoint"/>. 
+    /// </summary>
+    /// <param name="endPoint">The endpoint</param>
+    /// <param name="insecure">Whether to secure the connection via TLS.</param>
+    public static Uri GetRpcUri(EndPoint endPoint, bool insecure = false) => insecure
+        ? new Uri($"ws://{endPoint}/rpc/")
+        : new Uri($"wss://{endPoint}/rpc/");
+
+    /// <summary>
+    /// Generates a random base64 string of the length specified.
+    /// </summary>
+    public static string GetRandomId(int length)
     {
-        config.ThrowIfInvalid();
+        Span<byte> buf = stackalloc byte[length];
+        Random.Shared.NextBytes(buf);
+        return Convert.ToHexString(buf);
+    }
+
+    /// <summary>
+    /// Opens the connection to the Surreal server.
+    /// </summary>
+    /// <param name="endpoint">The endpoint of the Surreal server</param>
+    /// <param name="insecure">Whether to secure the connection via TLS.</param>
+    public async Task Open(IPEndPoint endpoint, bool insecure = false, CancellationToken ct = default)
+    {
         ThrowIfConnected();
-        
-        _ws = new TcpClient();
         try
         {
-            await _ws.ConnectAsync(config.Remote!, ct);
+            _ws = new ClientWebSocket();
+            await _ws.ConnectAsync(GetRpcUri(endpoint, insecure), ct);
         }
         catch
         {
             // Clean state
-            _ws.Dispose();
+            _ws?.Dispose();
             _ws = null;
             throw;
         }
     }
 
-    public void Close()
+    /// <summary>
+    /// Closes the connection to the Surreal server.
+    /// </summary>
+    public async Task Close(CancellationToken ct = default)
     {
-        _ws?.Close();
+        if (_ws is null)
+        {
+            return;
+        }
+
+        await _ws.CloseAsync(WebSocketCloseStatus.NormalClosure, "Client closed", ct);
+        _ws.Dispose();
+        _ws = null;
     }
 
+    /// <inheritdoc cref="IDisposable"/>
+    public void Dispose()
+    {
+        if (_ws is not null)
+        {
+            Close().Wait();
+        }
+    }
+
+    /// <inheritdoc cref="IAsyncDisposable"/>
+    public ValueTask DisposeAsync()
+    {
+        return _ws is null ? default : new(Close());
+    }
+
+    private static readonly int PageSize = Environment.SystemPageSize;
+    
+    /// <summary>
+    /// Sends the specified request to the Surreal server, and returns the response.
+    /// </summary>
+    /// <param name="req">The request to send</param>
     public async Task<RpcResponse> Send(RpcRequest req, CancellationToken ct = default)
     {
         ThrowIfDisconnected();
-        string id = Id.GetRandom(16);
-        NetworkStream stream = _ws!.GetStream();
-        await JsonSerializer.SerializeAsync(stream, req, SourceGenerationContext.Default.RpcRequest, ct);
-        
-        await stream.FlushAsync(ct);
+        req.Id ??= GetRandomId(6);
 
-        var rsp = await JsonSerializer.DeserializeAsync(stream, SourceGenerationContext.Default.RpcResponse, ct);
+        await using PooledMemoryStream stream = new(PageSize);
+        
+        await JsonSerializer.SerializeAsync(stream, req, SerializerOptions, ct);
+        await _ws!.SendAsync(stream.GetConsumedBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
+        stream.Position = 0;
+        
+        ValueWebSocketReceiveResult res;
+        do
+        {
+            res = await _ws.ReceiveAsync(stream.InternalReadMemory(PageSize), ct);
+        } while (!res.EndOfMessage);
+        
+        // Swap from write to read mode
+        long len = stream.Position - PageSize + res.Count;
+        stream.Position = 0;
+        stream.SetLength(len);
+        
+        var rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, SerializerOptions, ct);
         return rsp;
     }
 
@@ -65,88 +145,76 @@ sealed class RpcClient : IDisposable
             throw new InvalidOperationException("The connection is already open");
         }
     }
-
-    public void Dispose()
-    {
-        if (_ws is not null)
-        {
-            Close();
-            _ws.Dispose();
-        }
-    }
 }
 
 #if SURREAL_NET_INTERNAL
-    public
+public
 #endif
-struct RpcError
+    struct RpcError
 {
-    [JsonPropertyName("code")]
-    public int Code { get; set; }
+    [JsonPropertyName("code")] public int Code { get; set; }
 
-    [JsonPropertyName("message"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)] 
+    [JsonPropertyName("message"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public string? Message { get; set; }
-    
-    
 }
 
 #if SURREAL_NET_INTERNAL
-    public
+public
 #endif
-struct RpcRequest
+    struct RpcRequest
 {
-    [JsonPropertyName("id")]
-    public int Id { get; set; }
+    [JsonPropertyName("id")] public string? Id { get; set; }
 
     [JsonPropertyName("async"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public bool Async { get; set; }
-    
-    [JsonPropertyName("method")]
-    public string Method { get; set; }
+
+    [JsonPropertyName("method")] public string? Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public IList<object?>? Params { get; set; }
+    public List<object?>? Params { get; set; }
 }
 
 
 #if SURREAL_NET_INTERNAL
-    public
+public
 #endif
-struct RpcResponse
+    struct RpcResponse
 {
-    [JsonPropertyName("id")]
-    public int Id { get; set; }
+    [JsonPropertyName("id")] public string? Id { get; set; }
 
     [JsonPropertyName("error"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public RpcError? Error { get; set; }
 
     [JsonPropertyName("result"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public JsonDocument? Result { get; set; }
+    public object? Result { get; set; }
 }
 
 #if SURREAL_NET_INTERNAL
-    public
+public
 #endif
-struct RpcNotification
+    struct RpcNotification
 {
-    [JsonPropertyName("id")]
-    public int Id { get; set; }
-    
-    [JsonPropertyName("method")]
-    public string Method { get; set; }
+    [JsonPropertyName("id")] public string? Id { get; set; }
+
+    [JsonPropertyName("method")] public string? Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public IList<object?>? Params { get; set; }
+    public List<object?>? Params { get; set; }
 }
 
-[JsonSerializable(typeof(RpcError))]
-[JsonSerializable(typeof(RpcRequest))]
-[JsonSerializable(typeof(RpcResponse))]
-[JsonSerializable(typeof(RpcNotification))]
-
-#if SURREAL_NET_INTERNAL
-    public
-#endif
-partial class SourceGenerationContext : JsonSerializerContext
-{
-}
+// // Serialization for rpc messages
+// [JsonSerializable(typeof(RpcError))]
+// [JsonSerializable(typeof(RpcRequest))]
+// [JsonSerializable(typeof(RpcResponse))]
+// [JsonSerializable(typeof(RpcNotification))]
+// // Serialization for dependent types 
+// [JsonSerializable(typeof(bool))]
+// [JsonSerializable(typeof(string))]
+// [JsonSerializable(typeof(Dictionary<string, object?>))]
+// [JsonSerializable(typeof(object))]
+// #if SURREAL_NET_INTERNAL
+//     public
+// #endif
+// partial class SourceGenerationContext : JsonSerializerContext
+// {
+// }
