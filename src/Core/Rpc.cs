@@ -28,6 +28,9 @@ public
     };
     
     public const int DefaultBufferSize = 16 * 1024;
+
+    // Do not get any funny ideas and fill this fucker up.
+    public static readonly List<object?> EmptyList = new();
     
     private ClientWebSocket? _ws;
 
@@ -109,6 +112,7 @@ public
     {
         ThrowIfDisconnected();
         req.Id ??= GetRandomId(6);
+        req.Params ??= EmptyList;
 
         await using PooledMemoryStream stream = new(DefaultBufferSize);
         
