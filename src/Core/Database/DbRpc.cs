@@ -1,35 +1,7 @@
-﻿namespace Surreal.Net;
+﻿namespace Surreal.Net.Database;
 
-#if SURREAL_NET_INTERNAL
-public
-#endif
-    readonly struct AuthDto
-{
-    public AuthDto(string? ns, string? db, string? sc, string? user, string? pass, string? email, string?[]? interests)
-    {
-        Ns = ns;
-        Db = db;
-        Sc = sc;
-        User = user;
-        Pass = pass;
-        Email = email;
-        Interests = interests;
-    }
 
-    public string? Ns { get; }
-    public string? Db { get; }
-    public string? Sc { get; }
-    public string? User { get; }
-    public string? Pass { get; }
-    public string? Email { get; }
-    public string?[]? Interests { get; }
-
-    // TODO: validate the config here, once i figure out what that means
-    public static AuthDto FromSurreal(SurrealAuthentication auth) =>
-        new(auth.Namespace, auth.Database, auth.Scope, auth.Username, auth.Password, auth.Email, auth.Interests?.ToArray());
-}
-
-public sealed class Database : ISurrealClient
+public sealed class DbRpc : ISurrealDatabase
 {
     private readonly JsonRpcClient _client = new();
     private SurrealConfig _config;
@@ -42,8 +14,8 @@ public sealed class Database : ISurrealClient
     {
         config.ThrowIfInvalid();
         // Open connection
-        InvalidConfigException.ThrowIfNull(config.RpcUrl);
-        await _client.Open(config.RpcUrl!, ct);
+        InvalidConfigException.ThrowIfNull(config.RpcEndpoint);
+        await _client.Open(config.RpcEndpoint!, ct);
 
         // Authenticate
         await (config.Authentication switch

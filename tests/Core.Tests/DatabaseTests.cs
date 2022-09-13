@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
+using Surreal.Net.Database;
 
 namespace Surreal.Net.Tests;
 
@@ -9,7 +10,7 @@ public class DatabaseTests
     [Fact]
     public async Task DatabaseTestSuite()
     {
-        await DatabaseTestDriver.Run<Database>();
+        await DatabaseTestDriver.Run<DbRpc>();
     }
 }
 
@@ -18,15 +19,15 @@ public class DatabaseTests
 /// </summary>
 public sealed class DatabaseTestDriver
 {
-    private ISurrealClient _client;
+    private ISurrealDatabase _database;
 
-    public DatabaseTestDriver(ISurrealClient client)
+    public DatabaseTestDriver(ISurrealDatabase database)
     {
-        _client = client;
+        _database = database;
     }
 
     public static async Task Run<T>()
-        where T : ISurrealClient, new()
+        where T : ISurrealDatabase, new()
     {
         DatabaseTestDriver driver = new(new T());
         await driver.Run();
@@ -34,23 +35,22 @@ public sealed class DatabaseTestDriver
 
     private async Task Run()
     {
-        await _client.Open(ConfigHelper.Default);
-        _client.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
+        await _database.Open(ConfigHelper.Default);
+        _database.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
 
-        AssertOk(await _client.Use(ConfigHelper.Database, ConfigHelper.Namespace));
-        AssertOk(await _client.Info());
+        AssertOk(await _database.Use(ConfigHelper.Database, ConfigHelper.Namespace));
+        AssertOk(await _database.Info());
 
-        AssertOk(await _client.Signup(new()
+        AssertOk(await _database.Signin(new()
         {
             Namespace = ConfigHelper.Namespace,
-            Database = ConfigHelper.Database,
-            Username = "user2",
-            Password = "user2",
+            Username = ConfigHelper.User,
+            Password = ConfigHelper.Pass,
         }));
-        AssertOk(await _client.Invalidate());
+        AssertOk(await _database.Invalidate());
 
         var (id1, id2) = ("", "");
-        SurrealResponse res1 = await _client.Create("person", new
+        SurrealResponse res1 = await _database.Create("person", new
         {
             Title = "Founder & CEO",
             Name = new
@@ -64,7 +64,7 @@ public sealed class DatabaseTestDriver
         (res1.TryGetResult(out SurrealResult rsp1) && rsp1.TryGetDocument(out id1, out JsonElement _)).Should()
             .BeTrue();
 
-        SurrealResponse res2 = await _client.Create("person", new
+        SurrealResponse res2 = await _database.Create("person", new
         {
             Title = "Contributor",
             Name = new
@@ -79,17 +79,17 @@ public sealed class DatabaseTestDriver
             .BeTrue();
 
         var thing2 = SurrealThing.From("person", id2);
-        AssertOk(await _client.Update(thing2, new
+        AssertOk(await _database.Update(thing2, new
         {
             Marketing = false,
         }));
 
-        AssertOk(await _client.Select(thing2));
+        AssertOk(await _database.Select(thing2));
 
-        AssertOk(await _client.Delete(thing2));
+        AssertOk(await _database.Delete(thing2));
 
         var thing1 = SurrealThing.From("person", id1);
-        AssertOk(await _client.Change(thing1, new
+        AssertOk(await _database.Change(thing1, new
         {
             Title = "Founder & CEO",
             Name = new
@@ -102,20 +102,20 @@ public sealed class DatabaseTestDriver
         }));
 
         string newTitle = "Founder & CEO & Ruler of the known free World";
-        AssertOk(await _client.Modify(thing1, new
+        AssertOk(await _database.Modify(thing1, new
         {
             op = "replace", path = "/Title", value = newTitle
         }));
 
-        AssertOk(await _client.Let("tbl", "person"));
+        AssertOk(await _database.Let("tbl", "person"));
 
-        AssertOk(await _client.Query("SELECT $props FROM $tbl WHERE title = $title", new
+        AssertOk(await _database.Query("SELECT $props FROM $tbl WHERE title = $title", new
         {
             Props = "title, identifier",
             Title = newTitle,
         }));
 
-        await _client.Close();
+        await _database.Close();
     }
 
     [DebuggerStepThrough]
