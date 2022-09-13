@@ -462,9 +462,11 @@ public sealed class SurrealAuthentication
 {
     public string? Namespace { get; set; }
     public string? Database { get; set; }
+    public string? Scope { get; set; }
     public string? Username { get; set; }
     public string? Password { get; set; }
     public string? Email { get; set; }
+    public List<string?>? Interests { get; set; }
 }
 
 /// <summary>

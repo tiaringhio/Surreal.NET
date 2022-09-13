@@ -24,9 +24,9 @@ public sealed class DatabaseTestDriver
     {
         _client = client;
     }
-    
-    public static async Task Run<T>() 
-        where T: ISurrealClient, new()
+
+    public static async Task Run<T>()
+        where T : ISurrealClient, new()
     {
         DatabaseTestDriver driver = new(new T());
         await driver.Run();
@@ -36,14 +36,18 @@ public sealed class DatabaseTestDriver
     {
         await _client.Open(ConfigHelper.Default);
         _client.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
-        
+
         AssertOk(await _client.Use(ConfigHelper.Database, ConfigHelper.Namespace));
         AssertOk(await _client.Info());
-        
-        SurrealAuthentication auth = ConfigHelper.GetAuthentication("user", "user");
-        AssertOk(await _client.Signup(auth));
+
+        AssertOk(await _client.Signup(new()
+        {
+            Namespace = ConfigHelper.Namespace,
+            Database = ConfigHelper.Database,
+            Username = "user2",
+            Password = "user2",
+        }));
         AssertOk(await _client.Invalidate());
-        AssertOk(await _client.Signin(auth));
 
         var (id1, id2) = ("", "");
         SurrealResponse res1 = await _client.Create("person", new
@@ -57,7 +61,8 @@ public sealed class DatabaseTestDriver
             Marketing = true,
             Identifier = Random.Shared.Next(),
         });
-        (res1.TryGetResult(out SurrealResult rsp1) && rsp1.TryGetDocument(out id1, out JsonElement _)).Should().BeTrue();
+        (res1.TryGetResult(out SurrealResult rsp1) && rsp1.TryGetDocument(out id1, out JsonElement _)).Should()
+            .BeTrue();
 
         SurrealResponse res2 = await _client.Create("person", new
         {
@@ -70,18 +75,19 @@ public sealed class DatabaseTestDriver
             Marketing = false,
             Identifier = Random.Shared.Next(),
         });
-        (res2.TryGetResult(out SurrealResult rsp2) && rsp2.TryGetDocument(out id2, out JsonElement _)).Should().BeTrue();
+        (res2.TryGetResult(out SurrealResult rsp2) && rsp2.TryGetDocument(out id2, out JsonElement _)).Should()
+            .BeTrue();
 
         var thing2 = SurrealThing.From("person", id2);
         AssertOk(await _client.Update(thing2, new
         {
             Marketing = false,
         }));
-        
+
         AssertOk(await _client.Select(thing2));
 
         AssertOk(await _client.Delete(thing2));
-        
+
         var thing1 = SurrealThing.From("person", id1);
         AssertOk(await _client.Change(thing1, new
         {
@@ -102,7 +108,7 @@ public sealed class DatabaseTestDriver
         }));
 
         AssertOk(await _client.Let("tbl", "person"));
-        
+
         AssertOk(await _client.Query("SELECT $props FROM $tbl WHERE title = $title", new
         {
             Props = "title, identifier",

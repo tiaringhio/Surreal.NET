@@ -16,7 +16,7 @@ public
     public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
         AllowTrailingCommas = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.Never,
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
         DictionaryKeyPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
         NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,

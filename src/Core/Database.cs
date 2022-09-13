@@ -5,23 +5,28 @@ public
 #endif
     readonly struct AuthDto
 {
-    public AuthDto(string? ns, string? db, string? sc, string? pass, string? email)
+    public AuthDto(string? ns, string? db, string? sc, string? user, string? pass, string? email, string?[]? interests)
     {
         Ns = ns;
         Db = db;
         Sc = sc;
+        User = user;
         Pass = pass;
         Email = email;
+        Interests = interests;
     }
 
     public string? Ns { get; }
     public string? Db { get; }
     public string? Sc { get; }
+    public string? User { get; }
     public string? Pass { get; }
     public string? Email { get; }
+    public string?[]? Interests { get; }
 
+    // TODO: validate the config here, once i figure out what that means
     public static AuthDto FromSurreal(SurrealAuthentication auth) =>
-        new(auth.Namespace, auth.Database, auth.Username, auth.Password, auth.Email);
+        new(auth.Namespace, auth.Database, auth.Scope, auth.Username, auth.Password, auth.Email, auth.Interests?.ToArray());
 }
 
 public sealed class Database : ISurrealClient
@@ -43,7 +48,7 @@ public sealed class Database : ISurrealClient
         // Authenticate
         await (config.Authentication switch
         {
-            Auth.Basic => Signin(new() { Username = config.Username, Password = config.Password }, ct),
+            Auth.Basic => Signin(new() { Scope = config.Username, Password = config.Password }, ct),
             Auth.JsonWebToken => Authenticate(config.JsonWebToken!, ct),
             _ => Task.CompletedTask
         });
