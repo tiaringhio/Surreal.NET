@@ -1,4 +1,5 @@
-﻿using System.Runtime.CompilerServices;
+﻿using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Text.Json;
 
 namespace Surreal.Net.Tests;
@@ -111,6 +112,7 @@ public sealed class DatabaseTestDriver
         await _client.Close();
     }
 
+    [DebuggerStepThrough]
     private static void AssertOk(in SurrealResponse response, [CallerArgumentExpression("response")] string caller = "")
     {
         if (response.TryGetError(out var err))
