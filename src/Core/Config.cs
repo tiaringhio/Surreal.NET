@@ -428,7 +428,7 @@ public static class SurrealConfigBuilder
         
         public void Configure(ref SurrealConfig config)
         {
-            config.RpcUrl = RpcUrl ?? GetUri(config.Endpoint!, Insecure);
+            config.RpcEndpoint = RpcUrl ?? GetUri(config.Endpoint!, Insecure);
         }
     }
 }

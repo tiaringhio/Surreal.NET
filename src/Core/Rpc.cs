@@ -176,7 +176,7 @@ public
     [JsonPropertyName("method")] public string? Method { get; set; }
 
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
-    public List<object?>? Params { get; set; }
+    public List<object?> Params { get; set; }
 }
 
 

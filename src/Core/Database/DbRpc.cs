@@ -80,7 +80,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         return await _client.Send(new()
         {
             Method = "signup",
-            Params = new() { AuthDto.FromSurreal(auth) }
+            Params = new() { auth }
         }, ct);
     }
 
@@ -90,7 +90,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         var rsp = await _client.Send(new()
         {
             Method = "signin",
-            Params = new() { AuthDto.FromSurreal(auth) }
+            Params = new() { auth }
         }, ct);
         
         // TODO: Update auth
@@ -127,7 +127,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Query(string sql, IReadOnlyDictionary<string, object?> vars, CancellationToken ct = default)
+    public async Task<SurrealRpcResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default)
     {
         return await _client.Send(new()
         {

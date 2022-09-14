@@ -141,7 +141,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         return s_completed;
     }
 
-    public async Task<SurrealRestResponse> Query(string sql, IReadOnlyDictionary<string, object?> vars, CancellationToken ct = default)
+    public async Task<SurrealRestResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default)
     {
         string query = FormatVars(sql, vars);
         StringContent content = new(query, Encoding.UTF8, "application/json");
