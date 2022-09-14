@@ -1,7 +1,7 @@
 ﻿namespace Surreal.Net.Database;
 
 
-public sealed class DbRpc : ISurrealDatabase
+public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
 {
     private readonly JsonRpcClient _client = new();
     private SurrealConfig _config;
@@ -20,44 +20,35 @@ public sealed class DbRpc : ISurrealDatabase
         await _client.Open(config.RpcEndpoint!, ct);
 
         // Authenticate
-        await SetAuth(config, ct);
+        await SetAuth(config.Username, config.Password, ct);
         
         // Use database
-        await SetUse(config, ct);
+        await SetUse(config.Database, config.Namespace, ct);
     }
 
-    private async Task SetUse(SurrealConfig config, CancellationToken ct)
+    private async Task SetUse(string? db, string? ns, CancellationToken ct)
     {
-        if (config.Database is null ^ config.Namespace is null)
-        {
-            InvalidConfigException.ThrowIfNull(config.Database);
-            InvalidConfigException.ThrowIfNull(config.Namespace);
-        }
-
-        if (config.Database is not null && config.Namespace is not null)
-        {
-            await Use(config.Database, config.Namespace, ct);
-        }
+        _config.Database = db;
+        _config.Namespace = ns;
+        await Use(db, ns, ct);
     }
 
-    private async Task SetAuth(SurrealConfig config, CancellationToken ct)
+    private async Task SetAuth(string? user, string? pass, CancellationToken ct)
     {
-        await (config.Authentication switch
-        {
-            Auth.Basic => Signin(new() {Scope = config.Username, Password = config.Password}, ct),
-            Auth.JsonWebToken => Authenticate(config.JsonWebToken!, ct),
-            _ => Task.CompletedTask
-        });
+        // TODO: Support jwt auth
+        _config.Username = user;
+        _config.Password = pass;
+        await Signin(new() {Scope = user, Password = pass}, ct);
     }
 
+    public async Task Close(CancellationToken ct = default)
+    {
+        await _client.Close(ct);
+    }
+
+    /// <param name="ct"></param>
     /// <inheritdoc />
-    public async Task Close()
-    {
-        await _client.Close();
-    }
-
-    /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Info()
+    public async Task<SurrealRpcResponse> Info(CancellationToken ct)
     {
         return await _client.Send(new()
         {
@@ -66,7 +57,7 @@ public sealed class DbRpc : ISurrealDatabase
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Use(string db, string ns, CancellationToken ct = default)
+    public async Task<SurrealRpcResponse> Use(string? db, string? ns, CancellationToken ct = default)
     {
         var rsp = await _client.Send(new()
         {
@@ -136,7 +127,7 @@ public sealed class DbRpc : ISurrealDatabase
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Query(string sql, object? vars, CancellationToken ct = default)
+    public async Task<SurrealRpcResponse> Query(string sql, IReadOnlyDictionary<string, object?> vars, CancellationToken ct = default)
     {
         return await _client.Send(new()
         {

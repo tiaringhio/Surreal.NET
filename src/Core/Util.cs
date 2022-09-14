@@ -1,9 +1,11 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
+using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.Json;
+using Rustic;
 
 namespace Surreal.Net;
 
@@ -817,27 +819,38 @@ public
         {
             throw new ArgumentNullException(nameof(name));
         }
-        var result = new StringBuilder();
-        for (var i = 0; i < name.Length; i++)
+        
+        for (int i = 0; i < name.Length; i++)
         {
-            var c = name[i];
-            if (i == 0)
-            {
-                result.Append(char.ToLower(c));
-            }
-            else
-            {
-                if (char.IsUpper(c))
-                {
-                    result.Append('_');
-                    result.Append(char.ToLower(c));
-                }
-                else
-                {
-                    result.Append(c);
-                }
-            }
+            if (!Char.IsUpper(name[i])) 
+                continue;
+            return ConvertNameSlow(name, i);
         }
+        
+        return name;
+    }
+
+    private static string ConvertNameSlow(ReadOnlySpan<char> name, int start)
+    {
+        int cap = name.Length + 5;
+        using StrBuilder result = cap > 512 ? new(cap) : new(stackalloc char[cap]);
+        var converter = CultureInfo.InvariantCulture.TextInfo;
+        
+        result.Append(name.Slice(0, start));
+        bool prevUpper = true; // prevent leading _
+        for (var pos = start; pos < name.Length; pos++)
+        {
+            var ch = name[pos];
+            var upper = Char.IsUpper(ch);
+            if (upper && !prevUpper)
+            {
+                result.Append('_');
+            }
+
+            result.Append(upper ? converter.ToLower(ch) : ch);
+            prevUpper = upper;
+        }
+
         return result.ToString();
     }
 }

@@ -8,39 +8,40 @@ namespace Surreal.Net.Tests;
 public class DatabaseTests
 {
     [Fact]
-    public async Task DatabaseTestSuite()
+    public async Task RpcTestSuite()
     {
-        await DatabaseTestDriver.Run<DbRpc>();
+        await new DatabaseTestDriver<DbRpc, SurrealRpcResponse>().Run();
+    }
+    
+    [Fact]
+    public async Task RestTestSuite2()
+    {
+        await new DatabaseTestDriver<DbRest, SurrealRestResponse>().Run();
     }
 }
 
 /// <summary>
 /// The test driver executes the testsuite on the client.
 /// </summary>
-public sealed class DatabaseTestDriver
+public sealed class DatabaseTestDriver<T, U>
+    where T : ISurrealDatabase<U>, new()
+    where U: ISurrealResponse
 {
-    private ISurrealDatabase _database;
+    private T _database;
 
-    public DatabaseTestDriver(ISurrealDatabase database)
+    public DatabaseTestDriver()
     {
-        _database = database;
+        _database = new();
     }
 
-    public static async Task Run<T>()
-        where T : ISurrealDatabase, new()
-    {
-        DatabaseTestDriver driver = new(new T());
-        await driver.Run();
-    }
-
-    private async Task Run()
+    public async Task Run()
     {
         await _database.Open(ConfigHelper.Default);
         _database.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
 
         AssertOk(await _database.Use(ConfigHelper.Database, ConfigHelper.Namespace));
         AssertOk(await _database.Info());
-
+        
         AssertOk(await _database.Signin(new()
         {
             Namespace = ConfigHelper.Namespace,
@@ -50,7 +51,7 @@ public sealed class DatabaseTestDriver
         AssertOk(await _database.Invalidate());
 
         var (id1, id2) = ("", "");
-        SurrealRpcResponse res1 = await _database.Create("person", new
+        ISurrealResponse res1 = await _database.Create("person", new
         {
             Title = "Founder & CEO",
             Name = new
@@ -64,7 +65,7 @@ public sealed class DatabaseTestDriver
         (res1.TryGetResult(out SurrealResult rsp1) && rsp1.TryGetDocument(out id1, out JsonElement _)).Should()
             .BeTrue();
 
-        SurrealRpcResponse res2 = await _database.Create("person", new
+        ISurrealResponse res2 = await _database.Create("person", new
         {
             Title = "Contributor",
             Name = new
@@ -109,17 +110,17 @@ public sealed class DatabaseTestDriver
 
         AssertOk(await _database.Let("tbl", "person"));
 
-        AssertOk(await _database.Query("SELECT $props FROM $tbl WHERE title = $title", new
+        AssertOk(await _database.Query("SELECT $props FROM $tbl WHERE title = $title", new Dictionary<string, object?>
         {
-            Props = "title, identifier",
-            Title = newTitle,
+            ["props"] = "title, identifier",
+            ["title"] = newTitle,
         }));
 
         await _database.Close();
     }
 
     [DebuggerStepThrough]
-    private static void AssertOk(in SurrealRpcResponse rpcResponse, [CallerArgumentExpression("rpcResponse")] string caller = "")
+    private static void AssertOk(in ISurrealResponse rpcResponse, [CallerArgumentExpression("rpcResponse")] string caller = "")
     {
         if (rpcResponse.TryGetError(out var err))
         {

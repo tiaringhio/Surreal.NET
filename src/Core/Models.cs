@@ -1,7 +1,10 @@
 ﻿using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Net;
 using System.Runtime.CompilerServices;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace Surreal.Net;
 
@@ -18,6 +21,7 @@ public readonly struct SurrealThing
 
     public ReadOnlySpan<char> Table => Thing.AsSpan(0, _split);
     public ReadOnlySpan<char> Key => Thing.AsSpan(_split + 1);
+    public int Length => Thing.Length;
 
 #if SURREAL_NET_INTERNAL
     public
@@ -58,14 +62,16 @@ public readonly struct SurrealThing
         key.CopyTo(builder.Slice(keyOffset));
         return new(Table.Length, builder.ToString());
     }
+    
+    public static implicit operator string(in SurrealThing thing) => thing.Thing;
 }
 
 public interface ISurrealResponse
 {
     public bool IsOk { get; }
-    
+
     public bool IsError { get; }
-    
+
     public bool TryGetError(out SurrealError error);
 
     public bool TryGetResult(out SurrealResult result);
@@ -77,25 +83,27 @@ public interface ISurrealResponse
 /// The response from a query to the Surreal database via rest. 
 /// </summary>
 public readonly struct SurrealRestResponse : ISurrealResponse
-{
-    private readonly string? _time;
+{ 
+    private readonly string? _time; 
     private readonly string? _status;
     private readonly string? _detail;
+    private readonly string? _description;
     private readonly JsonElement _result;
 
 #if SURREAL_NET_INTERNAL
     public
 #endif
-        SurrealRestResponse(string? time, string? status, string? detail, JsonElement result)
+        SurrealRestResponse(string? time, string? status, string? description, string? detail, JsonElement result)
     {
         _time = time;
         _status = status;
         _detail = detail;
         _result = result;
+        _description = description;
     }
-    
+
     public string? Time => _time;
-    
+
     public bool IsOk => String.Equals(_status, "ok", StringComparison.OrdinalIgnoreCase);
 
     public bool IsError => !IsOk;
@@ -107,8 +115,8 @@ public readonly struct SurrealRestResponse : ISurrealResponse
             error = default;
             return false;
         }
-        
-        error = new(1, _detail);
+
+        error = new(1,  $"{_detail}: {_description}");
         return true;
     }
 
@@ -119,7 +127,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse
             result = default;
             return false;
         }
-        
+
         result = SurrealResult.From(_result);
         return true;
     }
@@ -129,14 +137,45 @@ public readonly struct SurrealRestResponse : ISurrealResponse
         if (IsError)
         {
             result = default;
-            error = new(1, _detail);;
+            error = new(1, _detail);
+            ;
             return false;
         }
-        
+
         result = SurrealResult.From(_result);
         error = default;
         return true;
     }
+    
+    private static JsonSerializerOptions _options = new()
+    {
+        PropertyNamingPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        WriteIndented = false,
+        DefaultIgnoreCondition = JsonIgnoreCondition.Always,
+        DictionaryKeyPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        IgnoreReadOnlyFields = false,
+        UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+    };
+
+    public static async Task<SurrealRestResponse> From(HttpResponseMessage msg)
+    {
+        if (msg.StatusCode != HttpStatusCode.OK)
+        {
+            return new(null, "error", msg.ReasonPhrase, null, default);
+        }
+
+        var stream = await msg.Content.ReadAsStreamAsync();
+        return await JsonSerializer.DeserializeAsync<SurrealRestResponse>(stream, _options);
+    }
+}
+public static class SurrealRestClientExtensions
+{
+    [DebuggerStepThrough]
+    public static Task<SurrealRestResponse> ToSurreal(this HttpResponseMessage msg) => SurrealRestResponse.From(msg);
 }
 
 /// <summary>
@@ -208,8 +247,13 @@ public readonly struct SurrealRpcResponse : ISurrealResponse
     {
         throw new InvalidOperationException("Response does not have an id.");
     }
-    
+
     public static implicit operator SurrealRpcResponse(in RpcResponse rsp) => From(in rsp);
+}
+
+public static class SurrealRpcClientExtensions
+{
+    public static SurrealRpcResponse ToSurreal(this RpcResponse rsp) => SurrealRpcResponse.From(in rsp);
 }
 
 public enum SurrealResultKind : byte
@@ -483,39 +527,39 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
                 ((double) thisValue).CompareTo((double) Unsafe.As<long, ulong>(ref otherValue)),
             (SurrealResultKind.SignedInteger, SurrealResultKind.Float) =>
                 ((double) thisValue).CompareTo(Unsafe.As<long, double>(ref otherValue)),
-            
+
             (SurrealResultKind.UnsignedInteger, SurrealResultKind.SignedInteger) =>
-                ((double)Unsafe.As<long, ulong>(ref thisValue)).CompareTo((double)otherValue),
+                ((double) Unsafe.As<long, ulong>(ref thisValue)).CompareTo((double) otherValue),
             (SurrealResultKind.UnsignedInteger, SurrealResultKind.UnsignedInteger) =>
                 Unsafe.As<long, ulong>(ref thisValue).CompareTo(Unsafe.As<long, ulong>(ref otherValue)),
             (SurrealResultKind.UnsignedInteger, SurrealResultKind.Float) =>
                 ((double) Unsafe.As<long, ulong>(ref thisValue)).CompareTo(Unsafe.As<long, double>(ref otherValue)),
-            
-            (SurrealResultKind.Float, SurrealResultKind.SignedInteger) => 
-                Unsafe.As<long, double>(ref thisValue).CompareTo((double)otherValue),
+
+            (SurrealResultKind.Float, SurrealResultKind.SignedInteger) =>
+                Unsafe.As<long, double>(ref thisValue).CompareTo((double) otherValue),
             (SurrealResultKind.Float, SurrealResultKind.UnsignedInteger) =>
-                Unsafe.As<long, double>(ref thisValue).CompareTo((double)Unsafe.As<long, ulong>(ref otherValue)),
+                Unsafe.As<long, double>(ref thisValue).CompareTo((double) Unsafe.As<long, ulong>(ref otherValue)),
             (SurrealResultKind.Float, SurrealResultKind.Float) =>
                 Unsafe.As<long, double>(ref thisValue).CompareTo(Unsafe.As<long, double>(ref otherValue)),
-            
+
             _ => ThrowInvalidCompareTypes(),
-                 
         };
     }
 
     // The struct is big, do not copy if not necessary!
     int IComparable<SurrealResult>.CompareTo(SurrealResult other) => CompareTo(in other);
-    
+
     public static bool operator <(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) < 0;
     public static bool operator <=(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) <= 0;
     public static bool operator >(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) > 0;
     public static bool operator >=(in SurrealResult left, in SurrealResult right) => left.CompareTo(in right) >= 0;
-    
-    
+
+
     [DoesNotReturn, DebuggerStepThrough]
     private static int ThrowInvalidCompareTypes()
     {
-        throw new InvalidOperationException("Cannot compare SurrealResult of different types, if one or more is not numeric..");
+        throw new InvalidOperationException(
+            "Cannot compare SurrealResult of different types, if one or more is not numeric..");
     }
 }
 
@@ -574,5 +618,6 @@ public
 
     // TODO: validate the config here, once i figure out what that means
     public static AuthDto FromSurreal(SurrealAuthentication auth) =>
-        new(auth.Namespace, auth.Database, auth.Scope, auth.Username, auth.Password, auth.Email, auth.Interests?.ToArray());
+        new(auth.Namespace, auth.Database, auth.Scope, auth.Username, auth.Password, auth.Email,
+            auth.Interests?.ToArray());
 }
