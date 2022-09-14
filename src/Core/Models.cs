@@ -60,10 +60,89 @@ public readonly struct SurrealThing
     }
 }
 
+public interface ISurrealResponse
+{
+    public bool IsOk { get; }
+    
+    public bool IsError { get; }
+    
+    public bool TryGetError(out SurrealError error);
+
+    public bool TryGetResult(out SurrealResult result);
+
+    public bool TryGetResult(out SurrealResult result, out SurrealError error);
+}
+
 /// <summary>
-/// The response from a query to the Surreal database. 
+/// The response from a query to the Surreal database via rest. 
 /// </summary>
-public readonly struct SurrealResponse
+public readonly struct SurrealRestResponse : ISurrealResponse
+{
+    private readonly string? _time;
+    private readonly string? _status;
+    private readonly string? _detail;
+    private readonly JsonElement _result;
+
+#if SURREAL_NET_INTERNAL
+    public
+#endif
+        SurrealRestResponse(string? time, string? status, string? detail, JsonElement result)
+    {
+        _time = time;
+        _status = status;
+        _detail = detail;
+        _result = result;
+    }
+    
+    public string? Time => _time;
+    
+    public bool IsOk => String.Equals(_status, "ok", StringComparison.OrdinalIgnoreCase);
+
+    public bool IsError => !IsOk;
+
+    public bool TryGetError(out SurrealError error)
+    {
+        if (IsOk)
+        {
+            error = default;
+            return false;
+        }
+        
+        error = new(1, _detail);
+        return true;
+    }
+
+    public bool TryGetResult(out SurrealResult result)
+    {
+        if (IsError)
+        {
+            result = default;
+            return false;
+        }
+        
+        result = SurrealResult.From(_result);
+        return true;
+    }
+
+    public bool TryGetResult(out SurrealResult result, out SurrealError error)
+    {
+        if (IsError)
+        {
+            result = default;
+            error = new(1, _detail);;
+            return false;
+        }
+        
+        result = SurrealResult.From(_result);
+        error = default;
+        return true;
+    }
+}
+
+/// <summary>
+/// The response from a query to the Surreal database via rpc. 
+/// </summary>
+public readonly struct SurrealRpcResponse : ISurrealResponse
 {
     private readonly string _id;
     private readonly SurrealResult _result;
@@ -72,7 +151,7 @@ public readonly struct SurrealResponse
 #if SURREAL_NET_INTERNAL
     public
 #endif
-        SurrealResponse(string id, SurrealError error, SurrealResult result)
+        SurrealRpcResponse(string id, SurrealError error, SurrealResult result)
     {
         _id = id;
         _error = error;
@@ -108,7 +187,7 @@ public readonly struct SurrealResponse
 
     public void Deconstruct(out SurrealResult result, out SurrealError error) => (result, error) = (_result, _error);
 
-    public static SurrealResponse From(in RpcResponse rsp)
+    public static SurrealRpcResponse From(in RpcResponse rsp)
     {
         if (rsp.Id is null)
         {
@@ -130,7 +209,7 @@ public readonly struct SurrealResponse
         throw new InvalidOperationException("Response does not have an id.");
     }
     
-    public static implicit operator SurrealResponse(in RpcResponse rsp) => From(in rsp);
+    public static implicit operator SurrealRpcResponse(in RpcResponse rsp) => From(in rsp);
 }
 
 public enum SurrealResultKind : byte

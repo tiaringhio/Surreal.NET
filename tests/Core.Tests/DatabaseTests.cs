@@ -50,7 +50,7 @@ public sealed class DatabaseTestDriver
         AssertOk(await _database.Invalidate());
 
         var (id1, id2) = ("", "");
-        SurrealResponse res1 = await _database.Create("person", new
+        SurrealRpcResponse res1 = await _database.Create("person", new
         {
             Title = "Founder & CEO",
             Name = new
@@ -64,7 +64,7 @@ public sealed class DatabaseTestDriver
         (res1.TryGetResult(out SurrealResult rsp1) && rsp1.TryGetDocument(out id1, out JsonElement _)).Should()
             .BeTrue();
 
-        SurrealResponse res2 = await _database.Create("person", new
+        SurrealRpcResponse res2 = await _database.Create("person", new
         {
             Title = "Contributor",
             Name = new
@@ -119,9 +119,9 @@ public sealed class DatabaseTestDriver
     }
 
     [DebuggerStepThrough]
-    private static void AssertOk(in SurrealResponse response, [CallerArgumentExpression("response")] string caller = "")
+    private static void AssertOk(in SurrealRpcResponse rpcResponse, [CallerArgumentExpression("rpcResponse")] string caller = "")
     {
-        if (response.TryGetError(out var err))
+        if (rpcResponse.TryGetError(out var err))
         {
             throw new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
         }
