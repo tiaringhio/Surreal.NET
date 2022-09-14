@@ -71,23 +71,14 @@ public struct SurrealConfig
     public Uri? RpcEndpoint { get; set; }
     
     /// <summary>
-    /// The <see cref="Uri"/> of the sql endpoint of the REST client
+    /// The <see cref="Uri"/> of the rest endpoint of the REST client
     /// </summary>
     /// <remarks>
     /// If not specified computed using <see cref="Endpoint"/>.
     /// This option can be used to override the computed value. 
     /// </remarks>
-    public Uri? SqlEndpoint { get; set; }
-        
-    /// <summary>
-    /// The <see cref="Uri"/> of the query endpoint of the REST client
-    /// </summary>
-    /// <remarks>
-    /// If not specified computed using <see cref="Endpoint"/>.
-    /// This option can be used to override the computed value. 
-    /// </remarks>
-    public Uri? KeyEndpoint { get; set; }
-
+    public Uri? RestEndpoint { get; set; }
+    
     /// <summary>
     /// Begins configuration of a <see cref="SurrealConfig"/> with fluent api.
     /// </summary>
@@ -464,12 +455,9 @@ public static class SurrealConfigBuilder
         /// </remarks>
         public bool Insecure { get; set; }
 
-        /// <inheritdoc cref="SurrealConfig.SqlEndpoint"/>
-        public Uri? SqlEndpoint { get; set; }
-        
-        /// <inheritdoc cref="SurrealConfig.KeyEndpoint"/>
-        public Uri? KeyEndpoint { get; set; }
-        
+        /// <inheritdoc cref="SurrealConfig.RestEndpoint"/>
+        public Uri? RestEndpoint { get; set; }
+
         /// <inheritdoc cref="Insecure" />
         public UseRest WithInsecure(bool insecure)
         {
@@ -478,21 +466,15 @@ public static class SurrealConfigBuilder
         }
         
         /// <summary>
-        /// Creates the <see cref="Uri"/> used for the <see cref="SqlEndpoint"/> based on the specified <see cref="EndPoint"/>. 
+        /// Creates the <see cref="Uri"/> used for the <see cref="RestEndpoint"/> based on the specified <see cref="EndPoint"/>. 
         /// </summary>
-        public static Uri GetSqlUri(EndPoint endPoint, bool insecure = false) => insecure
+        public static Uri GetUri(EndPoint endPoint, bool insecure = false) => insecure
             ? new($"http://{endPoint}/sql/") : new($"https://{endPoint}/sql/");
         
-        /// <summary>
-        /// Creates the <see cref="Uri"/> used for the <see cref="SqlEndpoint"/> based on the specified <see cref="EndPoint"/>. 
-        /// </summary>
-        public static Uri GetKeyUri(EndPoint endPoint, bool insecure = false) => insecure
-            ? new($"http://{endPoint}/key/") : new($"https://{endPoint}/key/");
 
         public void Configure(ref SurrealConfig config)
         {
-            config.SqlEndpoint = SqlEndpoint ?? GetSqlUri(config.Endpoint!, Insecure);
-            config.KeyEndpoint = KeyEndpoint ?? GetKeyUri(config.Endpoint!, Insecure);
+            config.RestEndpoint = RestEndpoint ?? GetUri(config.Endpoint!, Insecure);
         }
     }
 }
