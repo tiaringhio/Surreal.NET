@@ -24,6 +24,6 @@ jobs:
       run: dotnet build --no-restore
     - name: Test
       run: |
-        docker-compose up -d
+        docker-compose up -d -f "tests/db/docker-compose.yml"
         dotnet test --no-build --verbosity normal
-        docker-compose down
+        docker-compose down -f "tests/db/docker-compose.yml"
