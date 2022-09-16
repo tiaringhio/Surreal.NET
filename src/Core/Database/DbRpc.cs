@@ -38,7 +38,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         // TODO: Support jwt auth
         _config.Username = user;
         _config.Password = pass;
-        await Signin(new() {Scope = user, Password = pass}, ct);
+        await Signin(new() {User = user, Pass = pass}, ct);
     }
 
     public async Task Close(CancellationToken ct = default)
@@ -149,11 +149,14 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
     /// <inheritdoc />
     public async Task<SurrealRpcResponse> Create(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        return await _client.Send(new()
+        var rpcReq = new RpcRequest()
         {
             Method = "create",
+            Async = true,
             Params = new() { thing.ToString(), data }
-        }, ct);
+        };
+        var response = await _client.Send(rpcReq, ct);
+        return response;
     }
 
     /// <inheritdoc />

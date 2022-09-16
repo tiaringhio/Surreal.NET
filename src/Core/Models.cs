@@ -154,7 +154,8 @@ public readonly struct SurrealRestResponse : ISurrealResponse
         AllowTrailingCommas = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         WriteIndented = false,
-        DefaultIgnoreCondition = JsonIgnoreCondition.Always,
+        // This was throwing an exception when set to JsonIgnoreCondition.Always
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         DictionaryKeyPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
         IgnoreReadOnlyFields = false,
@@ -590,7 +591,7 @@ public sealed class SurrealAuthentication
     [JsonPropertyName("sc")]
     public string? Scope { get; set; }
     [JsonPropertyName("user")]
-    public string? Username { get; set; }
+    public string? User { get; set; }
     [JsonPropertyName("pass")]
-    public string? Password { get; set; }
+    public string? Pass { get; set; }
 }
