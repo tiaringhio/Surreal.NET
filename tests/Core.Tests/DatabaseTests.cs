@@ -125,8 +125,6 @@ public sealed class DatabaseTestDriver<T, U>
 public abstract class DriverBase<T>
     where T : new()
 {
-    private readonly List<Exception> _ex = new();
-
     public DriverBase()
     {
         Database = new();
@@ -137,16 +135,12 @@ public abstract class DriverBase<T>
     public async Task Execute()
     {
         await Run();
-        if (_ex.Count > 0)
-        {
-            throw new AggregateException(_ex);
-        }
     }
 
     protected abstract Task Run();
 
     [DebuggerStepThrough]
-    protected void AssertOk(in ISurrealResponse rpcResponse, [DoesNotReturnIf(true)] bool fatal = true, [CallerArgumentExpression("rpcResponse")] string caller = "")
+    protected void AssertOk(in ISurrealResponse rpcResponse, [CallerArgumentExpression("rpcResponse")] string caller = "")
     {
         if (!rpcResponse.TryGetError(out var err))
         {
@@ -154,38 +148,6 @@ public abstract class DriverBase<T>
         }
 
         Exception ex = new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
-        if (fatal)
-        {
-            throw ex;
-        }
-
-        _ex.Add(ex);
-    }
-}
-
-public sealed class AggregateException : Exception
-{
-    public List<Exception> Exceptions { get; } = new();
-
-    public AggregateException(List<Exception> exceptions) : base("Multiple exceptions occured")
-    {
-        Exceptions = exceptions;
-    }
-
-    public AggregateException() : base()
-    {
-    }
-
-    public AggregateException(string? message) : base(message)
-    {
-    }
-
-    public AggregateException(string? message, Exception? innerException) : base(message, innerException)
-    {
-    }
-
-    public override string ToString()
-    {
-        return Message + Environment.NewLine + string.Join(Environment.NewLine, Exceptions.Select(x => x.ToString()));
+        throw ex;
     }
 }
