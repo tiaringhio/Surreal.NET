@@ -169,6 +169,9 @@ public static class SurrealConfigBuilder
     /// <inheritdoc cref="UseRpc"/>
     public static UseRpc WithRpc(this IConfigBuilder config, bool insecure = false) => new(config) { Insecure = insecure };
 
+    /// <inheritdoc cref="UseRest"/>
+    public static UseRest WithRest(this IConfigBuilder config, bool insecure = false) => new(config) { Insecure = insecure };
+
     /// <summary>
     /// Basic options, such as the remote, database and namespace of the <see cref="SurrealConfig"/>
     /// </summary>
@@ -401,13 +404,13 @@ public static class SurrealConfigBuilder
         /// </remarks>
         public bool Insecure { get; set; }
 
-        /// <inheritdoc cref="SurrealConfig.RpcUrl" />
-        public Uri? RpcUrl { get; set; }
+        /// <inheritdoc cref="SurrealConfig.RpcEndpoint" />
+        public Uri? RpcEndpoint { get; set; }
 
-        /// <inheritdoc cref="SurrealConfig.RpcUrl"/>
-        public UseRpc WithRpcUrl(Uri rpcUrl)
+        /// <inheritdoc cref="SurrealConfig.RpcEndpoint"/>
+        public UseRpc WithRpcEndpoint(Uri url)
         {
-            RpcUrl = rpcUrl;
+            RpcEndpoint = url;
             return this;
         }
 
@@ -428,7 +431,59 @@ public static class SurrealConfigBuilder
 
         public void Configure(ref SurrealConfig config)
         {
-            config.RpcEndpoint = RpcUrl ?? GetUri(config.Endpoint!, Insecure);
+            config.RpcEndpoint = RpcEndpoint ?? GetUri(config.Endpoint!, Insecure);
+        }
+    }
+
+    /// <summary>
+    /// Configures the <see cref="SurrealConfig"/> to use the REST endpoint
+    /// </summary>
+    public sealed class UseRest : IConfigBuilder
+    {
+        internal UseRest(IConfigBuilder? parent)
+        {
+            Parent = parent;
+        }
+
+        public IConfigBuilder? Parent { get; }
+
+        /// <summary>
+        /// Optional: Determines whether to disable TLS for the RPC connection.
+        /// `false` uses the `wss` protocol, `true` uses `ws`.
+        /// </summary>
+        /// <remarks>
+        /// This is not recommended, and should only be used for testing purposes
+        /// </remarks>
+        public bool Insecure { get; set; }
+
+        /// <inheritdoc cref="SurrealConfig.RestEndpoint" />
+        public Uri? RestEndpoint { get; set; }
+
+        /// <inheritdoc cref="SurrealConfig.RestEndpoint"/>
+        public UseRest WithRestEndpoint(Uri url)
+        {
+            RestEndpoint = url;
+            return this;
+        }
+
+        /// <inheritdoc cref="Insecure" />
+        public UseRest WithRestInsecure(bool insecure)
+        {
+            Insecure = insecure;
+            return this;
+        }
+
+        /// <summary>
+        /// Creates the <see cref="Uri"/> used for the rpc websocket based on the specified <see cref="EndPoint"/>.
+        /// </summary>
+        public static Uri GetUri(EndPoint endPoint, bool insecure = false) => insecure
+            ? new Uri($"http://{endPoint}/")
+            : new Uri($"https://{endPoint}/");
+
+
+        public void Configure(ref SurrealConfig config)
+        {
+            config.RestEndpoint = RestEndpoint ?? GetUri(config.Endpoint!, Insecure);
         }
     }
 }
