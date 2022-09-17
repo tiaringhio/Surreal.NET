@@ -1,4 +1,4 @@
-version: '3.3'
+version: "3.3"
 
 services:
   surreal:
@@ -6,3 +6,4 @@ services:
     command: "start"
     ports:
       - 8082:8000
+    command: start -u root -p root

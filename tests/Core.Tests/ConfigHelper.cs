@@ -22,6 +22,7 @@ public static class ConfigHelper
         .WithNamespace(Namespace)
         .WithDatabase(Database)
         .WithRpc(insecure: true)
+        .WithRest(insecure: true)
         .WithBasicAuth(User, Pass)
         .Build();
 

@@ -17,7 +17,7 @@ public class ConfigTests
 
         ConfigHelper.ValidateEndpoint(cfg.Endpoint);
     }
-    
+
     [Fact]
     public void Build_last_option_should_overwrite_prior()
     {

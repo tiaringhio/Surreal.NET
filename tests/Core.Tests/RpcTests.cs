@@ -2,16 +2,17 @@
 
 namespace Surreal.Net.Tests;
 
+#if Debug
 public class RpcClientTests
 {
     public readonly JsonRpcClient Client = new();
-    
+
     [Fact]
     public async Task Open()
     {
         await Client.Open(ConfigHelper.Default.RpcEndpoint!);
     }
-    
+
     [Fact]
     public async Task Signin()
     {
@@ -61,7 +62,7 @@ public class RpcClientTests
             Marketing = true,
             Identifier = Random.Shared.Next(),
         };
-        
+
         var rsp = await Client.Send(new()
         {
             Method = "create",
@@ -71,7 +72,7 @@ public class RpcClientTests
                 person
             }
         });
-        
+
         rsp.Error.Should().BeNull();
         rsp.Result.Should().NotBeNull();
     }
@@ -119,12 +120,13 @@ public class RpcClientTests
             Method = "query",
             Params = new()
             {
-                "SELECT marketing, count() FROM type::table($tb) GROUP BY marketing", 
+                "SELECT marketing, count() FROM type::table($tb) GROUP BY marketing",
                 new
                 {
-                    Tb = "person"
+                    tb = "person"
                 }
             }
         });
     }
 }
+#endif

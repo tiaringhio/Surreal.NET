@@ -4,13 +4,13 @@
 /// Common interface for interacting with a Surreal database instance
 /// </summary>
 public interface ISurrealDatabase<TResponse>
-    where TResponse: ISurrealResponse
+    where TResponse : ISurrealResponse
 {
     /// <summary>
     /// Returns a copy of the current configuration.
     /// </summary>
     public SurrealConfig GetConfig();
-    
+
     /// <summary>
     /// Opens the connection to a Surreal database instance using the provided configuration.
     /// Configures the client with all applicable settings.
@@ -123,7 +123,7 @@ public interface ISurrealDatabase<TResponse>
     /// <param name="data"> The document / record data to insert. </param>
     /// <remarks>
     /// This function merges the current document / record data with the specified data.
-    /// 
+    ///
     /// This function will run the following query in the database:
     /// <code>UPDATE $thing MERGE $data;</code>
     /// </remarks>
@@ -162,7 +162,7 @@ public interface ISurrealDatabase
     /// Returns a copy of the current configuration.
     /// </summary>
     public SurrealConfig GetConfig();
-    
+
     /// <summary>
     /// Opens the connection to a Surreal database instance using the provided configuration.
     /// Configures the client with all applicable settings.
@@ -273,7 +273,7 @@ public interface ISurrealDatabase
     /// <param name="data"> The document / record data to insert. </param>
     /// <remarks>
     /// This function merges the current document / record data with the specified data.
-    /// 
+    ///
     /// This function will run the following query in the database:
     /// <code>UPDATE $thing MERGE $data;</code>
     /// </remarks>
