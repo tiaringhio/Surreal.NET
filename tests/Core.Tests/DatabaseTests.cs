@@ -167,11 +167,23 @@ public abstract class DriverBase<T>
 
 public sealed class AggregateException : Exception
 {
-    public List<Exception> Exceptions { get; }
+    public List<Exception> Exceptions { get; } = new();
 
     public AggregateException(List<Exception> exceptions) : base("Multiple exceptions occured")
     {
         Exceptions = exceptions;
+    }
+
+    public AggregateException() : base()
+    {
+    }
+
+    public AggregateException(string? message) : base(message)
+    {
+    }
+
+    public AggregateException(string? message, Exception? innerException) : base(message, innerException)
+    {
     }
 
     public override string ToString()
