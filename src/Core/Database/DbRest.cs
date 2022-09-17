@@ -16,7 +16,9 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     private static Task<SurrealRestResponse> CompletedOk => Task.FromResult(SurrealRestResponse.EmptyOk);
 
-    public Dictionary<string, object?> UseVariables { get; } = new();
+    public Dictionary<string, string> UseVariables { get; } = new();
+
+    private static IReadOnlyDictionary<string, object?> EmptyVars { get; } = new Dictionary<string, object?>(0);
 
     public JsonSerializerOptions SerializerOptions { get; } = new()
     {
@@ -137,7 +139,14 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public Task<SurrealRestResponse> Let(string key, object? value, CancellationToken ct = default)
     {
-        UseVariables[key] = value;
+        if (value is null)
+        {
+            UseVariables.Remove(key);
+        }
+        else
+        {
+            UseVariables[key] = ToJson(value);
+        }
         return CompletedOk;
     }
 
@@ -240,57 +249,35 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         {
             return src;
         }
-        Dictionary<string, object?>? vars = addVars is null || addVars.Count == 0
-            ? UseVariables
-            : Combine(UseVariables, addVars);
+
+        var vars = Combine(UseVariables, addVars ?? EmptyVars);
 
         if (vars is null || vars.Count == 0)
             return src;
 
-        // Serialize all objects
-        foreach (var (k, v) in vars)
+        // Replace $vas with values for all variables, this doesnt support nesting
+        NamedDef<string> def = new("$", vars, null);
+        return Fmt.Format(src, in def);
+    }
+
+    private IReadOnlyDictionary<string, string> Combine(IReadOnlyDictionary<string, string> a, IReadOnlyDictionary<string, object?> b)
+    {
+        Dictionary<string, string> result = new(a.Count + b.Count);
+        foreach (var (k, v) in a)
         {
-            vars[k] = ToJson(v);
+            result[k] = v;
         }
 
-        // Replace $vas with values for all variables, this doesnt support nesting
-        NamedDef<object?> def = new("$", vars, null);
-        return Fmt.Format(src, in def);
+        foreach (var (k, v) in b)
+        {
+            result[k] = ToJson(v);
+        }
+
+        return result;
     }
 
     private string ToJson<T>(T? v)
     {
         return JsonSerializer.Serialize(v, SerializerOptions);
-    }
-
-    private static Dictionary<K, V>? Combine<K, V>(Dictionary<K, V>? lhs, IReadOnlyDictionary<K, V>? rhs)
-        where K : notnull
-    {
-        // cheap way to combine two dictionaries
-        if (lhs is null || lhs.Count == 0)
-        {
-            return rhs is null ? null : new(rhs);
-        }
-        if (rhs is null || rhs.Count == 0)
-        {
-            return lhs;
-        }
-
-        // the expensive way
-        // org is the larger dictionary.  we'll add the smaller to it
-        IReadOnlyDictionary<K, V> org = lhs;
-        if (rhs.Count > lhs.Count)
-        {
-            org = rhs;
-            rhs = lhs;
-        }
-
-        Dictionary<K, V> res = new(org);
-        foreach (var (key, value) in rhs)
-        {
-            res[key] = value;
-        }
-
-        return res;
     }
 }
