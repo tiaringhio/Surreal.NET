@@ -18,8 +18,10 @@ namespace Surreal.Net;
 /// </remarks>
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    struct CachedCompletedInt32Task
+struct CachedCompletedInt32Task
 {
     private Task<int>? _task;
 
@@ -43,15 +45,17 @@ public
 }
 
 /// <summary>
-/// 
+///
 /// </summary>
 /// <remarks>
 /// Based on: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/IO/MemoryStream.cs
 /// </remarks>
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    sealed class PooledMemoryStream : Stream
+sealed class PooledMemoryStream : Stream
 {
     private readonly MemoryPool<byte> _pool;
     private IMemoryOwner<byte> _buffer; // Either allocated internally or externally.
@@ -153,7 +157,7 @@ public
 
             // We want to expand the array up to Array.MaxLength.
             // And we want to give the user the value that they asked for
-            if ((uint) (_capacity * 2) > Array.MaxLength)
+            if ((uint)(_capacity * 2) > Array.MaxLength)
             {
                 newCapacity = Math.Max(value, Array.MaxLength);
             }
@@ -202,7 +206,7 @@ public
     {
         return _buffer.Memory.Span.Slice(off);
     }
-    
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Span<byte> GetBufferSpan(int off, int len)
     {
@@ -217,7 +221,7 @@ public
         int origPos = _position;
         int newPos = origPos + count;
 
-        if ((uint) newPos > (uint) _length)
+        if ((uint)newPos > (uint)_length)
         {
             _position = _length;
             ThrowEndOfFileException();
@@ -236,7 +240,7 @@ public
         int origPos = _position;
         int newPos = origPos + count;
 
-        if ((uint) newPos > (uint) _length)
+        if ((uint)newPos > (uint)_length)
         {
             _position = _length;
             ThrowEndOfFileException();
@@ -346,7 +350,7 @@ public
 
             if (value > MemStreamMaxLength)
                 throw new ArgumentOutOfRangeException(nameof(value), "Position cannot be greater than Int32.MaxValue.");
-            _position = (int) value;
+            _position = (int)value;
         }
     }
 
@@ -536,29 +540,29 @@ public
         switch (loc)
         {
             case SeekOrigin.Begin:
-            {
-                int tempPosition = unchecked((int) offset);
-                if (offset < 0 || tempPosition < 0)
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                _position = tempPosition;
-                break;
-            }
+                {
+                    int tempPosition = unchecked((int)offset);
+                    if (offset < 0 || tempPosition < 0)
+                        throw new IOException("Attempted to seek before the beginning of the stream.");
+                    _position = tempPosition;
+                    break;
+                }
             case SeekOrigin.Current:
-            {
-                int tempPosition = unchecked(_position + (int) offset);
-                if (unchecked(_position + offset) < 0 || tempPosition < 0)
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                _position = tempPosition;
-                break;
-            }
+                {
+                    int tempPosition = unchecked(_position + (int)offset);
+                    if (unchecked(_position + offset) < 0 || tempPosition < 0)
+                        throw new IOException("Attempted to seek before the beginning of the stream.");
+                    _position = tempPosition;
+                    break;
+                }
             case SeekOrigin.End:
-            {
-                int tempPosition = unchecked(_length + (int) offset);
-                if (unchecked(_length + offset) < 0 || tempPosition < 0)
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                _position = tempPosition;
-                break;
-            }
+                {
+                    int tempPosition = unchecked(_length + (int)offset);
+                    if (unchecked(_length + offset) < 0 || tempPosition < 0)
+                        throw new IOException("Attempted to seek before the beginning of the stream.");
+                    _position = tempPosition;
+                    break;
+                }
             default:
                 throw new ArgumentException("Invalid SeekOrigin");
         }
@@ -591,7 +595,7 @@ public
             throw new ArgumentOutOfRangeException(nameof(value),
                 "value is greater than the maximum length of a MemoryStream");
 
-        int newLength = (int) value;
+        int newLength = (int)value;
         bool allocatedNewArray = EnsureCapacity(newLength);
         if (!allocatedNewArray && newLength > _length)
             GetBufferSpan(_length, newLength - _length).Clear();
@@ -786,12 +790,12 @@ public
 
         stream.Write(GetBufferSpan().Slice(0, _length));
     }
-    
+
     public ReadOnlyMemory<byte> GetConsumedBuffer()
     {
         return GetBuffer().Slice(0, _position);
     }
-    
+
     public string GetString(Encoding? encoding = null)
     {
         return (encoding ?? Encoding.Default).GetString(GetBufferSpan(0, _position));
@@ -806,11 +810,13 @@ public
 /// </remarks>
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
+sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
 {
     private static readonly Lazy<JsonLowerSnakeCaseNamingPolicy> _instance = new(() => new());
-    
+
     public static JsonLowerSnakeCaseNamingPolicy Instance => _instance.Value;
 
     public override string ConvertName(string name)
@@ -819,14 +825,14 @@ public
         {
             throw new ArgumentNullException(nameof(name));
         }
-        
+
         for (int i = 0; i < name.Length; i++)
         {
-            if (!Char.IsUpper(name[i])) 
+            if (!Char.IsUpper(name[i]))
                 continue;
             return ConvertNameSlow(name, i);
         }
-        
+
         return name;
     }
 
@@ -835,7 +841,7 @@ public
         int cap = name.Length + 5;
         using StrBuilder result = cap > 512 ? new(cap) : new(stackalloc char[cap]);
         var converter = CultureInfo.InvariantCulture.TextInfo;
-        
+
         result.Append(name.Slice(0, start));
         bool prevUpper = true; // prevent leading _
         for (var pos = start; pos < name.Length; pos++)

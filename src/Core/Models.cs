@@ -25,6 +25,8 @@ public readonly struct SurrealThing
 
 #if SURREAL_NET_INTERNAL
     public
+#else
+    internal
 #endif
     SurrealThing(int split, string thing)
     {
@@ -92,6 +94,8 @@ public readonly struct SurrealRestResponse : ISurrealResponse
 
 #if SURREAL_NET_INTERNAL
     public
+#else
+    internal
 #endif
     SurrealRestResponse(string? time, string? status, string? description, string? detail, JsonElement result)
     {
@@ -188,6 +192,8 @@ public readonly struct SurrealRpcResponse : ISurrealResponse
 
 #if SURREAL_NET_INTERNAL
     public
+#else
+    internal
 #endif
     SurrealRpcResponse(string id, SurrealError error, SurrealResult result)
     {
@@ -225,7 +231,12 @@ public readonly struct SurrealRpcResponse : ISurrealResponse
 
     public void Deconstruct(out SurrealResult result, out SurrealError error) => (result, error) = (_result, _error);
 
-    public static SurrealRpcResponse From(in RpcResponse rsp)
+#if SURREAL_NET_INTERNAL
+    public
+#else
+    internal
+#endif
+    static SurrealRpcResponse From(in RpcResponse rsp)
     {
         if (rsp.Id is null)
         {
@@ -246,13 +257,23 @@ public readonly struct SurrealRpcResponse : ISurrealResponse
     {
         throw new InvalidOperationException("Response does not have an id.");
     }
-
-    public static implicit operator SurrealRpcResponse(in RpcResponse rsp) => From(in rsp);
 }
 
 public static class SurrealRpcClientExtensions
 {
-    public static SurrealRpcResponse ToSurreal(this RpcResponse rsp) => SurrealRpcResponse.From(in rsp);
+#if SURREAL_NET_INTERNAL
+    public
+#else
+    internal
+#endif
+    static SurrealRpcResponse ToSurreal(this RpcResponse rsp) => SurrealRpcResponse.From(in rsp);
+
+#if SURREAL_NET_INTERNAL
+    public
+#else
+    internal
+#endif
+    static async Task<SurrealRpcResponse> ToSurreal(this Task<RpcResponse> rsp) => SurrealRpcResponse.From(await rsp);
 }
 
 public enum SurrealResultKind : byte
@@ -278,6 +299,8 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
 
 #if SURREAL_NET_INTERNAL
     public
+#else
+    internal
 #endif
     SurrealResult(JsonElement json, object? sentinelOrValue)
     {
@@ -288,6 +311,8 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
 
 #if SURREAL_NET_INTERNAL
     public
+#else
+    internal
 #endif
     SurrealResult(JsonElement json, object? sentinelOrValue, long int64ValueField)
     {
@@ -569,6 +594,8 @@ public readonly struct SurrealError
 {
 #if SURREAL_NET_INTERNAL
     public
+#else
+    internal
 #endif
     SurrealError(int code, string? message)
     {

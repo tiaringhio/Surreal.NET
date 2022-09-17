@@ -14,7 +14,7 @@ public class DatabaseTests
     }
 
     [Fact]
-    public async Task RestTestSuite2()
+    public async Task RestTestSuite()
     {
         await new DatabaseTestDriver<DbRest, SurrealRestResponse>().Run();
     }

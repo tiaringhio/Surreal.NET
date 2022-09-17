@@ -53,7 +53,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         return await _client.Send(new()
         {
             Method = "info",
-        });
+        }).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -71,7 +71,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
             _config.Namespace = ns;
         }
 
-        return rsp;
+        return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
@@ -81,7 +81,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "signup",
             Params = new() { auth }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -94,7 +94,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         }, ct);
 
         // TODO: Update auth
-        return rsp;
+        return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
@@ -103,7 +103,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         return await _client.Send(new()
         {
             Method = "invalidate",
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -113,7 +113,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "authenticate",
             Params = new() { token }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -123,7 +123,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "let",
             Params = new() { key, value }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -133,7 +133,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "query",
             Params = new() { sql, vars }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -143,7 +143,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "select",
             Params = new() { thing.ToString() }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -156,7 +156,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
             Params = new() { thing.ToString(), data }
         };
         var response = await _client.Send(rpcReq, ct);
-        return response;
+        return response.ToSurreal();
     }
 
     /// <inheritdoc />
@@ -166,7 +166,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "update",
             Params = new() { thing.ToString(), data }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -176,7 +176,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "change",
             Params = new() { thing.ToString(), data }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -186,7 +186,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "modify",
             Params = new() { thing.ToString(), data }
-        }, ct);
+        }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -196,6 +196,6 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         {
             Method = "delete",
             Params = new() { thing.ToString() }
-        }, ct);
+        }, ct).ToSurreal();
     }
 }

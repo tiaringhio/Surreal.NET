@@ -10,6 +10,8 @@ namespace Surreal.Net;
 /// </summary>
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
 sealed class JsonRpcClient : IDisposable, IAsyncDisposable
 {
@@ -152,6 +154,8 @@ sealed class JsonRpcClient : IDisposable, IAsyncDisposable
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
 struct RpcError
 {
@@ -163,6 +167,8 @@ struct RpcError
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
 struct RpcRequest
 {
@@ -180,6 +186,8 @@ struct RpcRequest
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
 struct RpcResponse
 {
@@ -194,6 +202,8 @@ struct RpcResponse
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
 struct RpcNotification
 {
