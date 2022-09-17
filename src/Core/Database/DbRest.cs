@@ -86,9 +86,12 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         return Task.CompletedTask;
     }
 
+    /// <summary>
+    /// UNSUPPORTED FOR REST IMPLEMENTATION
+    /// </summary>
     public Task<SurrealRestResponse> Info(CancellationToken ct = default)
     {
-        return Query("SELECT * FROM $auth", null, ct);
+        return CompletedOk;
     }
 
     public Task<SurrealRestResponse> Use(string db, string ns, CancellationToken ct = default)
@@ -100,8 +103,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Signup(SurrealAuthentication auth, CancellationToken ct = default)
     {
-        StringContent content = new(ToJson(auth), Encoding.UTF8, "application/json");
-        return await Signup(content, ct);
+        return await Signup(ToJsonContent(auth), ct);
     }
 
     /// <inheritdoc cref="Signup(SurrealAuthentication, CancellationToken)"/>
@@ -113,8 +115,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Signin(SurrealAuthentication auth, CancellationToken ct = default)
     {
-        StringContent content = new(ToJson(auth), Encoding.UTF8, "application/json");
-        return await Signin(content, ct);
+        return await Signin(ToJsonContent(auth), ct);
     }
 
     /// <inheritdoc cref="Signin(SurrealAuthentication, CancellationToken)"/>
@@ -172,8 +173,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Create(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
-        return await Create(thing, content, ct);
+        return await Create(thing, ToJsonContent(data), ct);
     }
 
     public async Task<SurrealRestResponse> Create(SurrealThing thing, HttpContent data, CancellationToken ct = default)
@@ -185,8 +185,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Update(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
-        return await Update(thing, content, ct);
+        return await Update(thing, ToJsonContent(data), ct);
     }
 
     public async Task<SurrealRestResponse> Update(SurrealThing thing, HttpContent data, CancellationToken ct = default)
@@ -209,8 +208,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
-        return await Modify(thing, content, ct);
+        return await Modify(thing, ToJsonContent(data), ct);
     }
 
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, HttpContent data, CancellationToken ct = default)
@@ -279,5 +277,10 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     private string ToJson<T>(T? v)
     {
         return JsonSerializer.Serialize(v, SerializerOptions);
+    }
+
+    private StringContent ToJsonContent<T>(T? v)
+    {
+        return new(ToJson(v), Encoding.UTF8, "application/json");
     }
 }
