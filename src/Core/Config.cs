@@ -25,57 +25,57 @@ public struct SurrealConfig
     /// Flag indicating a validated config.
     /// </summary>
     public bool IsValidated => _validated;
-    
+
     /// <summary>
     /// Remote database server endpoint (address and port) to connect to.
     /// </summary>
     public IPEndPoint? Endpoint { get; set; }
-    
+
     /// <summary>
     /// Optional: The database to export the data from.
     /// </summary>
     public string? Database { get; set; }
-    
+
     /// <summary>
     /// Optional: The namespace to export the data from.
     /// </summary>
     public string? Namespace { get; set; }
-    
+
     /// <summary>
     /// The authentication method to use.
     /// </summary>
     public Auth Authentication { get; set; }
-    
+
     /// <summary>
     /// Database authentication username to use when connecting.
     /// </summary>
     public string? Username { get; set; }
-    
+
     /// <summary>
     ///  Database authentication password to use when connecting.
     /// </summary>
     public string? Password { get; set; }
-    
+
     /// <summary>
     /// Database authentication Json Web Token to use when connecting.
     /// </summary>
     public string? JsonWebToken { get; set; }
-    
+
     /// <summary>
     /// Optional: Defines the RPC endpoint to use
     /// </summary>
     /// <remarks>
     /// If not specified computed using <see cref="Endpoint"/>.
-    /// This option can be used to override the computed value. 
+    /// This option can be used to override the computed value.
     /// </remarks>
     public Uri? RpcEndpoint { get; set; }
-    
+
     /// <summary>
     /// The <see cref="Uri"/> of the rest endpoint of the REST client
     /// </summary>
     /// <remarks>
     /// If not specified computed using <see cref="Endpoint"/>.
-    /// This option can be used to override the computed value. 
+    /// This option can be used to override the computed value.
     /// </remarks>
     public Uri? RestEndpoint { get; set; }
 
@@ -84,15 +84,15 @@ public struct SurrealConfig
     /// </summary>
     /// <returns></returns>
     public static SurrealConfigBuilder.Basic Create() => SurrealConfigBuilder.Create();
-    
+
     /// <summary>
-    /// Marks the configuration as validated. 
+    /// Marks the configuration as validated.
     /// </summary>
     public void MarkAsValidated()
     {
         _validated = true;
     }
-    
+
     [Pure]
     public void ThrowIfInvalid()
     {
@@ -107,7 +107,7 @@ public struct SurrealConfig
 /// Component that configures a <see cref="SurrealConfig"/>.
 /// </summary>
 /// <remarks>
-/// A <see cref="IConfigBuilder"/> may not be directly instantiated in user code! 
+/// A <see cref="IConfigBuilder"/> may not be directly instantiated in user code!
 /// </remarks>
 public interface IConfigBuilder
 {
@@ -124,7 +124,7 @@ public interface IConfigBuilder
 }
 
 /// <summary>
-/// Contains logic to build a <see cref="SurrealConfig"/> in the form of <see cref="IConfigBuilder"/> components and extensions methods. 
+/// Contains logic to build a <see cref="SurrealConfig"/> in the form of <see cref="IConfigBuilder"/> components and extensions methods.
 /// </summary>
 public static class SurrealConfigBuilder
 {
@@ -132,7 +132,7 @@ public static class SurrealConfigBuilder
     /// Begins configuration of a <see cref="SurrealConfig"/> with fluent api.
     /// </summary>
     public static Basic Create() => new(null);
-    
+
     /// <summary>
     /// Returns the configured <see cref="SurrealConfig"/> by applying the entire <see cref="IConfigBuilder"/> chain.
     /// </summary>
@@ -140,9 +140,9 @@ public static class SurrealConfigBuilder
     public static SurrealConfig Build(this IConfigBuilder? builder)
     {
         InvalidConfigException.ThrowIf(builder is null, "", "Empty configuration is not allowed.");
-        
+
         SurrealConfig config = default;
-        
+
         Stack<IConfigBuilder> backlog = new();
         backlog.Push(builder);
         while (builder.Parent is not null)
@@ -165,10 +165,10 @@ public static class SurrealConfigBuilder
 
     /// <inheritdoc cref="JwtAuth"/>
     public static JwtAuth WithJwtAuth(this IConfigBuilder config, string? token = null) => new(config) { Token = token };
-    
+
     /// <inheritdoc cref="UseRpc"/>
     public static UseRpc WithRpc(this IConfigBuilder config, bool insecure = false) => new(config) { Insecure = insecure };
-    
+
     /// <summary>
     /// Basic options, such as the remote, database and namespace of the <see cref="SurrealConfig"/>
     /// </summary>
@@ -190,7 +190,7 @@ public static class SurrealConfigBuilder
 
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
         public string? Namespace { get; set; }
-        
+
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
         public Basic WithEndpoint(IPEndPoint endpoint)
         {
@@ -227,10 +227,10 @@ public static class SurrealConfigBuilder
             {
                 Endpoint.Address = address;
             }
-            
+
             return this;
         }
-        
+
 
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
         public Basic WithAddress(in ReadOnlySpan<char> address, Func<IPAddress>? fallback = default)
@@ -247,7 +247,7 @@ public static class SurrealConfigBuilder
 
             return WithAddress(ip);
         }
-        
+
 
         /// <inheritdoc cref="SurrealConfig.Endpoint"/>
         public Basic WithPort(in int port)
@@ -273,7 +273,7 @@ public static class SurrealConfigBuilder
 
         /// <inheritdoc cref="SurrealConfig.Database"/>
         public Basic WithDatabase(in ReadOnlySpan<char> database) => WithDatabase(database.ToString());
-        
+
         /// <inheritdoc cref="SurrealConfig.Namespace"/>
         public Basic WithNamespace(string ns)
         {
@@ -298,7 +298,7 @@ public static class SurrealConfigBuilder
     /// Configures the <see cref="SurrealConfig"/> with User and Password authentication
     /// </summary>
     /// <remarks>
-    /// Important: 
+    /// Important:
     /// Do not ever use this on a client sided application!
     /// The password is stored in plaintext in the heap, and can be obtained by a 3rd party!
     /// </remarks>
@@ -360,7 +360,7 @@ public static class SurrealConfigBuilder
 
         /// <inheritdoc />
         public IConfigBuilder? Parent { get; }
-        
+
         /// <inheritdoc cref="SurrealConfig.JsonWebToken"/>
         public string? Token { get; set; }
 
@@ -369,8 +369,8 @@ public static class SurrealConfigBuilder
         {
             Token = jwt;
             return this;
-        } 
-        
+        }
+
         /// <inheritdoc />
         public void Configure(ref SurrealConfig config)
         {
@@ -391,7 +391,7 @@ public static class SurrealConfigBuilder
         }
 
         public IConfigBuilder? Parent { get; }
-        
+
         /// <summary>
         /// Optional: Determines whether to disable TLS for the RPC connection.
         /// `false` uses the `wss` protocol, `true` uses `ws`.
@@ -400,32 +400,32 @@ public static class SurrealConfigBuilder
         /// This is not recommended, and should only be used for testing purposes
         /// </remarks>
         public bool Insecure { get; set; }
-        
+
         /// <inheritdoc cref="SurrealConfig.RpcUrl" />
         public Uri? RpcUrl { get; set; }
-        
+
         /// <inheritdoc cref="SurrealConfig.RpcUrl"/>
         public UseRpc WithRpcUrl(Uri rpcUrl)
         {
             RpcUrl = rpcUrl;
             return this;
         }
-        
+
         /// <inheritdoc cref="Insecure" />
         public UseRpc WithRpcInsecure(bool insecure)
         {
             Insecure = insecure;
             return this;
         }
-        
+
         /// <summary>
-        /// Creates the <see cref="Uri"/> used for the rpc websocket based on the specified <see cref="EndPoint"/>. 
+        /// Creates the <see cref="Uri"/> used for the rpc websocket based on the specified <see cref="EndPoint"/>.
         /// </summary>
         public static Uri GetUri(EndPoint endPoint, bool insecure = false) => insecure
             ? new Uri($"ws://{endPoint}/rpc/")
             : new Uri($"wss://{endPoint}/rpc/");
 
-        
+
         public void Configure(ref SurrealConfig config)
         {
             config.RpcEndpoint = RpcUrl ?? GetUri(config.Endpoint!, Insecure);
@@ -456,7 +456,7 @@ public sealed class InvalidConfigException : Exception
     {
     }
 
-    public InvalidConfigException(string? propertyName,string? message) : base(message)
+    public InvalidConfigException(string? propertyName, string? message) : base(message)
     {
         PropertyName = propertyName;
     }
@@ -488,7 +488,7 @@ public sealed class InvalidConfigException : Exception
     {
         ThrowIf(value is null, propertyName, message ?? $"{value} cannot be null", innerException);
     }
-    
+
     [DebuggerStepThrough]
     public static void ThrowIfNullOrWhitespace(string? value, string? message = null, Exception? innerException = null,
         [CallerArgumentExpression("value")] string propertyName = "")
