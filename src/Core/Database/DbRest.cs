@@ -14,7 +14,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     private readonly HttpClient _client = new();
     private SurrealConfig _config;
 
-    private static readonly Task<SurrealRestResponse> s_completed = Task.FromResult<SurrealRestResponse>(default);
+    private static Task<SurrealRestResponse> CompletedOk => Task.FromResult(SurrealRestResponse.EmptyOk);
 
     public Dictionary<string, object?> UseVariables { get; } = new();
 
@@ -93,7 +93,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     {
         SetUse(db, ns);
 
-        return s_completed;
+        return CompletedOk;
     }
 
     public async Task<SurrealRestResponse> Signup(SurrealAuthentication auth, CancellationToken ct = default)
@@ -127,7 +127,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         SetUse(null, null);
         RemoveAuth();
 
-        return s_completed;
+        return CompletedOk;
     }
 
     public Task<SurrealRestResponse> Authenticate(string token, CancellationToken ct = default)
@@ -138,14 +138,14 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     public Task<SurrealRestResponse> Let(string key, object? value, CancellationToken ct = default)
     {
         UseVariables[key] = value;
-        return s_completed;
+        return CompletedOk;
     }
 
     public async Task<SurrealRestResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default)
     {
         string query = FormatVars(sql, vars);
         StringContent content = new(query, Encoding.UTF8, "application/json");
-        return await Signin(content, ct);
+        return await Query(content, ct);
     }
 
     /// <inheritdoc cref="Query(string, IReadOnlyDictionary{string, object?}?, CancellationToken)"/>

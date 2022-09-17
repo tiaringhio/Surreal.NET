@@ -174,6 +174,8 @@ public readonly struct SurrealRestResponse : ISurrealResponse
         var stream = await msg.Content.ReadAsStreamAsync();
         return await JsonSerializer.DeserializeAsync<SurrealRestResponse>(stream, _options);
     }
+
+    public static SurrealRestResponse EmptyOk => new(null, "ok", null, null, default);
 }
 public static class SurrealRestClientExtensions
 {
