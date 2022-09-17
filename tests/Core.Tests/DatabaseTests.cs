@@ -12,9 +12,9 @@ public class DatabaseTests
     {
         await new DatabaseTestDriver<DbRpc, SurrealRpcResponse>().Run();
     }
-    
+
     [Fact]
-    public async Task RestTestSuite2()
+    public async Task RestTestSuite()
     {
         await new DatabaseTestDriver<DbRest, SurrealRestResponse>().Run();
     }
@@ -25,7 +25,7 @@ public class DatabaseTests
 /// </summary>
 public sealed class DatabaseTestDriver<T, U>
     where T : ISurrealDatabase<U>, new()
-    where U: ISurrealResponse
+    where U : ISurrealResponse
 {
     private T _database;
 
@@ -46,8 +46,8 @@ public sealed class DatabaseTestDriver<T, U>
 
         var signInStatus = await _database.Signin(new()
         {
-            User = ConfigHelper.User,
-            Pass = ConfigHelper.Pass,
+            Username = ConfigHelper.User,
+            Password = ConfigHelper.Pass,
         });
 
         AssertOk(signInStatus);

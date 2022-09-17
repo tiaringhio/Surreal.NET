@@ -10,28 +10,28 @@ namespace Surreal.Net;
 /// </summary>
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    sealed class JsonRpcClient : IDisposable, IAsyncDisposable
+sealed class JsonRpcClient : IDisposable, IAsyncDisposable
 {
     public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
     {
         AllowTrailingCommas = true,
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        DictionaryKeyPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
         Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
         NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
         PropertyNameCaseInsensitive = true,
-        PropertyNamingPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
         ReadCommentHandling = JsonCommentHandling.Skip,
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
         WriteIndented = false
     };
-    
+
     public const int DefaultBufferSize = 16 * 1024;
 
     // Do not get any funny ideas and fill this fucker up.
     public static readonly List<object?> EmptyList = new();
-    
+
     private ClientWebSocket? _ws;
 
     /// <summary>
@@ -115,22 +115,22 @@ public
         req.Params ??= EmptyList;
 
         await using PooledMemoryStream stream = new(DefaultBufferSize);
-        
+
         await JsonSerializer.SerializeAsync(stream, req, SerializerOptions, ct);
         await _ws!.SendAsync(stream.GetConsumedBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
         stream.Position = 0;
-        
+
         ValueWebSocketReceiveResult res;
         do
         {
             res = await _ws.ReceiveAsync(stream.InternalReadMemory(DefaultBufferSize), ct);
         } while (!res.EndOfMessage);
-        
+
         // Swap from write to read mode
         long len = stream.Position - DefaultBufferSize + res.Count;
         stream.Position = 0;
         stream.SetLength(len);
-        
+
         var rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, SerializerOptions, ct);
         return rsp;
     }
@@ -154,8 +154,10 @@ public
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    struct RpcError
+struct RpcError
 {
     [JsonPropertyName("code")] public int Code { get; set; }
 
@@ -165,8 +167,10 @@ public
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    struct RpcRequest
+struct RpcRequest
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
@@ -182,8 +186,10 @@ public
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    struct RpcResponse
+struct RpcResponse
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
@@ -196,8 +202,10 @@ public
 
 #if SURREAL_NET_INTERNAL
 public
+#else
+internal
 #endif
-    struct RpcNotification
+struct RpcNotification
 {
     [JsonPropertyName("id")] public string? Id { get; set; }
 
@@ -206,20 +214,3 @@ public
     [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault)]
     public List<object?>? Params { get; set; }
 }
-
-// // Serialization for rpc messages
-// [JsonSerializable(typeof(RpcError))]
-// [JsonSerializable(typeof(RpcRequest))]
-// [JsonSerializable(typeof(RpcResponse))]
-// [JsonSerializable(typeof(RpcNotification))]
-// // Serialization for dependent types 
-// [JsonSerializable(typeof(bool))]
-// [JsonSerializable(typeof(string))]
-// [JsonSerializable(typeof(Dictionary<string, object?>))]
-// [JsonSerializable(typeof(object))]
-// #if SURREAL_NET_INTERNAL
-//     public
-// #endif
-// partial class SourceGenerationContext : JsonSerializerContext
-// {
-// }

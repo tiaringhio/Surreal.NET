@@ -14,10 +14,10 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     private readonly HttpClient _client = new();
     private SurrealConfig _config;
 
-    private static readonly Task<SurrealRestResponse> s_completed = Task.FromResult<SurrealRestResponse>(default);
-    
+    private static Task<SurrealRestResponse> CompletedOk => Task.FromResult(SurrealRestResponse.EmptyOk);
+
     public Dictionary<string, object?> UseVariables { get; } = new();
-    
+
     public JsonSerializerOptions SerializerOptions { get; } = new()
     {
         PropertyNamingPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
@@ -63,7 +63,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
             Convert.ToBase64String(Encoding.UTF8.GetBytes($"{user}:{pass}")));
         _client.DefaultRequestHeaders.Authorization = header;
     }
-    
+
     private void RemoveAuth()
     {
         _config.Username = null;
@@ -93,7 +93,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     {
         SetUse(db, ns);
 
-        return s_completed;
+        return CompletedOk;
     }
 
     public async Task<SurrealRestResponse> Signup(SurrealAuthentication auth, CancellationToken ct = default)
@@ -101,7 +101,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         StringContent content = new(ToJson(auth), Encoding.UTF8, "application/json");
         return await Signup(content, ct);
     }
-    
+
     /// <inheritdoc cref="Signup(SurrealAuthentication, CancellationToken)"/>
     public async Task<SurrealRestResponse> Signup(HttpContent auth, CancellationToken ct = default)
     {
@@ -126,8 +126,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     {
         SetUse(null, null);
         RemoveAuth();
-        
-        return s_completed;
+
+        return CompletedOk;
     }
 
     public Task<SurrealRestResponse> Authenticate(string token, CancellationToken ct = default)
@@ -138,14 +138,14 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     public Task<SurrealRestResponse> Let(string key, object? value, CancellationToken ct = default)
     {
         UseVariables[key] = value;
-        return s_completed;
+        return CompletedOk;
     }
 
     public async Task<SurrealRestResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default)
     {
         string query = FormatVars(sql, vars);
         StringContent content = new(query, Encoding.UTF8, "application/json");
-        return await Signin(content, ct);
+        return await Query(content, ct);
     }
 
     /// <inheritdoc cref="Query(string, IReadOnlyDictionary{string, object?}?, CancellationToken)"/>
@@ -166,7 +166,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
         return await Create(thing, content, ct);
     }
-    
+
     public async Task<SurrealRestResponse> Create(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
         var rsp = await _client.PostAsync($"key/{FormatUrl(thing)}", data, ct);
@@ -179,7 +179,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
         return await Update(thing, content, ct);
     }
-    
+
     public async Task<SurrealRestResponse> Update(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
         var rsp = await _client.PutAsync($"key/{FormatUrl(thing)}", data, ct);
@@ -203,7 +203,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
         return await Modify(thing, content, ct);
     }
-    
+
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
         var rsp = await _client.PatchAsync($"key/{FormatUrl(thing)}", data, ct);
@@ -230,29 +230,29 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
             result.Append('/');
         if (!src.Key.IsEmpty)
             result.Append(Uri.EscapeDataString(src.Key.ToString()));
-        
+
         return FormatVars(result.ToString(), addVars);
     }
-    
+
     private string FormatVars(string src, IReadOnlyDictionary<string, object?>? addVars = null)
     {
         if (!src.Contains('$'))
         {
             return src;
         }
-        Dictionary<string, object?>? vars = addVars is null || addVars.Count == 0 
+        Dictionary<string, object?>? vars = addVars is null || addVars.Count == 0
             ? UseVariables
             : Combine(UseVariables, addVars);
 
         if (vars is null || vars.Count == 0)
             return src;
-        
+
         // Serialize all objects
         foreach (var (k, v) in vars)
         {
             vars[k] = ToJson(v);
         }
-        
+
         // Replace $vas with values for all variables, this doesnt support nesting
         NamedDef<object?> def = new("$", vars, null);
         return Fmt.Format(src, in def);
@@ -264,7 +264,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     }
 
     private static Dictionary<K, V>? Combine<K, V>(Dictionary<K, V>? lhs, IReadOnlyDictionary<K, V>? rhs)
-        where K: notnull
+        where K : notnull
     {
         // cheap way to combine two dictionaries
         if (lhs is null || lhs.Count == 0)
