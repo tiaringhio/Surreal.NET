@@ -22,9 +22,8 @@ jobs:
       run: dotnet restore
     - name: Build
       run: dotnet build --no-restore
-    - name: Start DB container
-      run: docker-compose -f "tests/db/docker-compose.yml" up -d
     - name: Test
-      run: dotnet test --no-build --verbosity normal
-    - name: Stop DB container
-      run: docker-compose -f "tests/db/docker-compose.yml" down
+      run: |
+        docker-compose -f "tests/db/docker-compose.yml" up -d
+        dotnet test --no-build --verbosity normal
+        docker-compose -f "tests/db/docker-compose.yml" down

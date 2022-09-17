@@ -3,7 +3,6 @@ version: "3.3"
 services:
   surreal:
     image: surrealdb/surrealdb:latest
-    command: "start"
     ports:
       - 8082:8000
     command: start -u root -p root
