@@ -14,14 +14,14 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
     {
         config.ThrowIfInvalid();
         _config = config;
-        
+
         // Open connection
         InvalidConfigException.ThrowIfNull(config.RpcEndpoint);
         await _client.Open(config.RpcEndpoint!, ct);
 
         // Authenticate
         await SetAuth(config.Username, config.Password, ct);
-        
+
         // Use database
         await SetUse(config.Database, config.Namespace, ct);
     }
@@ -38,7 +38,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
         // TODO: Support jwt auth
         _config.Username = user;
         _config.Password = pass;
-        await Signin(new() {User = user, Pass = pass}, ct);
+        await Signin(new() { Username = user, Password = pass }, ct);
     }
 
     public async Task Close(CancellationToken ct = default)
@@ -64,7 +64,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
             Method = "use",
             Params = new() { db, ns }
         }, ct);
-        
+
         if (!rsp.Error.HasValue)
         {
             _config.Database = db;
@@ -92,7 +92,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
             Method = "signin",
             Params = new() { auth }
         }, ct);
-        
+
         // TODO: Update auth
         return rsp;
     }
