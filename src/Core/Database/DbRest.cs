@@ -72,12 +72,14 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         _config.Password = null;
         _client.DefaultRequestHeaders.Authorization = null;
     }
-
     private void SetUse(string? db, string? ns)
     {
         _config.Database = db;
         _config.Namespace = ns;
+
+        _client.DefaultRequestHeaders.Remove("DB");
         _client.DefaultRequestHeaders.Add("DB", db);
+        _client.DefaultRequestHeaders.Remove("NS");
         _client.DefaultRequestHeaders.Add("NS", ns);
     }
 
@@ -115,13 +117,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Signin(SurrealAuthentication auth, CancellationToken ct = default)
     {
-        return await Signin(ToJsonContent(auth), ct);
-    }
-
-    /// <inheritdoc cref="Signin(SurrealAuthentication, CancellationToken)"/>
-    public async Task<SurrealRestResponse> Signin(HttpContent auth, CancellationToken ct = default)
-    {
-        var rsp = await _client.PostAsync("signin", auth, ct);
+        SetAuth(auth.Username, auth.Password);
+        var rsp = await _client.PostAsync("signin", ToJsonContent(auth), ct);
         return await rsp.ToSurreal();
     }
 
@@ -179,6 +176,12 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     public async Task<SurrealRestResponse> Create(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
         var rsp = await _client.PostAsync($"key/{FormatUrl(thing)}", data, ct);
+        // TODO: DEBUGGING. entering the same details in a REST client works fine, lul
+        var u = rsp.RequestMessage.RequestUri;
+        var h = string.Join("\n", rsp.RequestMessage.Headers.Select(h => h.Key + ":" + string.Join(", ", h.Value)));
+        var b = await rsp.RequestMessage.Content.ReadAsStringAsync(ct);
+        var r = await rsp.Content.ReadAsStringAsync(ct);
+
         return await rsp.ToSurreal();
     }
 
