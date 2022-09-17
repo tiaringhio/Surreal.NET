@@ -115,6 +115,7 @@ public sealed class DatabaseTestDriver<T, U>
             ["props"] = "title, identifier",
             ["title"] = newTitle,
         });
+        AssertOk(queryResp);
 
         await Database.Close();
     }
