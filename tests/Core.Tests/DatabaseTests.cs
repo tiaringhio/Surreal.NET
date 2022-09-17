@@ -1,4 +1,6 @@
-﻿using System.Diagnostics;
+﻿using System.ComponentModel.Design;
+using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 using Surreal.Net.Database;
@@ -10,51 +12,42 @@ public class DatabaseTests
     [Fact]
     public async Task RpcTestSuite()
     {
-        await new DatabaseTestDriver<DbRpc, SurrealRpcResponse>().Run();
+        await new DatabaseTestDriver<DbRpc, SurrealRpcResponse>().Execute();
     }
 
     [Fact]
     public async Task RestTestSuite()
     {
-        await new DatabaseTestDriver<DbRest, SurrealRestResponse>().Run();
+        await new DatabaseTestDriver<DbRest, SurrealRestResponse>().Execute();
     }
 }
 
-/// <summary>
-/// The test driver executes the testsuite on the client.
-/// </summary>
 public sealed class DatabaseTestDriver<T, U>
+    : DriverBase<T>
     where T : ISurrealDatabase<U>, new()
     where U : ISurrealResponse
 {
-    private T _database;
-
-    public DatabaseTestDriver()
+    protected override async Task Run()
     {
-        _database = new();
-    }
+        await Database.Open(ConfigHelper.Default);
+        Database.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
 
-    public async Task Run()
-    {
-        await _database.Open(ConfigHelper.Default);
-        _database.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
-
-        var useResp = await _database.Use(ConfigHelper.Database, ConfigHelper.Namespace);
+        var useResp = await Database.Use(ConfigHelper.Database, ConfigHelper.Namespace);
         AssertOk(useResp);
-        var infoResp = await _database.Info();
+        var infoResp = await Database.Info();
         AssertOk(infoResp);
 
-        var signInStatus = await _database.Signin(new()
+        var signInStatus = await Database.Signin(new()
         {
             Username = ConfigHelper.User,
             Password = ConfigHelper.Pass,
         });
 
         AssertOk(signInStatus);
-        //AssertOk(await _database.Invalidate());
+        //AssertOk(await Database.Invalidate());
 
         var (id1, id2) = ("", "");
-        ISurrealResponse res1 = await _database.Create("person", new
+        ISurrealResponse res1 = await Database.Create("person", new
         {
             Title = "Founder & CEO",
             Name = new
@@ -68,7 +61,7 @@ public sealed class DatabaseTestDriver<T, U>
 
         AssertOk(res1);
 
-        ISurrealResponse res2 = await _database.Create("person", new
+        ISurrealResponse res2 = await Database.Create("person", new
         {
             Title = "Contributor",
             Name = new
@@ -82,17 +75,17 @@ public sealed class DatabaseTestDriver<T, U>
         AssertOk(res2);
 
         var thing2 = SurrealThing.From("person", id2);
-        AssertOk(await _database.Update(thing2, new
+        AssertOk(await Database.Update(thing2, new
         {
             Marketing = false,
         }));
 
-        AssertOk(await _database.Select(thing2));
+        AssertOk(await Database.Select(thing2));
 
-        AssertOk(await _database.Delete(thing2));
+        AssertOk(await Database.Delete(thing2));
 
         var thing1 = SurrealThing.From("person", id1);
-        AssertOk(await _database.Change(thing1, new
+        AssertOk(await Database.Change(thing1, new
         {
             Title = "Founder & CEO",
             Name = new
@@ -105,7 +98,7 @@ public sealed class DatabaseTestDriver<T, U>
         }));
 
         string newTitle = "Founder & CEO & Ruler of the known free World";
-        var modifyResp = await _database.Modify(thing1, new object[]
+        var modifyResp = await Database.Modify(thing1, new object[]
         {
             new {
                 op = "replace",
@@ -115,23 +108,73 @@ public sealed class DatabaseTestDriver<T, U>
         });
         AssertOk(modifyResp);
 
-        AssertOk(await _database.Let("tbl", "person"));
+        AssertOk(await Database.Let("tbl", "person"));
 
-        var queryResp = await _database.Query("SELECT $props FROM $tbl WHERE title = $title", new Dictionary<string, object?>
+        var queryResp = await Database.Query("SELECT $props FROM $tbl WHERE title = $title", new Dictionary<string, object?>
         {
             ["props"] = "title, identifier",
             ["title"] = newTitle,
         });
 
-        await _database.Close();
+        await Database.Close();
+    }
+}
+
+/// <summary>
+/// The test driver executes the testsuite on the client.
+/// </summary>
+public abstract class DriverBase<T>
+    where T : new()
+{
+    private readonly List<Exception> _ex = new();
+
+    public DriverBase()
+    {
+        Database = new();
     }
 
-    [DebuggerStepThrough]
-    private static void AssertOk(in ISurrealResponse rpcResponse, [CallerArgumentExpression("rpcResponse")] string caller = "")
+    public T Database { get; }
+
+    public async Task Execute()
     {
-        if (rpcResponse.TryGetError(out var err))
+        await Run();
+        if (_ex.Count > 0)
         {
-            throw new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
+            throw new AggregateException(_ex);
         }
+    }
+
+    protected abstract Task Run();
+
+    [DebuggerStepThrough]
+    protected void AssertOk(in ISurrealResponse rpcResponse, [DoesNotReturnIf(true)] bool fatal = true, [CallerArgumentExpression("rpcResponse")] string caller = "")
+    {
+        if (!rpcResponse.TryGetError(out var err))
+        {
+            return;
+        }
+
+        Exception ex = new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
+        if (fatal)
+        {
+            throw ex;
+        }
+
+        _ex.Add(ex);
+    }
+}
+
+public sealed class AggregateException : Exception
+{
+    public List<Exception> Exceptions { get; }
+
+    public AggregateException(List<Exception> exceptions) : base("Multiple exceptions occured")
+    {
+        Exceptions = exceptions;
+    }
+
+    public override string ToString()
+    {
+        return Message + Environment.NewLine + string.Join(Environment.NewLine, Exceptions.Select(x => x.ToString()));
     }
 }
