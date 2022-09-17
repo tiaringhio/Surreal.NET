@@ -151,7 +151,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse
         return true;
     }
 
-    private static JsonSerializerOptions _options = new()
+    private static readonly JsonSerializerOptions _options = new()
     {
         PropertyNameCaseInsensitive = true,
         AllowTrailingCommas = true,
@@ -166,16 +166,24 @@ public readonly struct SurrealRestResponse : ISurrealResponse
 
     public static async Task<SurrealRestResponse> From(HttpResponseMessage msg)
     {
+        var stream = await msg.Content.ReadAsStreamAsync();
         if (msg.StatusCode != HttpStatusCode.OK)
         {
-            return new(null, "error", msg.ReasonPhrase, null, default);
+            var err = await JsonSerializer.DeserializeAsync<HttpError>(stream);
+            return From(err);
         }
 
-        var stream = await msg.Content.ReadAsStreamAsync();
         return await JsonSerializer.DeserializeAsync<SurrealRestResponse>(stream, _options);
     }
 
     public static SurrealRestResponse EmptyOk => new(null, "ok", null, null, default);
+
+    static SurrealRestResponse From(HttpError? error)
+    {
+        return new(null, "HTTP_ERR", error?.description, error?.details, default);
+    }
+
+    record HttpError(int code, string details, string description);
 }
 public static class SurrealRestClientExtensions
 {
