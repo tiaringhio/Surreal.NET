@@ -44,7 +44,7 @@ public sealed class DatabaseTestDriver<T, U>
         AssertOk(signInStatus);
         //AssertOk(await Database.Invalidate());
 
-        var (id1, id2) = ("", "");
+        var (id1, id2) = ("id1", "id2");
         ISurrealResponse res1 = await Database.Create("person", new
         {
             Title = "Founder & CEO",
@@ -111,6 +111,7 @@ public sealed class DatabaseTestDriver<T, U>
         var queryResp = await Database.Query("SELECT $props FROM $tbl WHERE title = $title", new Dictionary<string, object?>
         {
             ["props"] = "title, identifier",
+            ["tbl"] = "person",
             ["title"] = newTitle,
         });
         AssertOk(queryResp);
