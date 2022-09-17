@@ -2,6 +2,7 @@
 
 namespace Surreal.Net.Tests;
 
+#if Debug
 public class RpcClientTests
 {
     public readonly JsonRpcClient Client = new();
@@ -128,3 +129,4 @@ public class RpcClientTests
         });
     }
 }
+#endif
