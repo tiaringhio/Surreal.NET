@@ -104,20 +104,19 @@ public sealed class DatabaseTestDriver<T, U>
             Identifier = Random.Shared.Next(),
         }));
 
-        /*
-         * Modify doesn't work but the Go lib doesn't update it so I don't
-         * have a reference for how to use Modify
-         *
         string newTitle = "Founder & CEO & Ruler of the known free World";
-        var modifyResp = await _database.Modify(thing1, new
+        var modifyResp = await _database.Modify(thing1, new object[]
         {
-            op = "replace", path = "/Title", value = newTitle
+            new {
+                op = "replace",
+                path = "/Title",
+                value = newTitle
+            }
         });
-        */
+        AssertOk(modifyResp);
 
         AssertOk(await _database.Let("tbl", "person"));
 
-        string newTitle = "Founder & CEO & Ruler of the known free World";
         var queryResp = await _database.Query("SELECT $props FROM $tbl WHERE title = $title", new Dictionary<string, object?>
         {
             ["props"] = "title, identifier",
