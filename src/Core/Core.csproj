@@ -8,11 +8,17 @@
         <Description>Core project for the C# Surreal client SDK.</Description>
         <PackageVersion>$(SurrealCoreVersion)</PackageVersion>
         <RootNamespace>Surreal.Net</RootNamespace>
+        <PackageId>Surreal.Net</PackageId>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <RepositoryUrl>https://github.com/ProphetLamb/Surreal.Net</RepositoryUrl>
     </PropertyGroup>
+
+    <ItemGroup>
+        <None Include="../../README.md" Pack="true" PackagePath="\" />
+    </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="Rustic.Text" Version="0.5.80" />
         <PackageReference Include="Rustic.Common" Version="0.5.80" />
-        
     </ItemGroup>
 </Project>
