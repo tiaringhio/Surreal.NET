@@ -205,13 +205,14 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        return await Modify(thing, ToJsonContent(data), ct);
-    }
-
-    public async Task<SurrealRestResponse> Modify(SurrealThing thing, HttpContent data, CancellationToken ct = default)
-    {
-        var rsp = await _client.PatchAsync($"key/{FormatUrl(thing)}", data, ct);
-        return await rsp.ToSurreal();
+        // Is this the most optimal way?
+        string sql = "UPDATE $what MERGE $data RETURN AFTER";
+        var vars = new Dictionary<string, object?>
+        {
+            ["what"] = thing.ToString(),
+            ["data"] = data
+        };
+        return await Query(sql, vars, ct);
     }
 
     public async Task<SurrealRestResponse> Delete(SurrealThing thing, CancellationToken ct = default)
