@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "src/Core/Core.csproj", "{4376F0D2-91E2-4417-BA23-7C0398C434B1}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core", "src/Driver/Driver.csproj", "{4376F0D2-91E2-4417-BA23-7C0398C434B1}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{75FF3A83-918D-49F9-94BD-4B871E0619F4}"
 	ProjectSection(SolutionItems) = preProject
@@ -9,7 +9,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{75FF3A83-918
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Directory.Build", "Directory.Build.props", "{47B2BC84-657E-4A89-8346-DE826B37AF75}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "tests\Core.Tests\Core.Tests.csproj", "{CBB7A8CF-B04B-4801-9D5A-FEE013880463}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "tests\Driver.Tests\Driver.Tests.csproj", "{CBB7A8CF-B04B-4801-9D5A-FEE013880463}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{84F225EC-1895-45C0-A2EE-C61DC3DC5D0F}"
 	ProjectSection(SolutionItems) = preProject
