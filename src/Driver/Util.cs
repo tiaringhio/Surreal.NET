@@ -876,7 +876,6 @@ public static class Constants
         AllowTrailingCommas = true,
         ReadCommentHandling = JsonCommentHandling.Skip,
         WriteIndented = false,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
         // This was throwing an exception when set to JsonIgnoreCondition.Always
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
         // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
