@@ -83,9 +83,19 @@ public readonly struct SurrealThing
             return reader.GetString();
         }
 
+        public override void ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options, ref ReadStack state)
+        {
+            state.Current.JsonPropertyName = reader.GetString();
+        }
+
         public override void Write(Utf8JsonWriter writer, SurrealThing value, JsonSerializerOptions options)
         {
             writer.WriteStringValue((string)value);
+        }
+
+        public override void WriteAsPropertyName(Utf8JsonWriter writer, SurrealThing value, JsonSerializerOptions options)
+        {
+            writer.WritePropertyName((string)value);
         }
     }
 
