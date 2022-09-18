@@ -16,7 +16,7 @@ namespace Surreal.Net;
 ///     `table_name:record_id`
 /// </remarks>
 [JsonConverter(typeof(Converter))]
-public readonly struct SurrealThing {
+public readonly struct SurrealThing : IEquatable<SurrealThing> {
     private readonly int _split;
     public string Thing { get; }
 
@@ -36,12 +36,7 @@ public readonly struct SurrealThing {
         Thing = thing;
     }
 
-    public override string ToString() {
-        return Thing;
-    }
-
-    public static SurrealThing From(
-        string? thing) {
+    public static SurrealThing From(string? thing) {
         if (string.IsNullOrEmpty(thing)) {
             return default;
         }
@@ -56,8 +51,7 @@ public readonly struct SurrealThing {
         return From($"{table}:{key}");
     }
 
-    public SurrealThing WithTable(
-        in ReadOnlySpan<char> table) {
+    public SurrealThing WithTable(in ReadOnlySpan<char> table) {
         int keyOffset = table.Length + 1;
         int chars = keyOffset + Key.Length;
         Span<char> builder = stackalloc char[chars];
@@ -67,8 +61,7 @@ public readonly struct SurrealThing {
         return new(table.Length, builder.ToString());
     }
 
-    public SurrealThing WithKey(
-        in ReadOnlySpan<char> key) {
+    public SurrealThing WithKey(in ReadOnlySpan<char> key) {
         int keyOffset = Table.Length + 1;
         int chars = keyOffset + key.Length;
         Span<char> builder = stackalloc char[chars];
@@ -78,19 +71,24 @@ public readonly struct SurrealThing {
         return new(Table.Length, builder.ToString());
     }
 
-    public static implicit operator SurrealThing(
-        in string? thing) {
+    public static implicit operator SurrealThing(in string? thing) {
         return From(thing);
     }
 
     // Double implicit operators can result in problem, so we use explicit operators instead.
-    public static explicit operator string(
-        in SurrealThing thing) {
+    public static explicit operator string(in SurrealThing thing) {
         return thing.Thing;
     }
 
     public sealed class Converter : JsonConverter<SurrealThing> {
         public override SurrealThing Read(
+            ref Utf8JsonReader reader,
+            Type typeToConvert,
+            JsonSerializerOptions options) {
+            return reader.GetString();
+        }
+
+        public override SurrealThing ReadAsPropertyName(
             ref Utf8JsonReader reader,
             Type typeToConvert,
             JsonSerializerOptions options) {
@@ -103,6 +101,29 @@ public readonly struct SurrealThing {
             JsonSerializerOptions options) {
             writer.WriteStringValue((string)value);
         }
+
+        public override void WriteAsPropertyName(
+            Utf8JsonWriter writer,
+            SurrealThing value,
+            JsonSerializerOptions options) {
+            writer.WritePropertyName((string)value);
+        }
+    }
+
+    public bool Equals(SurrealThing other) {
+        return Thing == other.Thing;
+    }
+
+    public override bool Equals(object? obj) {
+        return obj is SurrealThing other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        return Thing.GetHashCode();
+    }
+
+    public override string ToString() {
+        return (string)this;
     }
 }
 
@@ -111,11 +132,9 @@ public interface ISurrealResponse {
 
     public bool IsError { get; }
 
-    public bool TryGetError(
-        out SurrealError error);
+    public bool TryGetError(out SurrealError error);
 
-    public bool TryGetResult(
-        out SurrealResult result);
+    public bool TryGetResult(out SurrealResult result);
 
     public bool TryGetResult(
         out SurrealResult result,
@@ -155,8 +174,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
 
     public bool IsError => !IsOk;
 
-    public bool TryGetError(
-        out SurrealError error) {
+    public bool TryGetError(out SurrealError error) {
         if (IsOk) {
             error = default;
             return false;
@@ -166,8 +184,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
         return true;
     }
 
-    public bool TryGetResult(
-        out SurrealResult result) {
+    public bool TryGetResult(out SurrealResult result) {
         if (IsError) {
             result = default;
             return false;
@@ -233,8 +250,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
 
     public static SurrealRestResponse EmptyOk => new(null, "ok", null, null, default);
 
-    private static SurrealRestResponse From(
-        HttpError? error) {
+    private static SurrealRestResponse From(HttpError? error) {
         return new(null, "HTTP_ERR", error?.description, error?.details, default);
     }
 
@@ -246,8 +262,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
 
 public static class SurrealRestClientExtensions {
     [DebuggerStepThrough]
-    public static Task<SurrealRestResponse> ToSurreal(
-        this HttpResponseMessage msg) {
+    public static Task<SurrealRestResponse> ToSurreal(this HttpResponseMessage msg) {
         return SurrealRestResponse.From(msg);
     }
 }
@@ -280,14 +295,12 @@ public readonly struct SurrealRpcResponse : ISurrealResponse {
     public SurrealResult UncheckedResult { get; }
     public SurrealError UncheckedError => _error;
 
-    public bool TryGetError(
-        out SurrealError error) {
+    public bool TryGetError(out SurrealError error) {
         error = _error;
         return IsError;
     }
 
-    public bool TryGetResult(
-        out SurrealResult result) {
+    public bool TryGetResult(out SurrealResult result) {
         result = UncheckedResult;
         return IsOk;
     }
@@ -311,8 +324,7 @@ public readonly struct SurrealRpcResponse : ISurrealResponse {
 #else
     internal
 #endif
-        static SurrealRpcResponse From(
-            in RpcResponse rsp) {
+        static SurrealRpcResponse From(in RpcResponse rsp) {
         if (rsp.Id is null) {
             ThrowIdMissing();
         }
@@ -337,16 +349,14 @@ public static class SurrealRpcClientExtensions {
 #else
     internal
 #endif
-        static SurrealRpcResponse ToSurreal(
-            this RpcResponse rsp) => SurrealRpcResponse.From(in rsp);
+        static SurrealRpcResponse ToSurreal(this RpcResponse rsp) => SurrealRpcResponse.From(in rsp);
 
 #if SURREAL_NET_INTERNAL
     public
 #else
     internal
 #endif
-        static async Task<SurrealRpcResponse> ToSurreal(
-            this Task<RpcResponse> rsp) => SurrealRpcResponse.From(await rsp);
+        static async Task<SurrealRpcResponse> ToSurreal(this Task<RpcResponse> rsp) => SurrealRpcResponse.From(await rsp);
 }
 
 public enum SurrealResultKind : byte {
@@ -403,15 +413,13 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
 
     public JsonElement Inner => _json;
 
-    public bool TryGetObject(
-        out JsonElement document) {
+    public bool TryGetObject(out JsonElement document) {
         document = _json;
         return GetKind() == SurrealResultKind.Object;
     }
 
     [Obsolete("This is a hack to get around a proper ORM, will be revised once an ORM is available.")]
-    public bool TryGetObjectCollection<T>(
-        [NotNullWhen(true)] out List<T>? document) {
+    public bool TryGetObjectCollection<T>([NotNullWhen(true)] out List<T>? document) {
         // Try to unpack this document
 
         // Some results come as a simple array of objects
@@ -468,38 +476,33 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return isDoc;
     }
 
-    public bool TryGetValue(
-        [NotNullWhen(true)] out string? value) {
+    public bool TryGetValue([NotNullWhen(true)] out string? value) {
         bool isString = GetKind() == SurrealResultKind.String;
         value = isString ? (string)_sentinelOrValue! : null;
         return isString;
     }
 
-    public bool TryGetValue(
-        out long value) {
+    public bool TryGetValue(out long value) {
         bool isInt = GetKind() == SurrealResultKind.SignedInteger;
         value = isInt ? _int64ValueField : 0;
         return isInt;
     }
 
-    public bool TryGetValue(
-        out ulong value) {
+    public bool TryGetValue(out ulong value) {
         bool isInt = GetKind() == SurrealResultKind.SignedInteger;
         long data = _int64ValueField;
         value = isInt ? Unsafe.As<long, ulong>(ref data) : 0;
         return isInt;
     }
 
-    public bool TryGetValue(
-        out double value) {
+    public bool TryGetValue(out double value) {
         bool isFloat = GetKind() == SurrealResultKind.Float;
         long data = _int64ValueField;
         value = isFloat ? Unsafe.As<long, double>(ref data) : 0;
         return isFloat;
     }
 
-    public bool TryGetValue(
-        out bool value) {
+    public bool TryGetValue(out bool value) {
         bool isBoolean = GetKind() == SurrealResultKind.Boolean;
         value = isBoolean && _int64ValueField != FalseValue;
         return value;
@@ -519,8 +522,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     private const long TrueValue = 1;
     private const long FalseValue = 0;
 
-    public static SurrealResult From(
-        in JsonElement json) {
+    public static SurrealResult From(in JsonElement json) {
         return json.ValueKind switch {
             JsonValueKind.Undefined => new(json, NoneSentinel),
             JsonValueKind.Object => FromObject(json),
@@ -534,8 +536,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         };
     }
 
-    private static SurrealResult FromObject(
-        in JsonElement json) {
+    private static SurrealResult FromObject(in JsonElement json) {
         if (json.ValueKind == JsonValueKind.String) {
             return new(json, json.GetString());
         }
@@ -548,8 +549,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return new(json, null);
     }
 
-    private static SurrealResult FromNumber(
-        in JsonElement json) {
+    private static SurrealResult FromNumber(in JsonElement json) {
         if (json.TryGetInt64(out long signed)) {
             return new(json, SignedIntegerSentinel, signed);
         }
@@ -599,16 +599,14 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     }
 
     [DoesNotReturn, DebuggerStepThrough,]
-    private static SurrealResult ThrowUnknownJsonValueKind(
-        JsonElement json) {
+    private static SurrealResult ThrowUnknownJsonValueKind(JsonElement json) {
         throw new ArgumentOutOfRangeException(nameof(json), json.ValueKind, "Unknown value kind.");
     }
 
     // Below is the implementation for the comparison and equality logic,
     // as well as operator overloads and conversion logic for IConvertible.
 
-    public bool Equals(
-        in SurrealResult other) {
+    public bool Equals(in SurrealResult other) {
         // Fastest check for inequality, is via the value field.
         if (_int64ValueField != other._int64ValueField) {
             return false;
@@ -638,13 +636,11 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     }
 
     // The struct is big, do not copy if not necessary!
-    bool IEquatable<SurrealResult>.Equals(
-        SurrealResult other) {
+    bool IEquatable<SurrealResult>.Equals(SurrealResult other) {
         return Equals(in other);
     }
 
-    public override bool Equals(
-        object? obj) {
+    public override bool Equals(object? obj) {
         return obj is SurrealResult other && Equals(other);
     }
 
@@ -665,8 +661,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     }
 
 
-    public int CompareTo(
-        in SurrealResult other) {
+    public int CompareTo(in SurrealResult other) {
         SurrealResultKind thisKind = GetKind();
         SurrealResultKind otherKind = other.GetKind();
 
@@ -699,8 +694,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     }
 
     // The struct is big, do not copy if not necessary!
-    int IComparable<SurrealResult>.CompareTo(
-        SurrealResult other) {
+    int IComparable<SurrealResult>.CompareTo(SurrealResult other) {
         return CompareTo(in other);
     }
 
