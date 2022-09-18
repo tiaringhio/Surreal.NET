@@ -22,9 +22,9 @@
     </PackageReference>
     <PackageReference Include="FluentAssertions" Version="6.7.0" />
   </ItemGroup>
-  
+
   <ItemGroup>
-    <ProjectReference Include="../../src/Core/Core.csproj" PrivateAssets="all" />
+    <ProjectReference Include="$(SolutionDir)/src/Driver/Driver.csproj" PrivateAssets="all" />
   </ItemGroup>
 
 </Project>
