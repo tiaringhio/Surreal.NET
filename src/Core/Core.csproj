@@ -18,7 +18,6 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Rustic.Text" Version="0.5.80" />
         <PackageReference Include="Rustic.Common" Version="0.5.80" />
     </ItemGroup>
 </Project>

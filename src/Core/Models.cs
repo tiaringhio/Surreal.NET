@@ -1,3 +1,4 @@
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
@@ -20,7 +21,7 @@ public readonly struct SurrealThing
     public string Thing { get; }
 
     public ReadOnlySpan<char> Table => Thing.AsSpan(0, _split);
-    public ReadOnlySpan<char> Key => Thing.AsSpan(_split + 1);
+    public ReadOnlySpan<char> Key => _split == Length ? default : Thing.AsSpan(_split + 1);
     public int Length => Thing.Length;
 
 #if SURREAL_NET_INTERNAL
@@ -36,10 +37,13 @@ public readonly struct SurrealThing
 
     public override string ToString() => Thing;
 
-    public static SurrealThing From(string thing) => new(thing.IndexOf(':'), thing);
+    public static SurrealThing From(string thing)
+    {
+        int split = thing.IndexOf(':');
+        return new(split <= 0 ? thing.Length : split, thing);
+    }
 
-    public static SurrealThing From(in ReadOnlySpan<char> table, in ReadOnlySpan<char> key) =>
-        new(table.Length, $"{table}:{key}");
+    public static SurrealThing From(in ReadOnlySpan<char> table, in ReadOnlySpan<char> key) => From($"{table}:{key}");
 
     public static implicit operator SurrealThing(in string thing) => From(thing);
 
@@ -151,7 +155,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse
         return true;
     }
 
-    private static JsonSerializerOptions _options = new()
+    private static readonly JsonSerializerOptions _options = new()
     {
         PropertyNameCaseInsensitive = true,
         AllowTrailingCommas = true,
@@ -164,18 +168,40 @@ public readonly struct SurrealRestResponse : ISurrealResponse
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
     };
 
-    public static async Task<SurrealRestResponse> From(HttpResponseMessage msg)
+    public static async Task<SurrealRestResponse> From(HttpResponseMessage msg, CancellationToken ct = default)
     {
+        var stream = await msg.Content.ReadAsStreamAsync(ct);
         if (msg.StatusCode != HttpStatusCode.OK)
         {
-            return new(null, "error", msg.ReasonPhrase, null, default);
+            var err = await JsonSerializer.DeserializeAsync<HttpError>(stream, _options, ct);
+            return From(err);
+        }
+        // Handle empty response
+        if (!await PeekIsJson(stream, ct))
+        {
+            return EmptyOk;
         }
 
-        var stream = await msg.Content.ReadAsStreamAsync();
-        return await JsonSerializer.DeserializeAsync<SurrealRestResponse>(stream, _options);
+        return await JsonSerializer.DeserializeAsync<SurrealRestResponse>(stream, _options, ct);
+    }
+
+    private static async Task<bool> PeekIsJson(Stream stream, CancellationToken ct)
+    {
+        Debug.Assert(stream.CanSeek && stream.CanRead);
+        using var buffer = MemoryPool<byte>.Shared.Rent(1);
+        int read = await stream.ReadAsync(buffer.Memory.Slice(0, 1), ct);
+        stream.Seek(-read, SeekOrigin.Current);
+        return read > 0 && (char)buffer.Memory.Span[0] == '{';
     }
 
     public static SurrealRestResponse EmptyOk => new(null, "ok", null, null, default);
+
+    static SurrealRestResponse From(HttpError? error)
+    {
+        return new(null, "HTTP_ERR", error?.description, error?.details, default);
+    }
+
+    record HttpError(int code, string details, string description);
 }
 public static class SurrealRestClientExtensions
 {
