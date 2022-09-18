@@ -1,11 +1,9 @@
-﻿using System.Globalization;
-using System.Net.Http.Headers;
+﻿using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Rustic;
-using Rustic.Text;
 
 namespace Surreal.Net.Database;
 
@@ -249,19 +247,56 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
             return src;
         }
 
-        var vars = Combine(UseVariables, addVars ?? EmptyVars);
+        IReadOnlyDictionary<string, string>? vars = CombineVars(UseVariables, addVars ?? EmptyVars);
 
         if (vars is null || vars.Count == 0)
             return src;
 
-        // Replace $vas with values for all variables, this doesnt support nesting
-        NamedDef<string> def = new("$", vars, null);
-        return Fmt.Format(src, in def);
+        return FormatVarsSlow(src, vars);
     }
 
-    private IReadOnlyDictionary<string, string> Combine(IReadOnlyDictionary<string, string> a, IReadOnlyDictionary<string, object?> b)
+    private string FormatVarsSlow(string template, IReadOnlyDictionary<string, string>? vars)
     {
-        Dictionary<string, string> result = new(a.Count + b.Count);
+        using StrBuilder result = template.Length > 512 ? new(template.Length) : new(stackalloc char[template.Length]);
+        int i = 0;
+        while (i < template.Length)
+        {
+            if (template[i] != '$')
+            {
+                result.Append(template[i]);
+                i++;
+                continue;
+            }
+
+            int start = i;
+            i++;
+            while (i < template.Length && char.IsLetterOrDigit(template[i]))
+            {
+                i++;
+            }
+            string varName = template[start..i];
+
+            if (UseVariables.TryGetValue(varName, out string? varValue))
+            {
+                result.Append(varValue);
+            }
+            else if (vars?.TryGetValue(varName, out varValue) == true)
+            {
+                result.Append(varValue);
+            }
+            else
+            {
+                result.Append(template.AsSpan(start, i - start));
+            }
+        }
+
+        return result.ToString();
+    }
+
+
+    private IReadOnlyDictionary<string, string> CombineVars(IReadOnlyDictionary<string, string> a, IReadOnlyDictionary<string, object?> b)
+    {
+        Dictionary<string, string> result = new(a.Count + b.Count, StringComparer.OrdinalIgnoreCase);
         foreach (var (k, v) in a)
         {
             result[k] = v;
@@ -293,7 +328,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     private HttpContent ToContent(string s = "")
     {
         var content = new StringContent(s, Encoding.UTF8, "application/json");
-        
+
         if (content.Headers.ContentType != null)
         {
             // The server can only handle 'Content-Type' with 'application/json', remove any further information from this header
@@ -305,7 +340,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     private HttpRequestMessage ToRequestMessage(HttpMethod method, string requestUri)
     {
-        // SurrealDb must have a 'Content-Type' header defined, 
+        // SurrealDb must have a 'Content-Type' header defined,
         // but HttpClient does not allow default request headers to be set.
         // So we need to make PUT and DELETE requests with an empty request body, but with request headers
         return new HttpRequestMessage
