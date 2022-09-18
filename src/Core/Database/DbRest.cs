@@ -18,18 +18,6 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     private static IReadOnlyDictionary<string, object?> EmptyVars { get; } = new Dictionary<string, object?>(0);
 
-    public JsonSerializerOptions SerializerOptions { get; } = new()
-    {
-        PropertyNamingPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
-        PropertyNameCaseInsensitive = true,
-        WriteIndented = false,
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        DictionaryKeyPolicy = JsonLowerSnakeCaseNamingPolicy.Instance,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping
-    };
-
     public SurrealConfig GetConfig() => _config;
 
     public Task Open(SurrealConfig config, CancellationToken ct = default)
@@ -312,7 +300,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     private string ToJson<T>(T? v)
     {
-        return JsonSerializer.Serialize(v, SerializerOptions);
+        return JsonSerializer.Serialize(v, Constants.JsonOptions);
     }
 
     private HttpContent ToJsonContent<T>(T? v)

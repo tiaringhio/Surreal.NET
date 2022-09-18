@@ -15,18 +15,6 @@ internal
 #endif
 sealed class JsonRpcClient : IDisposable, IAsyncDisposable
 {
-    public static readonly JsonSerializerOptions DefaultJsonSerializerOptions = new()
-    {
-        AllowTrailingCommas = true,
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping, // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
-        NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
-        PropertyNameCaseInsensitive = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-        WriteIndented = false
-    };
-
     public const int DefaultBufferSize = 16 * 1024;
 
     // Do not get any funny ideas and fill this fucker up.
@@ -42,7 +30,7 @@ sealed class JsonRpcClient : IDisposable, IAsyncDisposable
     /// <summary>
     /// The <see cref="JsonSerializerOptions"/> used for serialization.
     /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; } = DefaultJsonSerializerOptions;
+    public JsonSerializerOptions SerializerOptions { get; } = Constants.CreateJsonOptions();
 
     /// <summary>
     /// Generates a random base64 string of the length specified.

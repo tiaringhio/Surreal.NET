@@ -15,6 +15,7 @@ namespace Surreal.Net;
 /// <remarks>
 /// `table_name:record_id`
 /// </remarks>
+[JsonConverter(typeof(SurrealThing.Converter))]
 public readonly struct SurrealThing
 {
     private readonly int _split;
@@ -37,15 +38,17 @@ public readonly struct SurrealThing
 
     public override string ToString() => Thing;
 
-    public static SurrealThing From(string thing)
+    public static SurrealThing From(string? thing)
     {
+        if (String.IsNullOrEmpty(thing))
+        {
+            return default;
+        }
         int split = thing.IndexOf(':');
         return new(split <= 0 ? thing.Length : split, thing);
     }
 
     public static SurrealThing From(in ReadOnlySpan<char> table, in ReadOnlySpan<char> key) => From($"{table}:{key}");
-
-    public static implicit operator SurrealThing(in string thing) => From(thing);
 
     public SurrealThing WithTable(in ReadOnlySpan<char> table)
     {
@@ -69,7 +72,23 @@ public readonly struct SurrealThing
         return new(Table.Length, builder.ToString());
     }
 
-    public static implicit operator string(in SurrealThing thing) => thing.Thing;
+    public static implicit operator SurrealThing(in string? thing) => From(thing);
+    // Double implicit operators can result in problem, so we use explicit operators instead.
+    public static explicit operator string(in SurrealThing thing) => thing.Thing;
+
+    public sealed class Converter : JsonConverter<SurrealThing>
+    {
+        public override SurrealThing Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+        {
+            return reader.GetString();
+        }
+
+        public override void Write(Utf8JsonWriter writer, SurrealThing value, JsonSerializerOptions options)
+        {
+            writer.WriteStringValue((string)value);
+        }
+    }
+
 }
 
 public interface ISurrealResponse
@@ -332,19 +351,6 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     private readonly object? _sentinelOrValue;
     private readonly long _int64ValueField;
 
-    private static readonly JsonSerializerOptions _options = new()
-    {
-        PropertyNameCaseInsensitive = true,
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        WriteIndented = false,
-        // This was throwing an exception when set to JsonIgnoreCondition.Always
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        IgnoreReadOnlyFields = false,
-        UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-    };
-
 #if SURREAL_NET_INTERNAL
     public
 #else
@@ -378,7 +384,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     }
 
     [Obsolete("This is a hack to get around a proper ORM, will be revised once an ORM is available.")]
-    public bool TryGetObjectCollection<T>(out List<T> document)
+    public bool TryGetObjectCollection<T>([NotNullWhen(true)] out List<T>? document)
     {
         // Try to unpack this document
 
@@ -391,37 +397,48 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         //    "time": "71.775µs"
         //  }
         //]
-
-        // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
-        var statusDocuments = _json.Deserialize<List<SurrealStatus>>(_options);
-
-        if (statusDocuments != null)
+        if (_json.ValueKind != JsonValueKind.Array)
         {
-            foreach (var statusDocument in statusDocuments)
-            {
-                if (string.IsNullOrEmpty(statusDocument.Status) && string.IsNullOrEmpty(statusDocument.Time))
-                {
-                    break; // This is not a status document
-                }
-
-                // This probably is a status document
-                if (statusDocument.Result.ValueKind == JsonValueKind.Null)
-                {
-                    // Skip over the statuses with no results
-                    // Often from requests that have variables etc
-                    continue;
-                }
-
-                document = statusDocument.Result.Deserialize<List<T>>()!;
-                return GetKind() == SurrealResultKind.Object;
-            }
+            document = default;
+            return false;
         }
 
-        document = _json.Deserialize<List<T>>(_options)!;
-        return GetKind() == SurrealResultKind.Object;
+        // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
+        var statusDocuments = _json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
+
+        if (statusDocuments == null)
+        {
+            // Not the 'embeded status' document type, try the simple array of objects
+            document = _json.Deserialize<List<T>>(Constants.JsonOptions);
+            return document != null;
+        }
+
+        foreach (var statusDocument in statusDocuments)
+        {
+            if (string.IsNullOrEmpty(statusDocument.Status) && string.IsNullOrEmpty(statusDocument.Time))
+            {
+                break; // This is not a status document
+            }
+
+            var result = statusDocument.Result;
+
+            // This probably is a status document
+            if (result.ValueKind != JsonValueKind.Array)
+            {
+                // Skip over the statuses with no results
+                // Often from requests that have variables etc
+                continue;
+            }
+
+            document = result.Deserialize<List<T>>()!;
+            return document is not null;
+        }
+
+        document = _json.Deserialize<List<T>>(Constants.JsonOptions);
+        return document is not null;
     }
 
-    public bool TryGetDocument(out string? id, out JsonElement document)
+    public bool TryGetDocument([NotNullWhen(true)] out string? id, out JsonElement document)
     {
         document = _json;
         bool isDoc = GetKind() == SurrealResultKind.Document;
@@ -429,7 +446,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return isDoc;
     }
 
-    public bool TryGetValue(out string? value)
+    public bool TryGetValue([NotNullWhen(true)] out string? value)
     {
         bool isString = GetKind() == SurrealResultKind.String;
         value = isString ? (string)_sentinelOrValue! : null;

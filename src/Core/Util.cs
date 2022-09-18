@@ -4,7 +4,9 @@ using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
+using System.Text.Encodings.Web;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using Rustic;
 
 namespace Surreal.Net;
@@ -859,4 +861,27 @@ sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
 
         return result.ToString();
     }
+}
+
+public static class Constants
+{
+    [ThreadStatic]
+    private static JsonSerializerOptions? _jsonSerializerOptions;
+
+    public static JsonSerializerOptions JsonOptions => _jsonSerializerOptions ??= CreateJsonOptions();
+
+    public static JsonSerializerOptions CreateJsonOptions() => new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        WriteIndented = false,
+        NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
+        // This was throwing an exception when set to JsonIgnoreCondition.Always
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        IgnoreReadOnlyFields = false,
+        UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+    };
 }
