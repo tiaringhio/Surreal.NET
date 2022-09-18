@@ -31,8 +31,7 @@ internal
     /// <remarks> This method will try to return an already cached task if available. </remarks>
     /// <param name="result"> The result value for which a <see cref="Task{Int32}" /> is needed. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<int> GetTask(
-        int result) {
+    public Task<int> GetTask(int result) {
         if (_task is { } task) {
             Debug.Assert(task.IsCompletedSuccessfully, "Expected that a stored last task completed successfully");
             if (task.Result == result) {
@@ -73,12 +72,10 @@ internal
     public PooledMemoryStream() : this(null, 0) {
     }
 
-    public PooledMemoryStream(
-        int capacity) : this(null, capacity) {
+    public PooledMemoryStream(int capacity) : this(null, capacity) {
     }
 
-    public PooledMemoryStream(
-        MemoryPool<byte> pool) : this(pool, 0) {
+    public PooledMemoryStream(MemoryPool<byte> pool) : this(pool, 0) {
     }
 
     public PooledMemoryStream(
@@ -105,8 +102,7 @@ internal
         }
     }
 
-    private static void ThrowObjectDisposedException_StreamClosed(
-        string? objectName) {
+    private static void ThrowObjectDisposedException_StreamClosed(string? objectName) {
         throw new ObjectDisposedException(objectName, "Cannot access a closed Stream.");
     }
 
@@ -120,8 +116,7 @@ internal
         throw new NotSupportedException("Cannot write to this stream.");
     }
 
-    protected override void Dispose(
-        bool disposing) {
+    protected override void Dispose(bool disposing) {
         if (disposing) {
             _buffer.Dispose();
             _isOpen = false;
@@ -133,8 +128,7 @@ internal
     }
 
     // returns a bool saying whether we allocated a new array.
-    private bool EnsureCapacity(
-        int value) {
+    private bool EnsureCapacity(int value) {
         // Check for overflow
         if (value < 0) {
             throw new IOException("Stream too long");
@@ -165,8 +159,7 @@ internal
     public override void Flush() {
     }
 
-    public override Task FlushAsync(
-        CancellationToken cancellationToken) {
+    public override Task FlushAsync(CancellationToken cancellationToken) {
         if (cancellationToken.IsCancellationRequested) {
             return Task.FromCanceled(cancellationToken);
         }
@@ -190,8 +183,7 @@ internal
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<byte> GetBufferSpan(
-        int off) {
+    public Span<byte> GetBufferSpan(int off) {
         return _buffer.Memory.Span.Slice(off);
     }
 
@@ -203,8 +195,7 @@ internal
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Span<byte> InternalReadSpan(
-        int count) {
+    internal Span<byte> InternalReadSpan(int count) {
         EnsureNotClosed();
 
         int origPos = Pos;
@@ -221,8 +212,7 @@ internal
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Memory<byte> InternalReadMemory(
-        int count) {
+    internal Memory<byte> InternalReadMemory(int count) {
         EnsureNotClosed();
 
         int origPos = Pos;
@@ -247,8 +237,7 @@ internal
     }
 
     // PERF: Get actual length of bytes available for read; do sanity checks; shift position - i.e. everything except actual copying bytes
-    internal int InternalEmulateRead(
-        int count) {
+    internal int InternalEmulateRead(int count) {
         EnsureNotClosed();
 
         int n = _length - Pos;
@@ -372,8 +361,7 @@ internal
         return n;
     }
 
-    public override int Read(
-        Span<byte> buffer) {
+    public override int Read(Span<byte> buffer) {
         EnsureNotClosed();
 
         int n = Math.Min(_length - Pos, buffer.Length);
@@ -526,32 +514,32 @@ internal
 
         switch (loc) {
         case SeekOrigin.Begin: {
-                int tempPosition = unchecked((int)offset);
-                if (offset < 0 || tempPosition < 0) {
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                }
-
-                Pos = tempPosition;
-                break;
+            int tempPosition = unchecked((int)offset);
+            if (offset < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
             }
+
+            Pos = tempPosition;
+            break;
+        }
         case SeekOrigin.Current: {
-                int tempPosition = unchecked(Pos + (int)offset);
-                if (unchecked(Pos + offset) < 0 || tempPosition < 0) {
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                }
-
-                Pos = tempPosition;
-                break;
+            int tempPosition = unchecked(Pos + (int)offset);
+            if (unchecked(Pos + offset) < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
             }
+
+            Pos = tempPosition;
+            break;
+        }
         case SeekOrigin.End: {
-                int tempPosition = unchecked(_length + (int)offset);
-                if (unchecked(_length + offset) < 0 || tempPosition < 0) {
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                }
-
-                Pos = tempPosition;
-                break;
+            int tempPosition = unchecked(_length + (int)offset);
+            if (unchecked(_length + offset) < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
             }
+
+            Pos = tempPosition;
+            break;
+        }
         default:
             throw new ArgumentException("Invalid SeekOrigin");
         }
@@ -570,8 +558,7 @@ internal
     // the stream is made longer than the maximum possible length of the
     // array (int.MaxValue).
     //
-    public override void SetLength(
-        long value) {
+    public override void SetLength(long value) {
         if (value < 0 || value > int.MaxValue) {
             throw new ArgumentOutOfRangeException(nameof(value), "value is negative or greater than Int32.MaxValue");
         }
@@ -658,8 +645,7 @@ internal
     }
 
 
-    public override void Write(
-        ReadOnlySpan<byte> buffer) {
+    public override void Write(ReadOnlySpan<byte> buffer) {
         EnsureNotClosed();
         EnsureWriteable();
 
@@ -735,8 +721,7 @@ internal
         }
     }
 
-    public override void WriteByte(
-        byte value) {
+    public override void WriteByte(byte value) {
         EnsureNotClosed();
         EnsureWriteable();
 
@@ -761,8 +746,7 @@ internal
     }
 
     // Writes this MemoryStream to another stream.
-    public void WriteTo(
-        Stream stream) {
+    public void WriteTo(Stream stream) {
         ArgumentNullException.ThrowIfNull(stream);
 
         EnsureNotClosed();
@@ -774,8 +758,7 @@ internal
         return GetBuffer().Slice(0, Pos);
     }
 
-    public string GetString(
-        Encoding? encoding = null) {
+    public string GetString(Encoding? encoding = null) {
         return (encoding ?? Encoding.Default).GetString(GetBufferSpan(0, Pos));
     }
 }
@@ -796,8 +779,7 @@ internal
 
     public static JsonLowerSnakeCaseNamingPolicy Instance => _instance.Value;
 
-    public override string ConvertName(
-        string name) {
+    public override string ConvertName(string name) {
         if (name == null) {
             throw new ArgumentNullException(nameof(name));
         }

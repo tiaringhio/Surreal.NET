@@ -33,8 +33,7 @@ internal
     /// <summary>
     ///     Generates a random base64 string of the length specified.
     /// </summary>
-    public static string GetRandomId(
-        int length) {
+    public static string GetRandomId(int length) {
         Span<byte> buf = stackalloc byte[length];
         Random.Shared.NextBytes(buf);
         return Convert.ToHexString(buf);
@@ -61,8 +60,7 @@ internal
     /// <summary>
     ///     Closes the connection to the Surreal server.
     /// </summary>
-    public async Task Close(
-        CancellationToken ct = default) {
+    public async Task Close(CancellationToken ct = default) {
         if (_ws is null) {
             return;
         }

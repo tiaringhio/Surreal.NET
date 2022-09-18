@@ -114,8 +114,7 @@ public interface IConfigBuilder {
     ///     Configures the <see cref="SurrealConfig" /> with the current settings
     /// </summary>
     /// <exception cref="InvalidConfigException"> If the configuration of this instance if faulty </exception>
-    public void Configure(
-        ref SurrealConfig config);
+    public void Configure(ref SurrealConfig config);
 }
 
 /// <summary>
@@ -133,8 +132,7 @@ public static class SurrealConfigBuilder {
     ///     Returns the configured <see cref="SurrealConfig" /> by applying the entire <see cref="IConfigBuilder" /> chain.
     /// </summary>
     /// <exception cref="InvalidConfigException"> If the configuration is faulty. </exception>
-    public static SurrealConfig Build(
-        this IConfigBuilder? builder) {
+    public static SurrealConfig Build(this IConfigBuilder? builder) {
         InvalidConfigException.ThrowIf(builder is null, "", "Empty configuration is not allowed.");
 
         SurrealConfig config = default;
@@ -187,8 +185,7 @@ public static class SurrealConfigBuilder {
     ///     Basic options, such as the remote, database and namespace of the <see cref="SurrealConfig" />
     /// </summary>
     public sealed class Basic : IConfigBuilder {
-        internal Basic(
-            IConfigBuilder? parent) {
+        internal Basic(IConfigBuilder? parent) {
             Parent = parent;
         }
 
@@ -205,8 +202,7 @@ public static class SurrealConfigBuilder {
         public IConfigBuilder? Parent { get; }
 
         /// <inheritdoc />
-        public void Configure(
-            ref SurrealConfig config) {
+        public void Configure(ref SurrealConfig config) {
             InvalidConfigException.ThrowIfNull(Endpoint, "Remote cannot be null");
             config.Endpoint = Endpoint;
             config.Database = Database;
@@ -214,8 +210,7 @@ public static class SurrealConfigBuilder {
         }
 
         /// <inheritdoc cref="SurrealConfig.Endpoint" />
-        public Basic WithEndpoint(
-            IPEndPoint endpoint) {
+        public Basic WithEndpoint(IPEndPoint endpoint) {
             Endpoint = endpoint;
             return this;
         }
@@ -238,8 +233,7 @@ public static class SurrealConfigBuilder {
 
 
         /// <inheritdoc cref="SurrealConfig.Endpoint" />
-        public Basic WithAddress(
-            IPAddress address) {
+        public Basic WithAddress(IPAddress address) {
             if (Endpoint is null) {
                 Endpoint = new(address, 0);
             } else {
@@ -266,8 +260,7 @@ public static class SurrealConfigBuilder {
 
 
         /// <inheritdoc cref="SurrealConfig.Endpoint" />
-        public Basic WithPort(
-            in int port) {
+        public Basic WithPort(in int port) {
             if (Endpoint is null) {
                 Endpoint = new(IPAddress.Loopback, port);
             } else {
@@ -278,28 +271,24 @@ public static class SurrealConfigBuilder {
         }
 
         /// <inheritdoc cref="SurrealConfig.Database" />
-        public Basic WithDatabase(
-            string database) {
+        public Basic WithDatabase(string database) {
             Database = database;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Database" />
-        public Basic WithDatabase(
-            in ReadOnlySpan<char> database) {
+        public Basic WithDatabase(in ReadOnlySpan<char> database) {
             return WithDatabase(database.ToString());
         }
 
         /// <inheritdoc cref="SurrealConfig.Namespace" />
-        public Basic WithNamespace(
-            string ns) {
+        public Basic WithNamespace(string ns) {
             Namespace = ns;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Namespace" />
-        public Basic WithNamespace(
-            in ReadOnlySpan<char> ns) {
+        public Basic WithNamespace(in ReadOnlySpan<char> ns) {
             return WithDatabase(ns.ToString());
         }
     }
@@ -313,8 +302,7 @@ public static class SurrealConfigBuilder {
     ///     The password is stored in plaintext in the heap, and can be obtained by a 3rd party!
     /// </remarks>
     public sealed class BasicAuth : IConfigBuilder {
-        internal BasicAuth(
-            IConfigBuilder? parent) {
+        internal BasicAuth(IConfigBuilder? parent) {
             Parent = parent;
         }
 
@@ -328,8 +316,7 @@ public static class SurrealConfigBuilder {
         public IConfigBuilder? Parent { get; }
 
         /// <inheritdoc />
-        public void Configure(
-            ref SurrealConfig config) {
+        public void Configure(ref SurrealConfig config) {
             InvalidConfigException.ThrowIfNullOrWhitespace(Username, "Username cannot be null or whitespace");
             config.Authentication = Auth.Basic;
             config.Username = Username;
@@ -337,28 +324,24 @@ public static class SurrealConfigBuilder {
         }
 
 
-        public BasicAuth WithUser(
-            string user) {
+        public BasicAuth WithUser(string user) {
             Username = user;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Username" />
-        public BasicAuth WithUser(
-            ReadOnlySpan<char> user) {
+        public BasicAuth WithUser(ReadOnlySpan<char> user) {
             return WithUser(user.ToString());
         }
 
         /// <inheritdoc cref="SurrealConfig.Password" />
-        public BasicAuth WithPassword(
-            string password) {
+        public BasicAuth WithPassword(string password) {
             Password = password;
             return this;
         }
 
         /// <inheritdoc cref="SurrealConfig.Password" />
-        public BasicAuth WithPassword(
-            ReadOnlySpan<char> password) {
+        public BasicAuth WithPassword(ReadOnlySpan<char> password) {
             return WithPassword(password.ToString());
         }
     }
@@ -367,8 +350,7 @@ public static class SurrealConfigBuilder {
     ///     Configures the <see cref="SurrealConfig" /> with Json Web Token Authentication
     /// </summary>
     public sealed class JwtAuth : IConfigBuilder {
-        internal JwtAuth(
-            IConfigBuilder? parent) {
+        internal JwtAuth(IConfigBuilder? parent) {
             Parent = parent;
         }
 
@@ -379,16 +361,14 @@ public static class SurrealConfigBuilder {
         public IConfigBuilder? Parent { get; }
 
         /// <inheritdoc />
-        public void Configure(
-            ref SurrealConfig config) {
+        public void Configure(ref SurrealConfig config) {
             InvalidConfigException.ThrowIfNullOrWhitespace(Token, "Invalid Json Web Token");
             config.Authentication = Auth.JsonWebToken;
             config.JsonWebToken = Token;
         }
 
         /// <inheritdoc cref="SurrealConfig.JsonWebToken" />
-        public JwtAuth WithToken(
-            string? jwt) {
+        public JwtAuth WithToken(string? jwt) {
             Token = jwt;
             return this;
         }
@@ -398,8 +378,7 @@ public static class SurrealConfigBuilder {
     ///     Configures the <see cref="SurrealConfig" /> to use the rpc endpoint
     /// </summary>
     public sealed class UseRpc : IConfigBuilder {
-        internal UseRpc(
-            IConfigBuilder? parent) {
+        internal UseRpc(IConfigBuilder? parent) {
             Parent = parent;
         }
 
@@ -418,21 +397,18 @@ public static class SurrealConfigBuilder {
         public IConfigBuilder? Parent { get; }
 
 
-        public void Configure(
-            ref SurrealConfig config) {
+        public void Configure(ref SurrealConfig config) {
             config.RpcEndpoint = RpcEndpoint ?? GetUri(config.Endpoint!, Insecure);
         }
 
         /// <inheritdoc cref="SurrealConfig.RpcEndpoint" />
-        public UseRpc WithRpcEndpoint(
-            Uri url) {
+        public UseRpc WithRpcEndpoint(Uri url) {
             RpcEndpoint = url;
             return this;
         }
 
         /// <inheritdoc cref="Insecure" />
-        public UseRpc WithRpcInsecure(
-            bool insecure) {
+        public UseRpc WithRpcInsecure(bool insecure) {
             Insecure = insecure;
             return this;
         }
@@ -453,8 +429,7 @@ public static class SurrealConfigBuilder {
     ///     Configures the <see cref="SurrealConfig" /> to use the REST endpoint
     /// </summary>
     public sealed class UseRest : IConfigBuilder {
-        internal UseRest(
-            IConfigBuilder? parent) {
+        internal UseRest(IConfigBuilder? parent) {
             Parent = parent;
         }
 
@@ -473,21 +448,18 @@ public static class SurrealConfigBuilder {
         public IConfigBuilder? Parent { get; }
 
 
-        public void Configure(
-            ref SurrealConfig config) {
+        public void Configure(ref SurrealConfig config) {
             config.RestEndpoint = RestEndpoint ?? GetUri(config.Endpoint!, Insecure);
         }
 
         /// <inheritdoc cref="SurrealConfig.RestEndpoint" />
-        public UseRest WithRestEndpoint(
-            Uri url) {
+        public UseRest WithRestEndpoint(Uri url) {
             RestEndpoint = url;
             return this;
         }
 
         /// <inheritdoc cref="Insecure" />
-        public UseRest WithRestInsecure(
-            bool insecure) {
+        public UseRest WithRestInsecure(bool insecure) {
             Insecure = insecure;
             return this;
         }
@@ -517,8 +489,7 @@ public sealed class InvalidConfigException : Exception {
         StreamingContext context) : base(info, context) {
     }
 
-    public InvalidConfigException(
-        string? message) : base(message) {
+    public InvalidConfigException(string? message) : base(message) {
     }
 
     public InvalidConfigException(

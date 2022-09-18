@@ -24,7 +24,7 @@ public abstract class RoundTripTests<T, U>
 
     [Fact]
     public async Task CreateRoundTripTest() {
-        RoundTripObject expectedObject = new RoundTripObject();
+        RoundTripObject expectedObject = new();
 
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
         U response = await Database.Create(thing, expectedObject);
@@ -32,14 +32,14 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
+        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }
 
     [Fact]
     public async Task CreateAndSelectRoundTripTest() {
-        RoundTripObject expectedObject = new RoundTripObject();
+        RoundTripObject expectedObject = new();
 
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
@@ -51,14 +51,14 @@ public abstract class RoundTripTests<T, U>
 
         Console.WriteLine(result.Inner.ToString());
 
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
+        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }
 
     [Fact]
     public async Task CreateAndQueryRoundTripTest() {
-        RoundTripObject expectedObject = new RoundTripObject();
+        RoundTripObject expectedObject = new();
 
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
@@ -68,19 +68,19 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
+        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }
 
     [Fact]
     public async Task CreateAndParameterizedQueryRoundTripTest() {
-        RoundTripObject expectedObject = new RoundTripObject();
+        RoundTripObject expectedObject = new();
 
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
         string sql = "SELECT * FROM $thing";
-        Dictionary<string, object?> param = new Dictionary<string, object?> {
+        Dictionary<string, object?> param = new() {
             ["thing"] = thing, //.ToString(), Needs a ToString() to work
         };
 
@@ -89,7 +89,7 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
+        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }

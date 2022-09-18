@@ -42,16 +42,14 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return Task.CompletedTask;
     }
 
-    public Task Close(
-        CancellationToken ct = default) {
+    public Task Close(CancellationToken ct = default) {
         return Task.CompletedTask;
     }
 
     /// <summary>
     ///     UNSUPPORTED FOR REST IMPLEMENTATION
     /// </summary>
-    public Task<SurrealRestResponse> Info(
-        CancellationToken ct = default) {
+    public Task<SurrealRestResponse> Info(CancellationToken ct = default) {
         return CompletedOk;
     }
 
@@ -78,8 +76,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return await rsp.ToSurreal();
     }
 
-    public Task<SurrealRestResponse> Invalidate(
-        CancellationToken ct = default) {
+    public Task<SurrealRestResponse> Invalidate(CancellationToken ct = default) {
         SetUse(null, null);
         RemoveAuth();
 
@@ -143,7 +140,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         CancellationToken ct = default) {
         // Is this the most optimal way?
         string sql = "UPDATE $what MERGE $data RETURN AFTER";
-        Dictionary<string, object?> vars = new Dictionary<string, object?> { ["what"] = thing.ToString(), ["data"] = data, };
+        Dictionary<string, object?> vars = new() { ["what"] = thing.ToString(), ["data"] = data, };
         return await Query(sql, vars, ct);
     }
 
@@ -316,24 +313,20 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return result;
     }
 
-    private string BuildRequestUri(
-        SurrealThing thing) {
+    private string BuildRequestUri(SurrealThing thing) {
         return $"key/{FormatUrl(thing)}";
     }
 
-    private string ToJson<T>(
-        T? v) {
+    private string ToJson<T>(T? v) {
         return JsonSerializer.Serialize(v, Constants.JsonOptions);
     }
 
-    private HttpContent ToJsonContent<T>(
-        T? v) {
+    private HttpContent ToJsonContent<T>(T? v) {
         return ToContent(ToJson(v));
     }
 
-    private static HttpContent ToContent(
-        string s = "") {
-        StringContent content = new StringContent(s, Encoding.UTF8, "application/json");
+    private static HttpContent ToContent(string s = "") {
+        StringContent content = new(s, Encoding.UTF8, "application/json");
 
         if (content.Headers.ContentType != null) {
             // The server can only handle 'Content-Type' with 'application/json', remove any further information from this header

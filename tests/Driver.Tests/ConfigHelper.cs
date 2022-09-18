@@ -18,8 +18,7 @@ public static class ConfigHelper {
        .WithBasicAuth(User, Pass)
        .Build();
 
-    public static void ValidateEndpoint(
-        IPEndPoint? endpoint) {
+    public static void ValidateEndpoint(IPEndPoint? endpoint) {
         endpoint.Should().NotBeNull();
         endpoint!.Address.ToString().Should().Be(Loopback);
         endpoint.Port.Should().Be(Port);

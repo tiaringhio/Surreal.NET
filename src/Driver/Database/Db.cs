@@ -22,15 +22,13 @@ public interface ISurrealDatabase<TResponse>
     ///     Closes the open connection the the Surreal database.
     /// </summary>
     /// <param name="ct"> </param>
-    public Task Close(
-        CancellationToken ct = default);
+    public Task Close(CancellationToken ct = default);
 
     /// <summary>
     ///     Retrieves the current session information.
     /// </summary>
     /// <param name="ct"> </param>
-    public Task<TResponse> Info(
-        CancellationToken ct = default);
+    public Task<TResponse> Info(CancellationToken ct = default);
 
     /// <summary>
     ///     Switch to a specific namespace and database.
@@ -67,8 +65,7 @@ public interface ISurrealDatabase<TResponse>
     /// <remarks>
     ///     This updates the internal <see cref="SurrealConfig" />.
     /// </remarks>
-    public Task<TResponse> Invalidate(
-        CancellationToken ct = default);
+    public Task<TResponse> Invalidate(CancellationToken ct = default);
 
     /// <summary>
     ///     Authenticates the current connection with a JWT token.
@@ -248,8 +245,7 @@ public interface ISurrealDatabase {
     /// <remarks>
     ///     This updates the internal <see cref="SurrealConfig" />.
     /// </remarks>
-    public Task<ISurrealResponse> Invalidate(
-        CancellationToken ct = default);
+    public Task<ISurrealResponse> Invalidate(CancellationToken ct = default);
 
     /// <summary>
     ///     Authenticates the current connection with a JWT token.
