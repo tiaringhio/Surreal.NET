@@ -277,8 +277,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
                 continue;
             }
 
-            int start = i;
-            i++;
+            int start = ++i;
             while (i < template.Length && char.IsLetterOrDigit(template[i])) {
                 i++;
             }
