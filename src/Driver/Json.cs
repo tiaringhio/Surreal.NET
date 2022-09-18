@@ -118,11 +118,11 @@ internal static class SpecialNumbers {
             return NUM_NAN;
         }
 
-        if (Single.IsNegativeInfinity(value)) {
+        if (Single.IsPositiveInfinity(value)) {
             return NUM_POSINF;
         }
 
-        if (Single.IsPositiveInfinity(value)) {
+        if (Single.IsNegativeInfinity(value)) {
             return NUM_NEGINF;
         }
 
@@ -160,11 +160,11 @@ internal static class SpecialNumbers {
             return NUM_NAN;
         }
 
-        if (Double.IsNegativeInfinity(value)) {
+        if (Double.IsPositiveInfinity(value)) {
             return NUM_POSINF;
         }
 
-        if (Double.IsPositiveInfinity(value)) {
+        if (Double.IsNegativeInfinity(value)) {
             return NUM_NEGINF;
         }
 
@@ -243,6 +243,7 @@ public sealed class SingleConv : JsonConverter<float> {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WriteStringValue(str.AsSpan());
+            return;
         }
 
         writer.WriteNumberValue(value);
@@ -252,6 +253,7 @@ public sealed class SingleConv : JsonConverter<float> {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WritePropertyName(str.AsSpan());
+            return;
         }
 
         writer.WritePropertyName(value.ToString(null, NumberFormatInfo.InvariantInfo).AsSpan());
@@ -293,6 +295,7 @@ public sealed class DoubleConv : JsonConverter<double> {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WriteStringValue(str.AsSpan());
+            return;
         }
 
         writer.WriteNumberValue(value);
@@ -302,6 +305,7 @@ public sealed class DoubleConv : JsonConverter<double> {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WritePropertyName(str.AsSpan());
+            return;
         }
 
         writer.WritePropertyName(value.ToString(null, NumberFormatInfo.InvariantInfo).AsSpan());
@@ -344,6 +348,7 @@ public sealed class DecimalConv : JsonConverter<decimal> {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WriteStringValue(str.AsSpan());
+            return;
         }
 
         writer.WriteNumberValue(value);
@@ -353,6 +358,7 @@ public sealed class DecimalConv : JsonConverter<decimal> {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WritePropertyName(str.AsSpan());
+            return;
         }
 
         writer.WritePropertyName(value.ToString(null, NumberFormatInfo.InvariantInfo).AsSpan());

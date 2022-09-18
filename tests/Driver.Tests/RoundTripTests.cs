@@ -144,30 +144,30 @@ public class RoundTripObject {
     public float PositiveFloat { get; set; } = float.MaxValue / 7;
     public float NegativeFloat { get; set; } = float.MinValue / 7;
     public float ZeroFloat { get; set; } = 0;
-    // public float MaxFloat { get; set; } = float.MaxValue;
-    // public float MinFloat { get; set; } = float.MinValue;
-    // public float NaNFloat { get; set; } = float.NaN; // Not Supported by default by System.Text.Json
-    // public float EpsilonFloat { get; set; } = float.Epsilon;
-    // public float NegEpsilonFloat { get; set; } = -float.Epsilon;
-    // public float PositiveInfinityFloat { get; set; } = float.PositiveInfinity; // Not Supported by default by System.Text.Json
-    // public float NegativeInfinityFloat { get; set; } = float.NegativeInfinity; // Not Supported by default by System.Text.Json
+    public float MaxFloat { get; set; } = float.MaxValue;
+    public float MinFloat { get; set; } = float.MinValue;
+    public float NaNFloat { get; set; } = float.NaN; // Not Supported by default by System.Text.Json
+    public float EpsilonFloat { get; set; } = float.Epsilon;
+    public float NegEpsilonFloat { get; set; } = -float.Epsilon;
+    public float PositiveInfinityFloat { get; set; } = float.PositiveInfinity; // Not Supported by default by System.Text.Json
+    public float NegativeInfinityFloat { get; set; } = float.NegativeInfinity; // Not Supported by default by System.Text.Json
 
     public double PositiveDouble { get; set; } = double.MaxValue / 7;
     public double NegativeDouble { get; set; } = double.MinValue / 7;
     public double ZeroDouble { get; set; } = 0;
-    // public double MaxDouble { get; set; } = double.MaxValue;
-    // public double MinDouble { get; set; } = double.MinValue;
-    // public double NaNDouble { get; set; } = double.NaN; // Not Supported by default by System.Text.Json
-    // public double EpsilonDouble { get; set; } = double.Epsilon;
-    // public double NegEpsilonDouble { get; set; } = -double.Epsilon;
-    // public double PositiveInfinityDouble { get; set; } = double.PositiveInfinity; // Not Supported by default by System.Text.Json
-    // public double NegativeInfinityDouble { get; set; } = double.NegativeInfinity; // Not Supported by default by System.Text.Json
+    public double MaxDouble { get; set; } = double.MaxValue;
+    public double MinDouble { get; set; } = double.MinValue;
+    public double NaNDouble { get; set; } = double.NaN; // Not Supported by default by System.Text.Json
+    public double EpsilonDouble { get; set; } = double.Epsilon;
+    public double NegEpsilonDouble { get; set; } = -double.Epsilon;
+    public double PositiveInfinityDouble { get; set; } = double.PositiveInfinity; // Not Supported by default by System.Text.Json
+    public double NegativeInfinityDouble { get; set; } = double.NegativeInfinity; // Not Supported by default by System.Text.Json
 
     public decimal PositiveDecimal { get; set; } = decimal.MaxValue / 7m;
     public decimal NegativeDecimal { get; set; } = decimal.MinValue / 7m;
     public decimal ZeroDecimal { get; set; } = 0;
-    // public decimal MaxDecimal { get; set; } = decimal.MaxValue;
-    // public decimal MinDecimal { get; set; } = decimal.MinValue;
+    public decimal MaxDecimal { get; set; } = decimal.MaxValue;
+    public decimal MinDecimal { get; set; } = decimal.MinValue;
 
     public DateTime MaxUtcDateTime { get; set; } = DateTime.MaxValue.AsUtc(); // This fails to roundtrip, the fractions part of the date gets 00 prepended to it
     public DateTime MinUtcDateTime { get; set; } = DateTime.MinValue.AsUtc();
