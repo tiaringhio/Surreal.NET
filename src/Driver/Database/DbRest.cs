@@ -251,14 +251,13 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
 
     private string FormatVars(
         string src,
-        IReadOnlyDictionary<string, object?>? addVars = null) {
+        IReadOnlyDictionary<string, object?>? vars = null) {
         if (!src.Contains('$')) {
             return src;
         }
 
-        IReadOnlyDictionary<string, string>? vars = CombineVars(UseVariables, addVars ?? EmptyVars);
-
-        if (vars is null || vars.Count == 0) {
+        int varsCount = UseVariables.Count + (vars?.Count ?? 0);
+        if (varsCount <= 0) {
             return src;
         }
 
@@ -267,7 +266,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
 
     private string FormatVarsSlow(
         string template,
-        IReadOnlyDictionary<string, string>? vars) {
+        IReadOnlyDictionary<string, object?>? vars) {
         using StrBuilder result = template.Length > 512 ? new(template.Length) : new(stackalloc char[template.Length]);
         int i = 0;
         while (i < template.Length) {
@@ -286,30 +285,14 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
 
             if (UseVariables.TryGetValue(varName, out string? varValue)) {
                 result.Append(varValue);
-            } else if (vars?.TryGetValue(varName, out varValue) == true) {
-                result.Append(varValue);
+            } else if (vars?.TryGetValue(varName, out object? varObj) == true) {
+                result.Append(ToJson(varObj));
             } else {
                 result.Append(template.AsSpan(start, i - start));
             }
         }
 
         return result.ToString();
-    }
-
-
-    private IReadOnlyDictionary<string, string> CombineVars(
-        IReadOnlyDictionary<string, string> a,
-        IReadOnlyDictionary<string, object?> b) {
-        Dictionary<string, string> result = new(a.Count + b.Count, StringComparer.OrdinalIgnoreCase);
-        foreach ((string k, string v) in a) {
-            result[k] = v;
-        }
-
-        foreach ((string k, object? v) in b) {
-            result[k] = ToJson(v);
-        }
-
-        return result;
     }
 
     private string BuildRequestUri(SurrealThing thing) {
