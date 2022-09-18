@@ -218,7 +218,6 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         HttpContent data,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync(BuildRequestUri(thing), data, ct);
-
         return await rsp.ToSurreal();
     }
 
@@ -286,7 +285,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
             if (UseVariables.TryGetValue(varName, out string? varValue)) {
                 result.Append(varValue);
             } else if (vars?.TryGetValue(varName, out object? varObj) == true) {
-                result.Append(ToJson(varObj));
+                result.Append(varObj?.ToString());
             } else {
                 result.Append(template.AsSpan(start, i - start));
             }

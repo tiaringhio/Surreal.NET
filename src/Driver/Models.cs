@@ -16,7 +16,7 @@ namespace Surreal.Net;
 ///     `table_name:record_id`
 /// </remarks>
 [JsonConverter(typeof(Converter))]
-public readonly struct SurrealThing {
+public readonly struct SurrealThing : IEquatable<SurrealThing> {
     private readonly int _split;
     public string Thing { get; }
 
@@ -34,10 +34,6 @@ public readonly struct SurrealThing {
             string thing) {
         _split = split;
         Thing = thing;
-    }
-
-    public override string ToString() {
-        return Thing;
     }
 
     public static SurrealThing From(string? thing) {
@@ -112,6 +108,22 @@ public readonly struct SurrealThing {
             JsonSerializerOptions options) {
             writer.WritePropertyName((string)value);
         }
+    }
+
+    public bool Equals(SurrealThing other) {
+        return Thing == other.Thing;
+    }
+
+    public override bool Equals(object? obj) {
+        return obj is SurrealThing other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        return Thing.GetHashCode();
+    }
+
+    public override string ToString() {
+        return (string)this;
     }
 }
 

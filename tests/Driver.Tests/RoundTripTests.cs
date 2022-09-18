@@ -81,7 +81,7 @@ public abstract class RoundTripTests<T, U>
         await Database.Create(thing, expectedObject);
         string sql = "SELECT * FROM $thing";
         Dictionary<string, object?> param = new() {
-            ["thing"] = thing, //.ToString(), Needs a ToString() to work
+            ["thing"] = thing,
         };
 
         U response = await Database.Query(sql, param);
