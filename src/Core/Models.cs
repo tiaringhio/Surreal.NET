@@ -377,6 +377,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return GetKind() == SurrealResultKind.Object;
     }
 
+    [Obsolete("This is a hack to get around a proper ORM, will be revised once an ORM is available.")]
     public bool TryGetObjectCollection<T>(out List<T> document)
     {
         // Try to unpack this document
@@ -419,7 +420,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         document = _json.Deserialize<List<T>>(_options)!;
         return GetKind() == SurrealResultKind.Object;
     }
-    
+
     public bool TryGetDocument(out string? id, out JsonElement document)
     {
         document = _json;
