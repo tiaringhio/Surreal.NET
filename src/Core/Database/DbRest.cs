@@ -205,13 +205,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
-        return await Modify(thing, content, ct);
-    }
-
-    public async Task<SurrealRestResponse> Modify(SurrealThing thing, HttpContent data, CancellationToken ct = default)
-    {
-        var rsp = await _client.PatchAsync(BuildRequestUri(thing), data, ct);
+        var req = ToRequestMessage(HttpMethod.Patch, BuildRequestUri(thing), ToJson(data));
+        var rsp = await _client.SendAsync(req, ct);
         return await rsp.ToSurreal();
     }
 
@@ -325,7 +320,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         return ToContent(ToJson(v));
     }
 
-    private HttpContent ToContent(string s = "")
+    private static HttpContent ToContent(string s = "")
     {
         var content = new StringContent(s, Encoding.UTF8, "application/json");
 
@@ -338,7 +333,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         return content;
     }
 
-    private HttpRequestMessage ToRequestMessage(HttpMethod method, string requestUri)
+    private HttpRequestMessage ToRequestMessage(HttpMethod method, string requestUri, string? content = "")
     {
         // SurrealDb must have a 'Content-Type' header defined,
         // but HttpClient does not allow default request headers to be set.
@@ -347,7 +342,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         {
             Method = method,
             RequestUri = new Uri(requestUri, UriKind.Relative),
-            Content = ToContent()
+            Content = ToContent(content)
         };
     }
 }
