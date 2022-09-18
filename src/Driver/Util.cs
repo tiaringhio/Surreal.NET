@@ -1,14 +1,8 @@
 ﻿using System.Buffers;
 using System.Diagnostics;
-using System.Globalization;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
-using System.Text.Encodings.Web;
-using System.Text.Json;
-using System.Text.Json.Serialization;
-
-using Rustic;
 
 namespace Surreal.Net;
 
@@ -514,32 +508,32 @@ internal
 
         switch (loc) {
         case SeekOrigin.Begin: {
-            int tempPosition = unchecked((int)offset);
-            if (offset < 0 || tempPosition < 0) {
-                throw new IOException("Attempted to seek before the beginning of the stream.");
-            }
+                int tempPosition = unchecked((int)offset);
+                if (offset < 0 || tempPosition < 0) {
+                    throw new IOException("Attempted to seek before the beginning of the stream.");
+                }
 
-            Pos = tempPosition;
-            break;
-        }
+                Pos = tempPosition;
+                break;
+            }
         case SeekOrigin.Current: {
-            int tempPosition = unchecked(Pos + (int)offset);
-            if (unchecked(Pos + offset) < 0 || tempPosition < 0) {
-                throw new IOException("Attempted to seek before the beginning of the stream.");
-            }
+                int tempPosition = unchecked(Pos + (int)offset);
+                if (unchecked(Pos + offset) < 0 || tempPosition < 0) {
+                    throw new IOException("Attempted to seek before the beginning of the stream.");
+                }
 
-            Pos = tempPosition;
-            break;
-        }
+                Pos = tempPosition;
+                break;
+            }
         case SeekOrigin.End: {
-            int tempPosition = unchecked(_length + (int)offset);
-            if (unchecked(_length + offset) < 0 || tempPosition < 0) {
-                throw new IOException("Attempted to seek before the beginning of the stream.");
-            }
+                int tempPosition = unchecked(_length + (int)offset);
+                if (unchecked(_length + offset) < 0 || tempPosition < 0) {
+                    throw new IOException("Attempted to seek before the beginning of the stream.");
+                }
 
-            Pos = tempPosition;
-            break;
-        }
+                Pos = tempPosition;
+                break;
+            }
         default:
             throw new ArgumentException("Invalid SeekOrigin");
         }
@@ -760,84 +754,5 @@ internal
 
     public string GetString(Encoding? encoding = null) {
         return (encoding ?? Encoding.Default).GetString(GetBufferSpan(0, Pos));
-    }
-}
-
-/// <summary>
-///     Converts keys to lower_snake_case for json serialization.
-/// </summary>
-/// <remarks>
-///     Source: https://www.rickvandenbosch.net/blog/creating-a-custom-jsonnamingpolicy/
-/// </remarks>
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy {
-    private static readonly Lazy<JsonLowerSnakeCaseNamingPolicy> _instance = new(() => new());
-
-    public static JsonLowerSnakeCaseNamingPolicy Instance => _instance.Value;
-
-    public override string ConvertName(string name) {
-        if (name == null) {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        for (int i = 0; i < name.Length; i++) {
-            if (!char.IsUpper(name[i])) {
-                continue;
-            }
-
-            return ConvertNameSlow(name, i);
-        }
-
-        return name;
-    }
-
-    private static string ConvertNameSlow(
-        ReadOnlySpan<char> name,
-        int start) {
-        int cap = name.Length + 5;
-        using StrBuilder result = cap > 512 ? new(cap) : new(stackalloc char[cap]);
-        TextInfo converter = CultureInfo.InvariantCulture.TextInfo;
-
-        result.Append(name.Slice(0, start));
-        bool prevUpper = true; // prevent leading _
-        for (int pos = start; pos < name.Length; pos++) {
-            char ch = name[pos];
-            bool upper = char.IsUpper(ch);
-            if (upper && !prevUpper) {
-                result.Append('_');
-            }
-
-            result.Append(upper ? converter.ToLower(ch) : ch);
-            prevUpper = upper;
-        }
-
-        return result.ToString();
-    }
-}
-
-public static class Constants {
-    [ThreadStatic]
-    private static JsonSerializerOptions? _jsonSerializerOptions;
-
-    public static JsonSerializerOptions JsonOptions => _jsonSerializerOptions ??= CreateJsonOptions();
-
-    public static JsonSerializerOptions CreateJsonOptions() {
-        return new() {
-            PropertyNameCaseInsensitive = true,
-            AllowTrailingCommas = true,
-            ReadCommentHandling = JsonCommentHandling.Skip,
-            WriteIndented = false,
-            NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
-            // This was throwing an exception when set to JsonIgnoreCondition.Always
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-            // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
-            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-            IgnoreReadOnlyFields = false,
-            UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-        };
     }
 }

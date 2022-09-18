@@ -94,18 +94,18 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
         string sql,
         IReadOnlyDictionary<string, object?>? vars,
         CancellationToken ct = default) {
-        RpcRequest rpcReq = new() { Method = "query", Params = new() { sql, vars, }, };
-        RpcResponse response = await _client.Send(rpcReq, ct);
-        return response.ToSurreal();
+        RpcRequest req = new() { Method = "query", Params = new() { sql, vars, }, };
+        RpcResponse rsp = await _client.Send(req, ct);
+        return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<SurrealRpcResponse> Select(
         SurrealThing thing,
         CancellationToken ct = default) {
-        RpcRequest rpcReq = new() { Method = "select", Params = new() { thing.ToString(), }, };
-        RpcResponse response = await _client.Send(rpcReq, ct);
-        return response.ToSurreal();
+        RpcRequest req = new() { Method = "select", Params = new() { thing.ToString(), }, };
+        RpcResponse rsp = await _client.Send(req, ct);
+        return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
@@ -113,9 +113,9 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
         SurrealThing thing,
         object data,
         CancellationToken ct = default) {
-        RpcRequest rpcReq = new() { Method = "create", Async = true, Params = new() { thing.ToString(), data, }, };
-        RpcResponse response = await _client.Send(rpcReq, ct);
-        return response.ToSurreal();
+        RpcRequest req = new() { Method = "create", Async = true, Params = new() { thing.ToString(), data, }, };
+        RpcResponse rsp = await _client.Send(req, ct);
+        return rsp.ToSurreal();
     }
 
     /// <inheritdoc />

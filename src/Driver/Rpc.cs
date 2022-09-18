@@ -36,7 +36,7 @@ internal
     public static string GetRandomId(int length) {
         Span<byte> buf = stackalloc byte[length];
         Random.Shared.NextBytes(buf);
-        return Convert.ToHexString(buf);
+        return Convert.ToBase64String(buf);
     }
 
     /// <summary>

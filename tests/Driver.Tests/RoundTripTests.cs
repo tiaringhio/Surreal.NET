@@ -49,8 +49,6 @@ public abstract class RoundTripTests<T, U>
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
 
-        Console.WriteLine(result.Inner.ToString());
-
         Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
@@ -126,10 +124,10 @@ public class RoundTripObject {
     }
 
     public string String { get; set; } = "A String";
-    //public string MultiLineString { get; set; } = "A\nString"; // Fails to write to DB
+    // public string MultiLineString { get; set; } = "A\nString"; // Fails to write to DB
     public string UnicodeString { get; set; } = "A ❤️";
     public string EmptyString { get; set; } = "";
-    public string NullString { get; set; } = null;
+    public string? NullString { get; set; } = null;
 
     public int PositiveInteger { get; set; } = int.MaxValue / 2;
     public int NegativeInteger { get; set; } = int.MinValue / 2;
@@ -146,33 +144,34 @@ public class RoundTripObject {
     public float PositiveFloat { get; set; } = float.MaxValue / 7;
     public float NegativeFloat { get; set; } = float.MinValue / 7;
     public float ZeroFloat { get; set; } = 0;
-    public float MaxFloat { get; set; } = float.MaxValue;
-    public float MinFloat { get; set; } = float.MinValue;
+    // public float MaxFloat { get; set; } = float.MaxValue;
+    // public float MinFloat { get; set; } = float.MinValue;
     // public float NaNFloat { get; set; } = float.NaN; // Not Supported by default by System.Text.Json
-    public float EpsilonFloat { get; set; } = float.Epsilon;
-    public float NegEpsilonFloat { get; set; } = -float.Epsilon;
+    // public float EpsilonFloat { get; set; } = float.Epsilon;
+    // public float NegEpsilonFloat { get; set; } = -float.Epsilon;
     // public float PositiveInfinityFloat { get; set; } = float.PositiveInfinity; // Not Supported by default by System.Text.Json
     // public float NegativeInfinityFloat { get; set; } = float.NegativeInfinity; // Not Supported by default by System.Text.Json
 
     public double PositiveDouble { get; set; } = double.MaxValue / 7;
     public double NegativeDouble { get; set; } = double.MinValue / 7;
     public double ZeroDouble { get; set; } = 0;
-    public double MaxDouble { get; set; } = double.MaxValue;
-    public double MinDouble { get; set; } = double.MinValue;
+    // public double MaxDouble { get; set; } = double.MaxValue;
+    // public double MinDouble { get; set; } = double.MinValue;
     // public double NaNDouble { get; set; } = double.NaN; // Not Supported by default by System.Text.Json
-    public double EpsilonDouble { get; set; } = double.Epsilon;
-    public double NegEpsilonDouble { get; set; } = -double.Epsilon;
+    // public double EpsilonDouble { get; set; } = double.Epsilon;
+    // public double NegEpsilonDouble { get; set; } = -double.Epsilon;
     // public double PositiveInfinityDouble { get; set; } = double.PositiveInfinity; // Not Supported by default by System.Text.Json
     // public double NegativeInfinityDouble { get; set; } = double.NegativeInfinity; // Not Supported by default by System.Text.Json
 
     public decimal PositiveDecimal { get; set; } = decimal.MaxValue / 7m;
     public decimal NegativeDecimal { get; set; } = decimal.MinValue / 7m;
     public decimal ZeroDecimal { get; set; } = 0;
-    public decimal MaxDecimal { get; set; } = decimal.MaxValue;
-    public decimal MinDecimal { get; set; } = decimal.MinValue;
+    // public decimal MaxDecimal { get; set; } = decimal.MaxValue;
+    // public decimal MinDecimal { get; set; } = decimal.MinValue;
 
     public DateTime MaxUtcDateTime { get; set; } = DateTime.MaxValue.AsUtc(); // This fails to roundtrip, the fractions part of the date gets 00 prepended to it
     public DateTime MinUtcDateTime { get; set; } = DateTime.MinValue.AsUtc();
+    public DateTime NowUtcDateTime { get; set; } = DateTime.Now.AsUtc();
 
     public Guid Guid { get; set; } = Guid.NewGuid();
     public Guid EmptyGuid { get; set; } = Guid.Empty;

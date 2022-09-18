@@ -459,7 +459,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
                 continue;
             }
 
-            document = result.Deserialize<List<T>>()!;
+            document = result.Deserialize<List<T>>(Constants.JsonOptions)!;
             return document is not null;
         }
 
