@@ -1,0 +1,27 @@
+name: Build & Test
+
+on:
+  workflow_dispatch:
+  pull_request:
+  push:
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: 6.0.x
+      - name: Restore dependencies
+        run: dotnet restore
+      - name: Build
+        run: dotnet build --no-restore
+      - name: Test
+        run: |
+          docker-compose -f "tests/db/docker-compose.yml" up -d
+          dotnet test --no-build --verbosity normal
+          docker-compose -f "tests/db/docker-compose.yml" down
