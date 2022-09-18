@@ -1,5 +1,3 @@
-
-
 namespace Surreal.Net.Tests;
 
 #if Debug

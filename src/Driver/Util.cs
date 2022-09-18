@@ -7,37 +7,35 @@ using System.Text;
 using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+
 using Rustic;
 
 namespace Surreal.Net;
 
 /// <summary>
-/// Encapsulates the logic of caching the last synchronously completed task of integer.
-/// Used in classes like <see cref="MemoryStream"/> to reduce allocations.
+///     Encapsulates the logic of caching the last synchronously completed task of integer.
+///     Used in classes like <see cref="MemoryStream" /> to reduce allocations.
 /// </summary>
 /// <remarks>
-/// Source: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Threading/Tasks/CachedCompletedInt32Task.cs
+///     Source: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Threading/Tasks/CachedCompletedInt32Task.cs
 /// </remarks>
 #if SURREAL_NET_INTERNAL
 public
 #else
 internal
 #endif
-struct CachedCompletedInt32Task
-{
+    struct CachedCompletedInt32Task {
     private Task<int>? _task;
 
-    /// <summary>Gets a completed <see cref="Task{Int32}"/> whose result is <paramref name="result"/>.</summary>
-    /// <remarks>This method will try to return an already cached task if available.</remarks>
-    /// <param name="result">The result value for which a <see cref="Task{Int32}"/> is needed.</param>
+    /// <summary> Gets a completed <see cref="Task{Int32}" /> whose result is <paramref name="result" />. </summary>
+    /// <remarks> This method will try to return an already cached task if available. </remarks>
+    /// <param name="result"> The result value for which a <see cref="Task{Int32}" /> is needed. </param>
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<int> GetTask(int result)
-    {
-        if (_task is { } task)
-        {
+    public Task<int> GetTask(
+        int result) {
+        if (_task is { } task) {
             Debug.Assert(task.IsCompletedSuccessfully, "Expected that a stored last task completed successfully");
-            if (task.Result == result)
-            {
+            if (task.Result == result) {
                 return task;
             }
         }
@@ -47,21 +45,18 @@ struct CachedCompletedInt32Task
 }
 
 /// <summary>
-///
 /// </summary>
 /// <remarks>
-/// Based on: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/IO/MemoryStream.cs
+///     Based on: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/IO/MemoryStream.cs
 /// </remarks>
 #if SURREAL_NET_INTERNAL
 public
 #else
 internal
 #endif
-sealed class PooledMemoryStream : Stream
-{
+    sealed class PooledMemoryStream : Stream {
     private readonly MemoryPool<byte> _pool;
     private IMemoryOwner<byte> _buffer; // Either allocated internally or externally.
-    private int _position; // read/write head.
     private int _length; // Number of bytes within the memory stream
 
     private int _capacity; // length of usable portion of buffer for stream
@@ -75,20 +70,20 @@ sealed class PooledMemoryStream : Stream
 
     private const int MemStreamMaxLength = int.MaxValue;
 
-    public PooledMemoryStream() : this(null, 0)
-    {
+    public PooledMemoryStream() : this(null, 0) {
     }
 
-    public PooledMemoryStream(int capacity) : this(null, capacity)
-    {
+    public PooledMemoryStream(
+        int capacity) : this(null, capacity) {
     }
 
-    public PooledMemoryStream(MemoryPool<byte> pool) : this(pool, 0)
-    {
+    public PooledMemoryStream(
+        MemoryPool<byte> pool) : this(pool, 0) {
     }
 
-    public PooledMemoryStream(MemoryPool<byte>? pool, int capacity)
-    {
+    public PooledMemoryStream(
+        MemoryPool<byte>? pool,
+        int capacity) {
         _pool = pool ?? MemoryPool<byte>.Shared;
         _buffer = _pool.Rent(capacity);
         _capacity = capacity;
@@ -104,32 +99,30 @@ sealed class PooledMemoryStream : Stream
     public override bool CanWrite => _writable;
 
 
-    private void EnsureNotClosed()
-    {
-        if (!_isOpen)
+    private void EnsureNotClosed() {
+        if (!_isOpen) {
             ThrowObjectDisposedException_StreamClosed(null);
+        }
     }
 
-    private static void ThrowObjectDisposedException_StreamClosed(string? objectName)
-    {
+    private static void ThrowObjectDisposedException_StreamClosed(
+        string? objectName) {
         throw new ObjectDisposedException(objectName, "Cannot access a closed Stream.");
     }
 
-    private void EnsureWriteable()
-    {
-        if (!CanWrite)
+    private void EnsureWriteable() {
+        if (!CanWrite) {
             ThrowNotSupportedException_UnwritableStream();
+        }
     }
 
-    private static void ThrowNotSupportedException_UnwritableStream()
-    {
+    private static void ThrowNotSupportedException_UnwritableStream() {
         throw new NotSupportedException("Cannot write to this stream.");
     }
 
-    protected override void Dispose(bool disposing)
-    {
-        if (disposing)
-        {
+    protected override void Dispose(
+        bool disposing) {
+        if (disposing) {
             _buffer.Dispose();
             _isOpen = false;
             _writable = false;
@@ -140,27 +133,25 @@ sealed class PooledMemoryStream : Stream
     }
 
     // returns a bool saying whether we allocated a new array.
-    private bool EnsureCapacity(int value)
-    {
+    private bool EnsureCapacity(
+        int value) {
         // Check for overflow
-        if (value < 0)
+        if (value < 0) {
             throw new IOException("Stream too long");
+        }
 
-        if (value > _capacity)
-        {
+        if (value > _capacity) {
             int newCapacity = Math.Max(value, 256);
 
             // We are ok with this overflowing since the next statement will deal
             // with the cases where _capacity*2 overflows.
-            if (newCapacity < _capacity * 2)
-            {
+            if (newCapacity < _capacity * 2) {
                 newCapacity = _capacity * 2;
             }
 
             // We want to expand the array up to Array.MaxLength.
             // And we want to give the user the value that they asked for
-            if ((uint)(_capacity * 2) > Array.MaxLength)
-            {
+            if ((uint)(_capacity * 2) > Array.MaxLength) {
                 newCapacity = Math.Max(value, Array.MaxLength);
             }
 
@@ -171,111 +162,106 @@ sealed class PooledMemoryStream : Stream
         return false;
     }
 
-    public override void Flush()
-    {
+    public override void Flush() {
     }
 
-    public override Task FlushAsync(CancellationToken cancellationToken)
-    {
-        if (cancellationToken.IsCancellationRequested)
+    public override Task FlushAsync(
+        CancellationToken cancellationToken) {
+        if (cancellationToken.IsCancellationRequested) {
             return Task.FromCanceled(cancellationToken);
+        }
 
-        try
-        {
+        try {
             Flush();
             return Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             return Task.FromException(ex);
         }
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Memory<byte> GetBuffer()
-    {
+    public Memory<byte> GetBuffer() {
         return _buffer.Memory;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<byte> GetBufferSpan()
-    {
+    public Span<byte> GetBufferSpan() {
         return _buffer.Memory.Span;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<byte> GetBufferSpan(int off)
-    {
+    public Span<byte> GetBufferSpan(
+        int off) {
         return _buffer.Memory.Span.Slice(off);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Span<byte> GetBufferSpan(int off, int len)
-    {
+    public Span<byte> GetBufferSpan(
+        int off,
+        int len) {
         return _buffer.Memory.Span.Slice(off, len);
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Span<byte> InternalReadSpan(int count)
-    {
+    internal Span<byte> InternalReadSpan(
+        int count) {
         EnsureNotClosed();
 
-        int origPos = _position;
+        int origPos = Pos;
         int newPos = origPos + count;
 
-        if ((uint)newPos > (uint)_length)
-        {
-            _position = _length;
+        if ((uint)newPos > (uint)_length) {
+            Pos = _length;
             ThrowEndOfFileException();
         }
 
-        var span = GetBufferSpan(origPos, count);
-        _position = newPos;
+        Span<byte> span = GetBufferSpan(origPos, count);
+        Pos = newPos;
         return span;
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Memory<byte> InternalReadMemory(int count)
-    {
+    internal Memory<byte> InternalReadMemory(
+        int count) {
         EnsureNotClosed();
 
-        int origPos = _position;
+        int origPos = Pos;
         int newPos = origPos + count;
 
-        if ((uint)newPos > (uint)_length)
-        {
-            _position = _length;
+        if ((uint)newPos > (uint)_length) {
+            Pos = _length;
             ThrowEndOfFileException();
         }
 
-        var span = GetBuffer().Slice(origPos, count);
-        _position = newPos;
+        Memory<byte> span = GetBuffer().Slice(origPos, count);
+        Pos = newPos;
         return span;
     }
 
-    public ReadOnlyMemory<byte> ReadToEnd()
-    {
-        return InternalReadMemory(_length - _position);
+    public ReadOnlyMemory<byte> ReadToEnd() {
+        return InternalReadMemory(_length - Pos);
     }
 
-    private static void ThrowEndOfFileException()
-    {
+    private static void ThrowEndOfFileException() {
         throw new EndOfStreamException("Cannot read beyond the end of the stream.");
     }
 
     // PERF: Get actual length of bytes available for read; do sanity checks; shift position - i.e. everything except actual copying bytes
-    internal int InternalEmulateRead(int count)
-    {
+    internal int InternalEmulateRead(
+        int count) {
         EnsureNotClosed();
 
-        int n = _length - _position;
-        if (n > count)
+        int n = _length - Pos;
+        if (n > count) {
             n = count;
-        if (n < 0)
-            n = 0;
+        }
 
-        Debug.Assert(_position + n >= 0, "_position + n >= 0"); // len is less than 2^31 -1.
-        _position += n;
+        if (n < 0) {
+            n = 0;
+        }
+
+        Debug.Assert(Pos + n >= 0, "_position + n >= 0"); // len is less than 2^31 -1.
+        Pos += n;
         return n;
     }
 
@@ -283,42 +269,38 @@ sealed class PooledMemoryStream : Stream
     // The capacity cannot be set to a value less than the current length
     // of the stream.
     //
-    public int Capacity
-    {
-        get
-        {
+    public int Capacity {
+        get {
             EnsureNotClosed();
             return _capacity;
         }
-        set
-        {
+        set {
             // Only update the capacity if the MS is expandable and the value is different than the current capacity.
             // Special behavior if the MS isn't expandable: we don't throw if value is the same as the current capacity
-            if (value < Length)
-                throw new ArgumentOutOfRangeException(nameof(value),
-                    "Capacity cannot be less than the length of the stream.");
+            if (value < Length) {
+                throw new ArgumentOutOfRangeException(
+                    nameof(value),
+                    "Capacity cannot be less than the length of the stream."
+                );
+            }
 
             EnsureNotClosed();
 
-            if (!_expandable && (value != Capacity))
+            if (!_expandable && value != Capacity) {
                 throw new NotSupportedException("Cannot expand this stream.");
+            }
 
             // MemoryStream has this invariant: _origin > 0 => !expandable (see ctors)
-            if (_expandable && value != _capacity)
-            {
-                if (value > 0)
-                {
+            if (_expandable && value != _capacity) {
+                if (value > 0) {
                     IMemoryOwner<byte> newBuffer = _pool.Rent(value);
-                    if (_length > 0)
-                    {
+                    if (_length > 0) {
                         GetBufferSpan(0, _length).CopyTo(newBuffer.Memory.Span);
                     }
 
                     _buffer.Dispose();
                     _buffer = newBuffer;
-                }
-                else
-                {
+                } else {
                     _buffer.Dispose();
                 }
 
@@ -327,114 +309,114 @@ sealed class PooledMemoryStream : Stream
         }
     }
 
-    public override long Length
-    {
-        get
-        {
+    public override long Length {
+        get {
             EnsureNotClosed();
             return _length;
         }
     }
 
-    public override long Position
-    {
-        get
-        {
+    public override long Position {
+        get {
             EnsureNotClosed();
-            return _position;
+            return Pos;
         }
-        set
-        {
-            if (value < 0)
+        set {
+            if (value < 0) {
                 throw new ArgumentOutOfRangeException(nameof(value), "Position cannot be negative.");
+            }
 
             EnsureNotClosed();
 
-            if (value > MemStreamMaxLength)
+            if (value > MemStreamMaxLength) {
                 throw new ArgumentOutOfRangeException(nameof(value), "Position cannot be greater than Int32.MaxValue.");
-            _position = (int)value;
+            }
+
+            Pos = (int)value;
         }
     }
 
-    public int Pos => _position;
+    public int Pos { get; private set; }
 
-    public override int Read(byte[] buffer, int offset, int count)
-    {
+    public override int Read(
+        byte[] buffer,
+        int offset,
+        int count) {
         ValidateBufferArguments(buffer, offset, count);
         EnsureNotClosed();
 
-        int n = _length - _position;
-        if (n > count)
+        int n = _length - Pos;
+        if (n > count) {
             n = count;
-        if (n <= 0)
-            return 0;
+        }
 
-        Debug.Assert(_position + n >= 0, "_position + n >= 0"); // len is less than 2^31 -1.
+        if (n <= 0) {
+            return 0;
+        }
+
+        Debug.Assert(Pos + n >= 0, "_position + n >= 0"); // len is less than 2^31 -1.
 
         Span<byte> currentBuffer = GetBufferSpan();
 
-        if (n <= 8)
-        {
+        if (n <= 8) {
             int byteCount = n;
-            while (--byteCount >= 0)
-                buffer[offset + byteCount] = currentBuffer[_position + byteCount];
-        }
-        else
-        {
-            currentBuffer.Slice(_position, n).CopyTo(buffer.AsSpan(offset, n));
+            while (--byteCount >= 0) {
+                buffer[offset + byteCount] = currentBuffer[Pos + byteCount];
+            }
+        } else {
+            currentBuffer.Slice(Pos, n).CopyTo(buffer.AsSpan(offset, n));
         }
 
-        _position += n;
+        Pos += n;
 
         return n;
     }
 
-    public override int Read(Span<byte> buffer)
-    {
+    public override int Read(
+        Span<byte> buffer) {
         EnsureNotClosed();
 
-        int n = Math.Min(_length - _position, buffer.Length);
-        if (n <= 0)
+        int n = Math.Min(_length - Pos, buffer.Length);
+        if (n <= 0) {
             return 0;
+        }
 
-        GetBufferSpan(_position, n).CopyTo(buffer);
+        GetBufferSpan(Pos, n).CopyTo(buffer);
 
-        _position += n;
+        Pos += n;
         return n;
     }
 
-    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
+    public override Task<int> ReadAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken) {
         ValidateBufferArguments(buffer, offset, count);
 
         // If cancellation was requested, bail early
-        if (cancellationToken.IsCancellationRequested)
+        if (cancellationToken.IsCancellationRequested) {
             return Task.FromCanceled<int>(cancellationToken);
+        }
 
-        try
-        {
+        try {
             int n = Read(buffer, offset, count);
             return _lastReadTask.GetTask(n);
-        }
-        catch (OperationCanceledException oce)
-        {
+        } catch (OperationCanceledException oce) {
             return Task.FromCanceled<int>(oce.CancellationToken);
-        }
-        catch (Exception exception)
-        {
+        } catch (Exception exception) {
             return Task.FromException<int>(exception);
         }
     }
 
-    public override ValueTask<int> ReadAsync(Memory<byte> buffer, CancellationToken cancellationToken = default)
-    {
-        if (cancellationToken.IsCancellationRequested)
-        {
+    public override ValueTask<int> ReadAsync(
+        Memory<byte> buffer,
+        CancellationToken cancellationToken = default) {
+        if (cancellationToken.IsCancellationRequested) {
             return ValueTask.FromCanceled<int>(cancellationToken);
         }
 
-        try
-        {
+        try {
             // ReadAsync(Memory<byte>,...) needs to delegate to an existing virtual to do the work, in case an existing derived type
             // has changed or augmented the logic associated with reads.  If the Memory wraps an array, we could delegate to
             // ReadAsync(byte[], ...), but that would defeat part of the purpose, as ReadAsync(byte[], ...) often needs to allocate
@@ -450,127 +432,132 @@ sealed class PooledMemoryStream : Stream
             return new ValueTask<int>(
                 MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> destinationArray)
                     ? Read(destinationArray.Array!, destinationArray.Offset, destinationArray.Count)
-                    : Read(buffer.Span));
-        }
-        catch (OperationCanceledException oce)
-        {
+                    : Read(buffer.Span)
+            );
+        } catch (OperationCanceledException oce) {
             return new ValueTask<int>(Task.FromCanceled<int>(oce.CancellationToken));
-        }
-        catch (Exception exception)
-        {
+        } catch (Exception exception) {
             return ValueTask.FromException<int>(exception);
         }
     }
 
-    public override int ReadByte()
-    {
+    public override int ReadByte() {
         EnsureNotClosed();
 
-        if (_position >= _length)
+        if (Pos >= _length) {
             return -1;
+        }
 
-        return GetBufferSpan()[_position++];
+        return GetBufferSpan()[Pos++];
     }
 
-    public override void CopyTo(Stream destination, int bufferSize)
-    {
+    public override void CopyTo(
+        Stream destination,
+        int bufferSize) {
         // Validate the arguments the same way Stream does for back-compat.
         ValidateCopyToArguments(destination, bufferSize);
         EnsureNotClosed();
 
-        int originalPosition = _position;
+        int originalPosition = Pos;
 
         // Seek to the end of the MemoryStream.
         int remaining = InternalEmulateRead(_length - originalPosition);
 
         // If we were already at or past the end, there's no copying to do so just quit.
-        if (remaining > 0)
-        {
+        if (remaining > 0) {
             // Call Write() on the other Stream, using our internal buffer and avoiding any
             // intermediary allocations.
             destination.Write(GetBufferSpan().Slice(originalPosition, remaining));
         }
     }
 
-    public override Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-    {
+    public override Task CopyToAsync(
+        Stream destination,
+        int bufferSize,
+        CancellationToken cancellationToken) {
         // This implementation offers better performance compared to the base class version.
 
         ValidateCopyToArguments(destination, bufferSize);
         EnsureNotClosed();
 
         // If canceled - return fast:
-        if (cancellationToken.IsCancellationRequested)
+        if (cancellationToken.IsCancellationRequested) {
             return Task.FromCanceled(cancellationToken);
+        }
 
         // Avoid copying data from this buffer into a temp buffer:
         // (require that InternalEmulateRead does not throw,
         // otherwise it needs to be wrapped into try-catch-Task.FromException like memStrDest.Write below)
 
-        int pos = _position;
-        int n = InternalEmulateRead(_length - _position);
+        int pos = Pos;
+        int n = InternalEmulateRead(_length - Pos);
 
         // If we were already at or past the end, there's no copying to do so just quit.
-        if (n == 0)
+        if (n == 0) {
             return Task.CompletedTask;
+        }
 
         // If destination is not a memory stream, write there asynchronously:
-        if (!(destination is MemoryStream memStrDest))
+        if (!(destination is MemoryStream memStrDest)) {
             return destination.WriteAsync(GetBuffer().Slice(pos, n), cancellationToken).AsTask();
+        }
 
-        try
-        {
+        try {
             // If destination is a MemoryStream, CopyTo synchronously:
             memStrDest.Write(GetBufferSpan().Slice(pos, n));
             return Task.CompletedTask;
-        }
-        catch (Exception ex)
-        {
+        } catch (Exception ex) {
             return Task.FromException(ex);
         }
     }
 
 
-    public override long Seek(long offset, SeekOrigin loc)
-    {
+    public override long Seek(
+        long offset,
+        SeekOrigin loc) {
         EnsureNotClosed();
 
-        if (offset > MemStreamMaxLength)
-            throw new ArgumentOutOfRangeException(nameof(offset),
-                "offset is greater than the maximum length of a MemoryStream");
-
-        switch (loc)
-        {
-            case SeekOrigin.Begin:
-                {
-                    int tempPosition = unchecked((int)offset);
-                    if (offset < 0 || tempPosition < 0)
-                        throw new IOException("Attempted to seek before the beginning of the stream.");
-                    _position = tempPosition;
-                    break;
-                }
-            case SeekOrigin.Current:
-                {
-                    int tempPosition = unchecked(_position + (int)offset);
-                    if (unchecked(_position + offset) < 0 || tempPosition < 0)
-                        throw new IOException("Attempted to seek before the beginning of the stream.");
-                    _position = tempPosition;
-                    break;
-                }
-            case SeekOrigin.End:
-                {
-                    int tempPosition = unchecked(_length + (int)offset);
-                    if (unchecked(_length + offset) < 0 || tempPosition < 0)
-                        throw new IOException("Attempted to seek before the beginning of the stream.");
-                    _position = tempPosition;
-                    break;
-                }
-            default:
-                throw new ArgumentException("Invalid SeekOrigin");
+        if (offset > MemStreamMaxLength) {
+            throw new ArgumentOutOfRangeException(
+                nameof(offset),
+                "offset is greater than the maximum length of a MemoryStream"
+            );
         }
 
-        Debug.Assert(_position >= 0, "_position >= 0");
-        return _position;
+        switch (loc) {
+        case SeekOrigin.Begin: {
+            int tempPosition = unchecked((int)offset);
+            if (offset < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
+            }
+
+            Pos = tempPosition;
+            break;
+        }
+        case SeekOrigin.Current: {
+            int tempPosition = unchecked(Pos + (int)offset);
+            if (unchecked(Pos + offset) < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
+            }
+
+            Pos = tempPosition;
+            break;
+        }
+        case SeekOrigin.End: {
+            int tempPosition = unchecked(_length + (int)offset);
+            if (unchecked(_length + offset) < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
+            }
+
+            Pos = tempPosition;
+            break;
+        }
+        default:
+            throw new ArgumentException("Invalid SeekOrigin");
+        }
+
+        Debug.Assert(Pos >= 0, "_position >= 0");
+        return Pos;
     }
 
     // Sets the length of the stream to a given value.  The new
@@ -583,209 +570,199 @@ sealed class PooledMemoryStream : Stream
     // the stream is made longer than the maximum possible length of the
     // array (int.MaxValue).
     //
-    public override void SetLength(long value)
-    {
-        if (value < 0 || value > int.MaxValue)
+    public override void SetLength(
+        long value) {
+        if (value < 0 || value > int.MaxValue) {
             throw new ArgumentOutOfRangeException(nameof(value), "value is negative or greater than Int32.MaxValue");
+        }
 
         EnsureWriteable();
 
         // Origin wasn't publicly exposed above.
-        Debug.Assert(MemStreamMaxLength ==
-                     int.MaxValue); // Check parameter validation logic in this method if this fails.
-        if (value > int.MaxValue)
-            throw new ArgumentOutOfRangeException(nameof(value),
-                "value is greater than the maximum length of a MemoryStream");
+        Debug.Assert(
+            MemStreamMaxLength ==
+            int.MaxValue
+        ); // Check parameter validation logic in this method if this fails.
+
+        if (value > int.MaxValue) {
+            throw new ArgumentOutOfRangeException(
+                nameof(value),
+                "value is greater than the maximum length of a MemoryStream"
+            );
+        }
 
         int newLength = (int)value;
         bool allocatedNewArray = EnsureCapacity(newLength);
-        if (!allocatedNewArray && newLength > _length)
+        if (!allocatedNewArray && newLength > _length) {
             GetBufferSpan(_length, newLength - _length).Clear();
+        }
+
         _length = newLength;
-        if (_position > newLength)
-            _position = newLength;
+        if (Pos > newLength) {
+            Pos = newLength;
+        }
     }
 
-    public byte[] ToArray()
-    {
+    public byte[] ToArray() {
         int count = _length;
-        if (count == 0)
+        if (count == 0) {
             return Array.Empty<byte>();
+        }
+
         byte[] copy = GC.AllocateUninitializedArray<byte>(count);
         GetBufferSpan(count).CopyTo(copy);
         return copy;
     }
 
-    public override void Write(byte[] buffer, int offset, int count)
-    {
+    public override void Write(
+        byte[] buffer,
+        int offset,
+        int count) {
         ValidateBufferArguments(buffer, offset, count);
         EnsureNotClosed();
         EnsureWriteable();
 
-        int i = _position + count;
+        int i = Pos + count;
         // Check for overflow
-        if (i < 0)
+        if (i < 0) {
             throw new IOException("Stream too long");
+        }
 
-        if (i > _length)
-        {
-            bool mustZero = _position > _length;
-            if (i > _capacity)
-            {
+        if (i > _length) {
+            bool mustZero = Pos > _length;
+            if (i > _capacity) {
                 bool allocatedNewArray = EnsureCapacity(i);
-                if (allocatedNewArray)
-                {
+                if (allocatedNewArray) {
                     mustZero = false;
                 }
             }
 
-            if (mustZero)
-            {
+            if (mustZero) {
                 GetBufferSpan(_length, i - _length).Clear();
             }
 
             _length = i;
         }
 
-        var currentBuffer = GetBufferSpan(_position, count);
-        if ((count <= 8) && (buffer.AsSpan().Overlaps(currentBuffer)))
-        {
+        Span<byte> currentBuffer = GetBufferSpan(Pos, count);
+        if (count <= 8 && buffer.AsSpan().Overlaps(currentBuffer)) {
             int byteCount = count;
-            while (--byteCount >= 0)
-            {
+            while (--byteCount >= 0) {
                 currentBuffer[byteCount] = buffer[offset + byteCount];
             }
-        }
-        else
-        {
+        } else {
             buffer.AsSpan(offset, count).CopyTo(currentBuffer);
         }
 
-        _position = i;
+        Pos = i;
     }
 
 
-    public override void Write(ReadOnlySpan<byte> buffer)
-    {
+    public override void Write(
+        ReadOnlySpan<byte> buffer) {
         EnsureNotClosed();
         EnsureWriteable();
 
         // Check for overflow
-        int i = _position + buffer.Length;
-        if (i < 0)
+        int i = Pos + buffer.Length;
+        if (i < 0) {
             throw new IOException("Stream too long");
+        }
 
-        if (i > _length)
-        {
-            bool mustZero = _position > _length;
-            if (i > _capacity)
-            {
+        if (i > _length) {
+            bool mustZero = Pos > _length;
+            if (i > _capacity) {
                 bool allocatedNewArray = EnsureCapacity(i);
-                if (allocatedNewArray)
-                {
+                if (allocatedNewArray) {
                     mustZero = false;
                 }
             }
 
-            if (mustZero)
-            {
+            if (mustZero) {
                 GetBufferSpan(_length, i - _length).Clear();
             }
 
             _length = i;
         }
 
-        buffer.CopyTo(GetBufferSpan().Slice(_position, buffer.Length));
-        _position = i;
+        buffer.CopyTo(GetBufferSpan().Slice(Pos, buffer.Length));
+        Pos = i;
     }
 
-    public override Task WriteAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
+    public override Task WriteAsync(
+        byte[] buffer,
+        int offset,
+        int count,
+        CancellationToken cancellationToken) {
         ValidateBufferArguments(buffer, offset, count);
 
         // If cancellation is already requested, bail early
-        if (cancellationToken.IsCancellationRequested)
+        if (cancellationToken.IsCancellationRequested) {
             return Task.FromCanceled(cancellationToken);
+        }
 
-        try
-        {
+        try {
             Write(buffer, offset, count);
             return Task.CompletedTask;
-        }
-        catch (OperationCanceledException oce)
-        {
+        } catch (OperationCanceledException oce) {
             return Task.FromCanceled(oce.CancellationToken);
-        }
-        catch (Exception exception)
-        {
+        } catch (Exception exception) {
             return Task.FromException(exception);
         }
     }
 
-    public override ValueTask WriteAsync(ReadOnlyMemory<byte> buffer, CancellationToken cancellationToken = default)
-    {
-        if (cancellationToken.IsCancellationRequested)
-        {
+    public override ValueTask WriteAsync(
+        ReadOnlyMemory<byte> buffer,
+        CancellationToken cancellationToken = default) {
+        if (cancellationToken.IsCancellationRequested) {
             return ValueTask.FromCanceled(cancellationToken);
         }
 
-        try
-        {
+        try {
             // See corresponding comment in ReadAsync for why we don't just always use Write(ReadOnlySpan<byte>).
             // Unlike ReadAsync, we could delegate to WriteAsync(byte[], ...) here, but we don't for consistency.
-            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> sourceArray))
-            {
+            if (MemoryMarshal.TryGetArray(buffer, out ArraySegment<byte> sourceArray)) {
                 Write(sourceArray.Array!, sourceArray.Offset, sourceArray.Count);
-            }
-            else
-            {
+            } else {
                 Write(buffer.Span);
             }
 
             return default;
-        }
-        catch (OperationCanceledException oce)
-        {
+        } catch (OperationCanceledException oce) {
             return new ValueTask(Task.FromCanceled(oce.CancellationToken));
-        }
-        catch (Exception exception)
-        {
+        } catch (Exception exception) {
             return ValueTask.FromException(exception);
         }
     }
 
-    public override void WriteByte(byte value)
-    {
+    public override void WriteByte(
+        byte value) {
         EnsureNotClosed();
         EnsureWriteable();
 
-        if (_position >= _length)
-        {
-            int newLength = _position + 1;
-            bool mustZero = _position > _length;
-            if (newLength >= _capacity)
-            {
+        if (Pos >= _length) {
+            int newLength = Pos + 1;
+            bool mustZero = Pos > _length;
+            if (newLength >= _capacity) {
                 bool allocatedNewArray = EnsureCapacity(newLength);
-                if (allocatedNewArray)
-                {
+                if (allocatedNewArray) {
                     mustZero = false;
                 }
             }
 
-            if (mustZero)
-            {
+            if (mustZero) {
                 GetBufferSpan(_length, newLength - _length).Clear();
             }
 
             _length = newLength;
         }
 
-        GetBufferSpan()[_position++] = value;
+        GetBufferSpan()[Pos++] = value;
     }
 
     // Writes this MemoryStream to another stream.
-    public void WriteTo(Stream stream)
-    {
+    public void WriteTo(
+        Stream stream) {
         ArgumentNullException.ThrowIfNull(stream);
 
         EnsureNotClosed();
@@ -793,65 +770,62 @@ sealed class PooledMemoryStream : Stream
         stream.Write(GetBufferSpan().Slice(0, _length));
     }
 
-    public ReadOnlyMemory<byte> GetConsumedBuffer()
-    {
-        return GetBuffer().Slice(0, _position);
+    public ReadOnlyMemory<byte> GetConsumedBuffer() {
+        return GetBuffer().Slice(0, Pos);
     }
 
-    public string GetString(Encoding? encoding = null)
-    {
-        return (encoding ?? Encoding.Default).GetString(GetBufferSpan(0, _position));
+    public string GetString(
+        Encoding? encoding = null) {
+        return (encoding ?? Encoding.Default).GetString(GetBufferSpan(0, Pos));
     }
 }
 
 /// <summary>
-/// Converts keys to lower_snake_case for json serialization.
+///     Converts keys to lower_snake_case for json serialization.
 /// </summary>
 /// <remarks>
-/// Source: https://www.rickvandenbosch.net/blog/creating-a-custom-jsonnamingpolicy/
+///     Source: https://www.rickvandenbosch.net/blog/creating-a-custom-jsonnamingpolicy/
 /// </remarks>
 #if SURREAL_NET_INTERNAL
 public
 #else
 internal
 #endif
-sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
-{
+    sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy {
     private static readonly Lazy<JsonLowerSnakeCaseNamingPolicy> _instance = new(() => new());
 
     public static JsonLowerSnakeCaseNamingPolicy Instance => _instance.Value;
 
-    public override string ConvertName(string name)
-    {
-        if (name == null)
-        {
+    public override string ConvertName(
+        string name) {
+        if (name == null) {
             throw new ArgumentNullException(nameof(name));
         }
 
-        for (int i = 0; i < name.Length; i++)
-        {
-            if (!Char.IsUpper(name[i]))
+        for (int i = 0; i < name.Length; i++) {
+            if (!char.IsUpper(name[i])) {
                 continue;
+            }
+
             return ConvertNameSlow(name, i);
         }
 
         return name;
     }
 
-    private static string ConvertNameSlow(ReadOnlySpan<char> name, int start)
-    {
+    private static string ConvertNameSlow(
+        ReadOnlySpan<char> name,
+        int start) {
         int cap = name.Length + 5;
         using StrBuilder result = cap > 512 ? new(cap) : new(stackalloc char[cap]);
-        var converter = CultureInfo.InvariantCulture.TextInfo;
+        TextInfo converter = CultureInfo.InvariantCulture.TextInfo;
 
         result.Append(name.Slice(0, start));
         bool prevUpper = true; // prevent leading _
-        for (var pos = start; pos < name.Length; pos++)
-        {
-            var ch = name[pos];
-            var upper = Char.IsUpper(ch);
-            if (upper && !prevUpper)
-            {
+        for (int pos = start; pos < name.Length; pos++) {
+            char ch = name[pos];
+            bool upper = char.IsUpper(ch);
+            if (upper && !prevUpper) {
                 result.Append('_');
             }
 
@@ -863,25 +837,25 @@ sealed class JsonLowerSnakeCaseNamingPolicy : JsonNamingPolicy
     }
 }
 
-public static class Constants
-{
+public static class Constants {
     [ThreadStatic]
     private static JsonSerializerOptions? _jsonSerializerOptions;
 
     public static JsonSerializerOptions JsonOptions => _jsonSerializerOptions ??= CreateJsonOptions();
 
-    public static JsonSerializerOptions CreateJsonOptions() => new()
-    {
-        PropertyNameCaseInsensitive = true,
-        AllowTrailingCommas = true,
-        ReadCommentHandling = JsonCommentHandling.Skip,
-        WriteIndented = false,
-        NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
-        // This was throwing an exception when set to JsonIgnoreCondition.Always
-        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
-        // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
-        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
-        IgnoreReadOnlyFields = false,
-        UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-    };
+    public static JsonSerializerOptions CreateJsonOptions() {
+        return new() {
+            PropertyNameCaseInsensitive = true,
+            AllowTrailingCommas = true,
+            ReadCommentHandling = JsonCommentHandling.Skip,
+            WriteIndented = false,
+            NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
+            // This was throwing an exception when set to JsonIgnoreCondition.Always
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
+            Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+            IgnoreReadOnlyFields = false,
+            UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+        };
+    }
 }
