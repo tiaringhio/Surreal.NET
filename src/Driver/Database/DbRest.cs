@@ -12,7 +12,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
 
     private static Task<SurrealRestResponse> CompletedOk => Task.FromResult(SurrealRestResponse.EmptyOk);
 
-    public Dictionary<string, string> UseVariables { get; } = new();
+    private readonly Dictionary<string, object?> _vars = new();
 
     private static IReadOnlyDictionary<string, object?> EmptyVars { get; } = new Dictionary<string, object?>(0);
 
@@ -94,9 +94,9 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         object? value,
         CancellationToken ct = default) {
         if (value is null) {
-            UseVariables.Remove(key);
+            _vars.Remove(key);
         } else {
-            UseVariables[key] = ToJson(value);
+            _vars[key] = ToJson(value);
         }
 
         return CompletedOk;
@@ -255,7 +255,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
             return src;
         }
 
-        int varsCount = UseVariables.Count + (vars?.Count ?? 0);
+        int varsCount = _vars.Count + (vars?.Count ?? 0);
         if (varsCount <= 0) {
             return src;
         }
@@ -282,10 +282,10 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
 
             string varName = template[start..i];
 
-            if (UseVariables.TryGetValue(varName, out string? varValue)) {
-                result.Append(varValue);
-            } else if (vars?.TryGetValue(varName, out object? varObj) == true) {
-                result.Append(varObj?.ToString());
+            if (_vars.TryGetValue(varName, out object? varValue)) {
+                result.Append(ToJson(varValue));
+            } else if (vars?.TryGetValue(varName, out varValue) == true) {
+                result.Append(ToJson(varValue));
             } else {
                 result.Append(template.AsSpan(start, i - start));
             }
