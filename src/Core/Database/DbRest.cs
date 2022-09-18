@@ -151,7 +151,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
     public async Task<SurrealRestResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default)
     {
         string query = FormatVars(sql, vars);
-        StringContent content = new(query, Encoding.UTF8, "application/json");
+        var content = ToContent(query);
         return await Query(content, ct);
     }
 
@@ -164,7 +164,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Select(SurrealThing thing, CancellationToken ct = default)
     {
-        var rsp = await _client.GetAsync($"key/{FormatUrl(thing)}", ct);
+        var requestMessage = ToRequestMessage(HttpMethod.Get, BuildRequestUri(thing));
+        var rsp = await _client.SendAsync(requestMessage, ct);
         return await rsp.ToSurreal();
     }
 
@@ -175,12 +176,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Create(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
-        var rsp = await _client.PostAsync($"key/{FormatUrl(thing)}", data, ct);
-        // TODO: DEBUGGING. entering the same details in a REST client works fine, lul
-        var u = rsp.RequestMessage.RequestUri;
-        var h = string.Join("\n", rsp.RequestMessage.Headers.Select(h => h.Key + ":" + string.Join(", ", h.Value)));
-        var b = await rsp.RequestMessage.Content.ReadAsStringAsync(ct);
-        var r = await rsp.Content.ReadAsStringAsync(ct);
+        var rsp = await _client.PostAsync(BuildRequestUri(thing), data, ct);
 
         return await rsp.ToSurreal();
     }
@@ -193,7 +189,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Update(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
-        var rsp = await _client.PutAsync($"key/{FormatUrl(thing)}", data, ct);
+        var rsp = await _client.PutAsync(BuildRequestUri(thing), data, ct);
         return await rsp.ToSurreal();
     }
 
@@ -211,18 +207,20 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        return await Modify(thing, ToJsonContent(data), ct);
+        StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
+        return await Modify(thing, content, ct);
     }
 
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
-        var rsp = await _client.PatchAsync($"key/{FormatUrl(thing)}", data, ct);
+        var rsp = await _client.PatchAsync(BuildRequestUri(thing), data, ct);
         return await rsp.ToSurreal();
     }
 
     public async Task<SurrealRestResponse> Delete(SurrealThing thing, CancellationToken ct = default)
     {
-        var rsp = await _client.DeleteAsync($"key/{FormatUrl(thing)}", ct);
+        var requestMessage = ToRequestMessage(HttpMethod.Delete, BuildRequestUri(thing));
+        var rsp = await _client.SendAsync(requestMessage, ct);
         return await rsp.ToSurreal();
     }
 
@@ -277,13 +275,44 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         return result;
     }
 
+    private string BuildRequestUri(SurrealThing thing)
+    {
+        return $"key/{FormatUrl(thing)}";
+    }
+
     private string ToJson<T>(T? v)
     {
         return JsonSerializer.Serialize(v, SerializerOptions);
     }
 
-    private StringContent ToJsonContent<T>(T? v)
+    private HttpContent ToJsonContent<T>(T? v)
     {
-        return new(ToJson(v), Encoding.UTF8, "application/json");
+        return ToContent(ToJson(v));
+    }
+
+    private HttpContent ToContent(string s = "")
+    {
+        var content = new StringContent(s, Encoding.UTF8, "application/json");
+        
+        if (content.Headers.ContentType != null)
+        {
+            // The server can only handle 'Content-Type' with 'application/json', remove any further information from this header
+            content.Headers.ContentType.CharSet = null;
+        }
+
+        return content;
+    }
+
+    private HttpRequestMessage ToRequestMessage(HttpMethod method, string requestUri)
+    {
+        // SurrealDb must have a 'Content-Type' header defined, 
+        // but HttpClient does not allow default request headers to be set.
+        // So we need to make PUT and DELETE requests with an empty request body, but with request headers
+        return new HttpRequestMessage
+        {
+            Method = method,
+            RequestUri = new Uri(requestUri, UriKind.Relative),
+            Content = ToContent()
+        };
     }
 }
