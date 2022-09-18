@@ -316,6 +316,13 @@ public enum SurrealResultKind : byte
     Boolean,
 }
 
+public struct SurrealStatus
+{
+    public JsonElement Result { get; set; }
+    public string Status { get; set; }
+    public string Time { get; set; }
+}
+
 /// <summary>
 /// The result of a successful query to the Surreal database.
 /// </summary>
@@ -324,6 +331,19 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     private readonly JsonElement _json;
     private readonly object? _sentinelOrValue;
     private readonly long _int64ValueField;
+
+    private static readonly JsonSerializerOptions _options = new()
+    {
+        PropertyNameCaseInsensitive = true,
+        AllowTrailingCommas = true,
+        ReadCommentHandling = JsonCommentHandling.Skip,
+        WriteIndented = false,
+        // This was throwing an exception when set to JsonIgnoreCondition.Always
+        DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+        Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
+        IgnoreReadOnlyFields = false,
+        UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
+    };
 
 #if SURREAL_NET_INTERNAL
     public
@@ -357,6 +377,49 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return GetKind() == SurrealResultKind.Object;
     }
 
+    public bool TryGetObjectCollection<T>(out List<T> document)
+    {
+        // Try to unpack this document
+
+        // Some results come as a simple array of objects
+        // Others come embedded into a 'status' document that can have multiple result sets
+        //[
+        //  {
+        //    "result": [ ... ],
+        //    "status": "OK",
+        //    "time": "71.775µs"
+        //  }
+        //]
+
+        // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
+        var statusDocuments = _json.Deserialize<List<SurrealStatus>>(_options);
+
+        if (statusDocuments != null)
+        {
+            foreach (var statusDocument in statusDocuments)
+            {
+                if (string.IsNullOrEmpty(statusDocument.Status) && string.IsNullOrEmpty(statusDocument.Time))
+                {
+                    break; // This is not a status document
+                }
+
+                // This probably is a status document
+                if (statusDocument.Result.ValueKind == JsonValueKind.Null)
+                {
+                    // Skip over the statuses with no results
+                    // Often from requests that have variables etc
+                    continue;
+                }
+
+                document = statusDocument.Result.Deserialize<List<T>>()!;
+                return GetKind() == SurrealResultKind.Object;
+            }
+        }
+
+        document = _json.Deserialize<List<T>>(_options)!;
+        return GetKind() == SurrealResultKind.Object;
+    }
+    
     public bool TryGetDocument(out string? id, out JsonElement document)
     {
         document = _json;

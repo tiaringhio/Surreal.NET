@@ -129,21 +129,25 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse>
     /// <inheritdoc />
     public async Task<SurrealRpcResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default)
     {
-        return await _client.Send(new()
+        var rpcReq = new RpcRequest()
         {
             Method = "query",
             Params = new() { sql, vars }
-        }, ct).ToSurreal();
+        };
+        var response = await _client.Send(rpcReq, ct);
+        return response.ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<SurrealRpcResponse> Select(SurrealThing thing, CancellationToken ct = default)
     {
-        return await _client.Send(new()
+        var rpcReq = new RpcRequest()
         {
             Method = "select",
             Params = new() { thing.ToString() }
-        }, ct).ToSurreal();
+        };
+        var response = await _client.Send(rpcReq, ct);
+        return response.ToSurreal();
     }
 
     /// <inheritdoc />
