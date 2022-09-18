@@ -1,109 +1,104 @@
 ﻿using System.Runtime.CompilerServices;
+
 using FluentAssertions.Extensions;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+
 using Surreal.Net.Database;
 
 namespace Surreal.Net.Tests;
 
-public class RpcRoundTripTests : RoundTripTests<DbRpc, SurrealRpcResponse>
-{
+public class RpcRoundTripTests : RoundTripTests<DbRpc, SurrealRpcResponse> {
 }
-public class RestRoundTripTests : RoundTripTests<DbRest, SurrealRestResponse>
-{
+
+public class RestRoundTripTests : RoundTripTests<DbRest, SurrealRestResponse> {
 }
 
 public abstract class RoundTripTests<T, U>
     where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse
-{
+    where U : ISurrealResponse {
     protected T Database;
 
-    protected RoundTripTests()
-    {
+    protected RoundTripTests() {
         Database = new();
         Database.Open(ConfigHelper.Default).Wait();
     }
 
     [Fact]
-    public async Task CreateRoundTripTest()
-    {
-        var expectedObject = new RoundTripObject();
+    public async Task CreateRoundTripTest() {
+        RoundTripObject expectedObject = new RoundTripObject();
 
-        var thing = SurrealThing.From("object", Random.Shared.Next().ToString());
-        var response = await Database.Create(thing, expectedObject);
+        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        U response = await Database.Create(thing, expectedObject);
 
         Assert.NotNull(response);
         AssertOk(response);
-        Assert.True(response.TryGetResult(out var result));
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out var returnedDocument));
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }
 
     [Fact]
-    public async Task CreateAndSelectRoundTripTest()
-    {
-        var expectedObject = new RoundTripObject();
+    public async Task CreateAndSelectRoundTripTest() {
+        RoundTripObject expectedObject = new RoundTripObject();
 
-        var thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
-        var response = await Database.Select(thing);
+        U response = await Database.Select(thing);
 
         Assert.NotNull(response);
         AssertOk(response);
-        Assert.True(response.TryGetResult(out var result));
+        Assert.True(response.TryGetResult(out SurrealResult result));
 
-        System.Console.WriteLine(result.Inner.ToString());
+        Console.WriteLine(result.Inner.ToString());
 
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out var returnedDocument));
+        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }
 
     [Fact]
-    public async Task CreateAndQueryRoundTripTest()
-    {
-        var expectedObject = new RoundTripObject();
+    public async Task CreateAndQueryRoundTripTest() {
+        RoundTripObject expectedObject = new RoundTripObject();
 
-        var thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
-        var sql = $"SELECT * FROM \"{thing}\"";
-        var response = await Database.Query(sql, null);
+        string sql = $"SELECT * FROM \"{thing}\"";
+        U response = await Database.Query(sql, null);
 
         Assert.NotNull(response);
         AssertOk(response);
-        Assert.True(response.TryGetResult(out var result));
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out var returnedDocument));
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }
 
     [Fact]
-    public async Task CreateAndParameterizedQueryRoundTripTest()
-    {
-        var expectedObject = new RoundTripObject();
+    public async Task CreateAndParameterizedQueryRoundTripTest() {
+        RoundTripObject expectedObject = new RoundTripObject();
 
-        var thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
-        var sql = "SELECT * FROM $thing";
-        var param = new Dictionary<string, object?>
-        {
-            ["thing"] = thing,//.ToString(), Needs a ToString() to work
+        string sql = "SELECT * FROM $thing";
+        Dictionary<string, object?> param = new Dictionary<string, object?> {
+            ["thing"] = thing, //.ToString(), Needs a ToString() to work
         };
-        var response = await Database.Query(sql, param);
+
+        U response = await Database.Query(sql, param);
 
         Assert.NotNull(response);
         AssertOk(response);
-        Assert.True(response.TryGetResult(out var result));
-        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out var returnedDocument));
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection<RoundTripObject>(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
     }
 
-    protected void AssertOk(in ISurrealResponse rpcResponse, [CallerArgumentExpression("rpcResponse")] string caller = "")
-    {
-        if (!rpcResponse.TryGetError(out var err))
-        {
+    protected void AssertOk(
+        in ISurrealResponse rpcResponse,
+        [CallerArgumentExpression("rpcResponse")]
+        string caller = "") {
+        if (!rpcResponse.TryGetError(out SurrealError err)) {
             return;
         }
 
@@ -112,8 +107,24 @@ public abstract class RoundTripTests<T, U>
     }
 }
 
-public class RoundTripObject
-{
+public class RoundTripObject {
+    [Flags]
+    public enum FlagsEnum {
+        None = 0,
+        First = 1 << 0,
+        Second = 1 << 1,
+        Third = 1 << 2,
+        Fourth = 1 << 3,
+        All = First | Second | Third | Fourth,
+    }
+
+    public enum StandardEnum {
+        Zero = 0,
+        One = 1,
+        TwoHundred = 200,
+        NegTwoHundred = -200,
+    }
+
     public string String { get; set; } = "A String";
     //public string MultiLineString { get; set; } = "A\nString"; // Fails to write to DB
     public string UnicodeString { get; set; } = "A ❤️";
@@ -179,30 +190,12 @@ public class RoundTripObject
     public FlagsEnum SecondFourthFlagsEnum { get; set; } = FlagsEnum.Second | FlagsEnum.Fourth;
     public FlagsEnum UndefinedFlagsEnum { get; set; } = (FlagsEnum)(1 << 8);
 
-    public static void AssertAreEqual(RoundTripObject a, RoundTripObject b)
-    {
+    public static void AssertAreEqual(
+        RoundTripObject a,
+        RoundTripObject b) {
         Assert.NotNull(a);
         Assert.NotNull(b);
 
         b.Should().BeEquivalentTo(a);
-    }
-
-    public enum StandardEnum
-    {
-        Zero = 0,
-        One = 1,
-        TwoHundred = 200,
-        NegTwoHundred = -200,
-    }
-
-    [Flags]
-    public enum FlagsEnum
-    {
-        None = 0,
-        First = 1 << 0,
-        Second = 1 << 1,
-        Third = 1 << 2,
-        Fourth = 1 << 3,
-        All = First | Second | Third | Fourth,
     }
 }

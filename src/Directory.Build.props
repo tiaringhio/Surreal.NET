@@ -1,36 +1,36 @@
 ﻿<Project>
-  <PropertyGroup>
-    <SurrealCoreVersion>1.0.2</SurrealCoreVersion>
+	<PropertyGroup>
+		<SurrealCoreVersion>1.0.2</SurrealCoreVersion>
 
-  </PropertyGroup>
+	</PropertyGroup>
 
-  <PropertyGroup>
-    <Authors>ProphetLamb</Authors>
-    <Owners>ProhetLamb</Owners>
-    <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-    <Copyright>Copyright (c) ProphetLamb 2022</Copyright>
-    <PackageProjectUrl>https://github.com/ProphetLamb/Surreal.Net</PackageProjectUrl>
-    <RepositoryType>git</RepositoryType>
-    <RepositoryUrl>https://github.com/ProphetLamb/Surreal.Net.git</RepositoryUrl>
-    <PackageReadmeFile>README.md</PackageReadmeFile>
-  </PropertyGroup>
+	<PropertyGroup>
+		<Authors>ProphetLamb</Authors>
+		<Owners>ProhetLamb</Owners>
+		<PackageLicenseExpression>MIT</PackageLicenseExpression>
+		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
+		<Copyright>Copyright (c) ProphetLamb 2022</Copyright>
+		<PackageProjectUrl>https://github.com/ProphetLamb/Surreal.Net</PackageProjectUrl>
+		<RepositoryType>git</RepositoryType>
+		<RepositoryUrl>https://github.com/ProphetLamb/Surreal.Net.git</RepositoryUrl>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+	</PropertyGroup>
 
 
-  <PropertyGroup Label="Nuget Pack Options">
-    <AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
-    <PublishRepositoryUrl>true</PublishRepositoryUrl>
-    <EmbedUntrackedSources>true</EmbedUntrackedSources>
-    <DebugType>embedded</DebugType>
-    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
-    <GenerateDocumentationFile>true</GenerateDocumentationFile>
-  </PropertyGroup>
+	<PropertyGroup Label="Nuget Pack Options">
+		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
+		<PublishRepositoryUrl>true</PublishRepositoryUrl>
+		<EmbedUntrackedSources>true</EmbedUntrackedSources>
+		<DebugType>embedded</DebugType>
+		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="$(Configuration)=='Debug'">
-    <DefineConstants>$(DefineConstants);SURREAL_NET_INTERNAL</DefineConstants>
-  </PropertyGroup>
+	<PropertyGroup Condition="$(Configuration)=='Debug'">
+		<DefineConstants>$(DefineConstants);SURREAL_NET_INTERNAL</DefineConstants>
+	</PropertyGroup>
 
-  <PropertyGroup Condition="$(Configuration)=='Release'">
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-  </PropertyGroup>
+	<PropertyGroup Condition="$(Configuration)=='Release'">
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+	</PropertyGroup>
 </Project>
