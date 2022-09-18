@@ -164,7 +164,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Select(SurrealThing thing, CancellationToken ct = default)
     {
-        var requestMessage = ToRequestMessage(HttpMethod.Get, $"key/{FormatUrl(thing)}");
+        var requestMessage = ToRequestMessage(HttpMethod.Get, BuildRequestUri(thing));
         var rsp = await _client.SendAsync(requestMessage, ct);
         return await rsp.ToSurreal();
     }
@@ -176,7 +176,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Create(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
-        var rsp = await _client.PostAsync($"key/{FormatUrl(thing)}", data, ct);
+        var rsp = await _client.PostAsync(BuildRequestUri(thing), data, ct);
 
         return await rsp.ToSurreal();
     }
@@ -189,7 +189,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Update(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
-        var rsp = await _client.PutAsync($"key/{FormatUrl(thing)}", data, ct);
+        var rsp = await _client.PutAsync(BuildRequestUri(thing), data, ct);
         return await rsp.ToSurreal();
     }
 
@@ -213,13 +213,13 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Modify(SurrealThing thing, HttpContent data, CancellationToken ct = default)
     {
-        var rsp = await _client.PatchAsync($"key/{FormatUrl(thing)}", data, ct);
+        var rsp = await _client.PatchAsync(BuildRequestUri(thing), data, ct);
         return await rsp.ToSurreal();
     }
 
     public async Task<SurrealRestResponse> Delete(SurrealThing thing, CancellationToken ct = default)
     {
-        var requestMessage = ToRequestMessage(HttpMethod.Delete, $"key/{FormatUrl(thing)}");
+        var requestMessage = ToRequestMessage(HttpMethod.Delete, BuildRequestUri(thing));
         var rsp = await _client.SendAsync(requestMessage, ct);
         return await rsp.ToSurreal();
     }
@@ -273,6 +273,11 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         }
 
         return result;
+    }
+
+    private string BuildRequestUri(SurrealThing thing)
+    {
+        return $"key/{FormatUrl(thing)}";
     }
 
     private string ToJson<T>(T? v)
