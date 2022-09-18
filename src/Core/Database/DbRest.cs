@@ -296,7 +296,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
         
         if (content.Headers.ContentType != null)
         {
-            // The can only handle 'Content-Type' with 'application/json', remove any further information from this header
+            // The server can only handle 'Content-Type' with 'application/json', remove any further information from this header
             content.Headers.ContentType.CharSet = null;
         }
 
