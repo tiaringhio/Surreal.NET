@@ -195,16 +195,6 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
 
     public async Task<SurrealRestResponse> Change(SurrealThing thing, object data, CancellationToken ct = default)
     {
-        return await Change(thing, ToJsonContent(data), ct);
-    }
-
-    public async Task<SurrealRestResponse> Change(SurrealThing thing, HttpContent data, CancellationToken ct = default)
-    {
-        return await Modify(thing, data, ct);
-    }
-
-    public async Task<SurrealRestResponse> Modify(SurrealThing thing, object data, CancellationToken ct = default)
-    {
         // Is this the most optimal way?
         string sql = "UPDATE $what MERGE $data RETURN AFTER";
         var vars = new Dictionary<string, object?>
@@ -213,6 +203,18 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable
             ["data"] = data
         };
         return await Query(sql, vars, ct);
+    }
+
+    public async Task<SurrealRestResponse> Modify(SurrealThing thing, object data, CancellationToken ct = default)
+    {
+        StringContent content = new(ToJson(data), Encoding.UTF8, "application/json");
+        return await Modify(thing, content, ct);
+    }
+
+    public async Task<SurrealRestResponse> Modify(SurrealThing thing, HttpContent data, CancellationToken ct = default)
+    {
+        var rsp = await _client.PatchAsync($"key/{FormatUrl(thing)}", data, ct);
+        return await rsp.ToSurreal();
     }
 
     public async Task<SurrealRestResponse> Delete(SurrealThing thing, CancellationToken ct = default)
