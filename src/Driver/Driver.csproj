@@ -9,17 +9,17 @@
 
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Database driver for SurrealDB</Description>
-		<PackageVersion>$(SurrealCoreVersion)</PackageVersion>
+		<PackageVersion>$(SurrealDriverVersion)</PackageVersion>
 		<PackageId>Surreal.Net.Driver</PackageId>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Rustic.Common" Version="0.5.80"/>
+		<PackageReference Include="Rustic.Common" Version="0.5.80" />
 	</ItemGroup>
 
 
 	<ItemGroup>
-		<None Include="$(SolutionDir)/README.md" Pack="true" PackagePath="/"/>
+		<None Include="$(SolutionDir)/README.md" Pack="true" PackagePath="/" />
 	</ItemGroup>
 </Project>

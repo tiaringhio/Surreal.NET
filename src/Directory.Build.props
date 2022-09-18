@@ -1,6 +1,6 @@
 ﻿<Project>
 	<PropertyGroup>
-		<SurrealCoreVersion>1.0.2</SurrealCoreVersion>
+		<SurrealDriverVersion>1.0.2</SurrealDriverVersion>
 
 	</PropertyGroup>
 
