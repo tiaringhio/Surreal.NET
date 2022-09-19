@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 
 using FluentAssertions.Extensions;
 
@@ -30,7 +30,7 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Create(thing, expectedObject);
 
         Assert.NotNull(response);
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
@@ -46,7 +46,7 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Select(thing);
 
         Assert.NotNull(response);
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
 
         Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
@@ -64,7 +64,7 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Query(sql, null);
 
         Assert.NotNull(response);
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
@@ -85,23 +85,11 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Query(sql, param);
 
         Assert.NotNull(response);
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
         Assert.Single(returnedDocument);
         RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
-    }
-
-    protected void AssertOk(
-        in ISurrealResponse rpcResponse,
-        [CallerArgumentExpression("rpcResponse")]
-        string caller = "") {
-        if (!rpcResponse.TryGetError(out SurrealError err)) {
-            return;
-        }
-
-        Exception ex = new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
-        throw ex;
     }
 }
 
