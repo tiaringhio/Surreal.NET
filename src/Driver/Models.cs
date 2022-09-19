@@ -233,18 +233,16 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
             return From(err);
         }
         
-        var successDocuments = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
-        var successDocument = successDocuments?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
-
         if (await PeekIsEmpty(stream, ct)) {
             // Success and empty message -> invalid json
             return EmptyOk;
         }
+        
+        var docs = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
+        var doc = docs?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
 
-        var successDocuments = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
-        var successDocument = successDocuments?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
 
-        return From(successDocument);
+        return From(doc);
     }
 
     /// <summary>
@@ -272,7 +270,7 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
     }
 
     private static SurrealRestResponse From(HttpSuccess? success) {
-        return new(success?.time, success?.status, null, null, success.result);
+        return new(success?.time, success?.status, null, null, success?.result ?? default);
     }
 
     private record HttpError(
