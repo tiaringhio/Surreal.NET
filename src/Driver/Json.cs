@@ -86,7 +86,7 @@ internal static class Constants {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             IgnoreReadOnlyFields = false,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            Converters = { new DecimalConv(), new DoubleConv(), new SingleConv(), new DateTimeConv(), new DateTimeOffsetConv(), new TimeSpanConv() }
+            Converters = { new DecimalConv(), new DoubleConv(), new SingleConv(), new TimeOnlyConv(), new DateOnlyConv(), new DateTimeConv(), new DateTimeOffsetConv(), new TimeSpanConv() }
         };
     }
 }
@@ -365,38 +365,29 @@ public sealed class DecimalConv : JsonConverter<decimal> {
     }
 }
 
-public sealed class DateTimeConv : JsonConverter<DateTime> {
-    public static string FromDateTime(in DateTime dt) {
-        return FromUtc(TimeZoneInfo.ConvertTimeToUtc(dt));
-    }
-    
-    public static string FromUtc(in DateTime dt) {
-        Debug.Assert(dt.Kind == DateTimeKind.Utc);
-        StrBuilder builder = new(stackalloc char[31]);
-        dt.Year.TryFormat(builder.AppendSpan(4), out _, "0000", NumberFormatInfo.InvariantInfo);
-        builder.Append('-');
-        dt.Month.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
-        builder.Append('-');
-        dt.Day.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
-        builder.Append('T');
-        dt.Hour.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
-        builder.Append(':');
-        dt.Minute.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
-        builder.Append(':');
-        dt.Second.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
-        builder.Append('.');
-        ExtractNanos(in dt).TryFormat(builder.AppendSpan(9), out _, "000000000", NumberFormatInfo.InvariantInfo);
-        builder.Append('Z');
-        return builder.ToString();
+public sealed class DateOnlyConv : JsonConverter<DateOnly> {
+    public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return reader.TokenType switch {
+            JsonTokenType.None or JsonTokenType.Null => default,
+            JsonTokenType.String or JsonTokenType.PropertyName => Parse(reader.GetString()),
+            _ => ThrowJsonTokenTypeInvalid()
+        };
     }
 
-    private static int ExtractNanos(in DateTime dt) {
-        return (int)(dt.Ticks % TimeSpan.TicksPerSecond);
+    public override DateOnly ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return Read(ref reader, typeToConvert, options);
     }
 
-    public static DateTime FromString(in ReadOnlySpan<char> str) {
+    public override void Write(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options) {
+        writer.WriteStringValue(ToString(in value));
+    }
+
+    public override void WriteAsPropertyName(Utf8JsonWriter writer, DateOnly value, JsonSerializerOptions options) {
+        writer.WritePropertyName(ToString(in value));
+    }
+
+    public static DateOnly Parse(in ReadOnlySpan<char> str) {
         ReadOnlySpan<char> slc, rem = str;
-        // Date portion
         slc = rem.Slice(0, 4);
         rem = rem.Slice(4);
         int y = Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
@@ -406,7 +397,53 @@ public sealed class DateTimeConv : JsonConverter<DateTime> {
         slc = rem.Slice(1, 2);
         rem = rem.Slice(3);
         int d = Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-        // Time portion
+        return new(y, m , d);
+    }
+
+    // Needs 10 chars
+    public static void ToString(ref StrBuilder builder, in DateOnly dt) {
+        dt.Year.TryFormat(builder.AppendSpan(4), out _, "0000", NumberFormatInfo.InvariantInfo);
+        builder.Append('-');
+        dt.Month.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
+        builder.Append('-');
+        dt.Day.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
+    }
+
+    public static string ToString(in DateOnly dt) {
+        StrBuilder builder = new(stackalloc char[11]);
+        ToString(ref builder, dt);
+        return builder.ToString();
+    }
+    
+    [DoesNotReturn]
+    private DateOnly ThrowJsonTokenTypeInvalid() {
+        throw new JsonException("Cannot deserialize a non string token as a DateOnly.");
+    }
+}
+
+public sealed class TimeOnlyConv : JsonConverter<TimeOnly> {
+    public override TimeOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return reader.TokenType switch {
+            JsonTokenType.None or JsonTokenType.Null => default,
+            JsonTokenType.String or JsonTokenType.PropertyName => Parse(reader.GetString()),
+            _ => ThrowJsonTokenTypeInvalid()
+        };
+    }
+
+    public override TimeOnly ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return Read(ref reader, typeToConvert, options);
+    }
+
+    public override void Write(Utf8JsonWriter writer, TimeOnly value, JsonSerializerOptions options) {
+        writer.WriteStringValue(ToString(in value));
+    }
+
+    public override void WriteAsPropertyName(Utf8JsonWriter writer, TimeOnly value, JsonSerializerOptions options) {
+        writer.WritePropertyName(ToString(in value));
+    }
+
+    public static TimeOnly Parse(in ReadOnlySpan<char> str) {
+        ReadOnlySpan<char> slc, rem = str;
         long t = 0;
         slc = rem.Slice(1, 2);
         rem = rem.Slice(3);
@@ -421,13 +458,42 @@ public sealed class DateTimeConv : JsonConverter<DateTime> {
         rem = rem.Slice(10);
         t += Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
         Debug.Assert(t <= 863999999999L);
-        return new DateOnly(y, m, d).ToDateTime(new(t));
+        return new(t);
+    }
+
+    // Needs 18
+    public static void ToString(ref StrBuilder builder, in TimeOnly dt) {
+        
+        dt.Hour.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
+        builder.Append(':');
+        dt.Minute.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
+        builder.Append(':');
+        dt.Second.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
+        builder.Append('.');
+        ExtractNanos(in dt).TryFormat(builder.AppendSpan(9), out _, "000000000", NumberFormatInfo.InvariantInfo);
     }
     
+    public static string ToString(in TimeOnly ts) {
+        StrBuilder builder = new(stackalloc char[19]);
+        ToString(ref builder, in ts);
+        return builder.ToString();
+    }
+
+    private static int ExtractNanos(in TimeOnly dt) {
+        return (int)(dt.Ticks % TimeSpan.TicksPerSecond);
+    }
+    
+    [DoesNotReturn]
+    private TimeOnly ThrowJsonTokenTypeInvalid() {
+        throw new JsonException("Cannot deserialize a non string token as a TimeOnly.");
+    }
+}
+
+public sealed class DateTimeConv : JsonConverter<DateTime> {
     public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         DateTime dt = reader.TokenType switch {
             JsonTokenType.Null or JsonTokenType.None => default,
-            JsonTokenType.String or JsonTokenType.PropertyName => FromString(reader.GetString()),
+            JsonTokenType.String or JsonTokenType.PropertyName => Parse(reader.GetString()),
             JsonTokenType.Number => DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64()).UtcDateTime,
             _ => ThrowJsonTokenTypeInvalid()
         };
@@ -440,11 +506,33 @@ public sealed class DateTimeConv : JsonConverter<DateTime> {
     }
 
     public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options) {
-        writer.WriteStringValue(FromDateTime(in value));
+        writer.WriteStringValue(ToString(in value));
     }
 
     public override void WriteAsPropertyName(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options) {
-        writer.WritePropertyName(FromDateTime(in value));
+        writer.WritePropertyName(ToString(in value));
+    }
+    
+    public static DateTime Parse(in ReadOnlySpan<char> str) {
+        // Date portion
+        DateOnly d = DateOnlyConv.Parse(in str);
+        // Time portion
+        TimeOnly t = TimeOnlyConv.Parse(str.Slice(10));
+        return d.ToDateTime(t);
+    }
+    
+    public static string ToString(in DateTime dt) {
+        return ToStringUtc(TimeZoneInfo.ConvertTimeToUtc(dt));
+    }
+    
+    public static string ToStringUtc(in DateTime dt) {
+        Debug.Assert(dt.Kind == DateTimeKind.Utc);
+        StrBuilder builder = new(stackalloc char[31]);
+        DateOnlyConv.ToString(ref builder, DateOnly.FromDateTime(dt));
+        builder.Append('T');
+        TimeOnlyConv.ToString(ref builder, TimeOnly.FromDateTime(dt));
+        builder.Append('Z');
+        return builder.ToString();
     }
 
     [DoesNotReturn]
@@ -454,18 +542,10 @@ public sealed class DateTimeConv : JsonConverter<DateTime> {
 }
 
 public sealed class DateTimeOffsetConv : JsonConverter<DateTimeOffset> {
-    public static string FromDateTime(in DateTimeOffset dt) {
-        return DateTimeConv.FromUtc(dt.UtcDateTime);
-    }
-    
-    public static DateTimeOffset FromString(in ReadOnlySpan<char> str) {
-        return DateTimeConv.FromString(str);
-    }
-    
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         DateTimeOffset dt = reader.TokenType switch {
             JsonTokenType.Null or JsonTokenType.None => default,
-            JsonTokenType.String or JsonTokenType.PropertyName => FromString(reader.GetString()),
+            JsonTokenType.String or JsonTokenType.PropertyName => Parse(reader.GetString()),
             JsonTokenType.Number => DateTimeOffset.FromUnixTimeSeconds(reader.GetInt64()),
             _ => ThrowJsonTokenInvalid()
         };
@@ -478,11 +558,19 @@ public sealed class DateTimeOffsetConv : JsonConverter<DateTimeOffset> {
     }
 
     public override void Write(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options) {
-        writer.WriteStringValue(FromDateTime(in value));
+        writer.WriteStringValue(ToString(in value));
     }
 
     public override void WriteAsPropertyName(Utf8JsonWriter writer, DateTimeOffset value, JsonSerializerOptions options) {
-        writer.WritePropertyName(FromDateTime(in value));
+        writer.WritePropertyName(ToString(in value));
+    }
+
+    public static string ToString(in DateTimeOffset dt) {
+        return DateTimeConv.ToStringUtc(dt.UtcDateTime);
+    }
+    
+    public static DateTimeOffset Parse(in ReadOnlySpan<char> str) {
+        return DateTimeConv.Parse(in str);
     }
     
     [DoesNotReturn]
@@ -492,27 +580,47 @@ public sealed class DateTimeOffsetConv : JsonConverter<DateTimeOffset> {
 }
 
 public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
-    public const string ISO_8061_FORMAT = "HH:mm:ss.fffffff";
-
+    
     public static readonly Regex UnitTimeRegex = new(@"^([+-]?(?:\d*\.)\d+(?:[eE][+-]?\d+))(\w*)$", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.CultureInvariant);
+    
+    
+    public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        TimeSpan ts = reader.TokenType switch {
+            JsonTokenType.None or JsonTokenType.Null => default,
+            JsonTokenType.String or JsonTokenType.PropertyName => Parse(reader.GetString()),
+            JsonTokenType.Number => TimeSpan.FromTicks(reader.GetInt64()),
+            _ => ThrowJsonTokenTypeInvalid()
+        };
 
-    public static string FromTimeSpan(in TimeSpan ts) {
-        return ts.ToString(ISO_8061_FORMAT, DateTimeFormatInfo.InvariantInfo);
+        return ts;
+    }
+
+    public override TimeSpan ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+        return Read(ref reader, typeToConvert, options);
+    }
+
+    public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options) {
+        writer.WriteStringValue(ToString(in value));
+    }
+
+    public override void WriteAsPropertyName(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options) {
+        writer.WritePropertyName(ToString(in value));
+    }
+
+    public static string ToString(in TimeSpan ts) {
+        return TimeOnlyConv.ToString( TimeOnly.FromTimeSpan(ts));
     }
     
-    public static TimeSpan FromString(string? str) {
+    public static TimeSpan Parse(string? str) {
         if (String.IsNullOrEmpty(str)) {
             return default;
         }
-        if (TimeSpan.TryParseExact(str.AsSpan(), ISO_8061_FORMAT, DateTimeFormatInfo.InvariantInfo, TimeSpanStyles.None, out TimeSpan ts)) {
+
+        if (ParseUnitTime(str, out TimeSpan ts)) {
             return ts;
         }
 
-        if (ParseUnitTime(str, out TimeSpan fromMilliseconds)) {
-            return fromMilliseconds;
-        }
-
-        return ThrowFormatInvalid();
+        return TimeOnlyConv.Parse(str).ToTimeSpan();
     }
 
     private static bool ParseUnitTime(string str, out TimeSpan ts) {
@@ -526,54 +634,40 @@ public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
         ReadOnlySpan<char> unt = match.Groups[2].ValueSpan;
         if (unt.IsEmpty || unt.Equals("ns", StringComparison.OrdinalIgnoreCase)) {
             long lng = Int64.Parse(val, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-            {
-                ts = TimeSpan.FromTicks(lng);
-                return true;
-            }
+            ts = TimeSpan.FromTicks(lng);
+            return true;
         }
 
         double dbl = Double.Parse(val, NumberStyles.Float, NumberFormatInfo.InvariantInfo);
         if (unt.Equals("µs", StringComparison.OrdinalIgnoreCase)
          || unt.Equals("us", StringComparison.OrdinalIgnoreCase)) {
-            {
-                ts = TimeSpan.FromMilliseconds(dbl * 1000.0);
-                return true;
-            }
+            ts = TimeSpan.FromMilliseconds(dbl * 1000.0);
+            return true;
         }
 
         if (unt.Equals("ms", StringComparison.OrdinalIgnoreCase)) {
-            {
-                ts = TimeSpan.FromMilliseconds(dbl);
-                return true;
-            }
+            ts = TimeSpan.FromMilliseconds(dbl);
+            return true;
         }
 
         if (unt.Equals("s", StringComparison.OrdinalIgnoreCase)) {
-            {
-                ts = TimeSpan.FromSeconds(dbl);
-                return true;
-            }
+            ts = TimeSpan.FromSeconds(dbl);
+            return true;
         }
 
         if (unt.Equals("m", StringComparison.OrdinalIgnoreCase)) {
-            {
-                ts = TimeSpan.FromMinutes(dbl);
-                return true;
-            }
+            ts = TimeSpan.FromMinutes(dbl);
+            return true;
         }
 
         if (unt.Equals("h", StringComparison.OrdinalIgnoreCase)) {
-            {
-                ts = TimeSpan.FromHours(dbl);
-                return true;
-            }
+            ts = TimeSpan.FromHours(dbl);
+            return true;
         }
 
         if (unt.Equals("d", StringComparison.OrdinalIgnoreCase)) {
-            {
-                ts = TimeSpan.FromDays(dbl);
-                return true;
-            }
+            ts = TimeSpan.FromDays(dbl);
+            return true;
         }
 
         ThrowFormatUnitUnknown(unt);
@@ -581,34 +675,6 @@ public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
         return false;
     }
 
-    public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-        TimeSpan ts = reader.TokenType switch {
-            JsonTokenType.None or JsonTokenType.Null => default,
-            JsonTokenType.String or JsonTokenType.PropertyName => FromString(reader.GetString()),
-            JsonTokenType.Number => TimeSpan.FromTicks(reader.GetInt64()),
-            _ => ThrowJsonTokenTypeInvalid()
-        };
-
-        return ts;
-    }
-
-    public override TimeSpan ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-        return Read(ref reader, typeToConvert, options);
-    }
-
-    public override void Write(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options) {
-        writer.WriteStringValue(FromTimeSpan(in value));
-    }
-
-    public override void WriteAsPropertyName(Utf8JsonWriter writer, TimeSpan value, JsonSerializerOptions options) {
-        writer.WritePropertyName(FromTimeSpan(in value));
-    }
-    
-    [DoesNotReturn]
-    private static TimeSpan ThrowFormatInvalid() {
-        throw new FormatException("Invalid format for a TimeSpan, allowed are ISO8061 and value unit combination.");
-    }
-    
     [DoesNotReturn]
     private static void ThrowFormatUnitUnknown(ReadOnlySpan<char> unt) {
         throw new FormatException($"Invalid TimeSpan unit `{unt}`");

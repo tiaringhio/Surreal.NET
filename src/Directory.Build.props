@@ -17,20 +17,17 @@
 	</PropertyGroup>
 
 
-	<PropertyGroup Label="Nuget Pack Options">
+	<PropertyGroup Condition="$(Configuration)=='Release'" Label="Nuget Pack Options">
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
 		<DebugType>embedded</DebugType>
 		<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
+		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="$(Configuration)=='Debug'">
 		<DefineConstants>$(DefineConstants);SURREAL_NET_INTERNAL</DefineConstants>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="$(Configuration)=='Release'">
-		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 </Project>

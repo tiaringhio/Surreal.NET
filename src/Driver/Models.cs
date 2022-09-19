@@ -221,6 +221,9 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
     };
 
+    /// <summary>
+    /// Parses a <see cref="HttpResponseMessage"/> containing JSON to a <see cref="SurrealRestResponse"/>. 
+    /// </summary>
     public static async Task<SurrealRestResponse> From(
         HttpResponseMessage msg,
         CancellationToken ct = default) {
@@ -229,23 +232,37 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
             HttpError? err = await JsonSerializer.DeserializeAsync<HttpError>(stream, _options, ct);
             return From(err);
         }
+        
+        var successDocuments = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
+        var successDocument = successDocuments?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
 
-        // Handle empty response
-        if (!await PeekIsJson(stream, ct)) {
+        if (await PeekIsEmpty(stream, ct)) {
+            // Success and empty message -> invalid json
             return EmptyOk;
         }
 
-        return await JsonSerializer.DeserializeAsync<SurrealRestResponse>(stream, _options, ct);
+        var successDocuments = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
+        var successDocument = successDocuments?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
+
+        return From(successDocument);
     }
 
-    private static async Task<bool> PeekIsJson(
+    /// <summary>
+    /// Attempts to peek the next byte of the stream. 
+    /// </summary>
+    /// <remarks>
+    /// Resets the stream to the original position.
+    /// </remarks>
+    private static async Task<bool> PeekIsEmpty(
         Stream stream,
         CancellationToken ct) {
         Debug.Assert(stream.CanSeek && stream.CanRead);
         using IMemoryOwner<byte> buffer = MemoryPool<byte>.Shared.Rent(1);
+        // This is more efficient, then ReadByte.
+        // Async, because this is the first request to the networkstream, thus no readahead is possible.
         int read = await stream.ReadAsync(buffer.Memory.Slice(0, 1), ct);
         stream.Seek(-read, SeekOrigin.Current);
-        return read > 0 && (char)buffer.Memory.Span[0] == '{';
+        return read <= 0;
     }
 
     public static SurrealRestResponse EmptyOk => new(null, "ok", null, null, default);
@@ -254,10 +271,20 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
         return new(null, "HTTP_ERR", error?.description, error?.details, default);
     }
 
+    private static SurrealRestResponse From(HttpSuccess? success) {
+        return new(success?.time, success?.status, null, null, success.result);
+    }
+
     private record HttpError(
         int code,
         string details,
-        string description);
+        string description,
+        string information);
+
+    private record HttpSuccess(
+        string time,
+        string status,
+        JsonElement result);
 }
 
 public static class SurrealRestClientExtensions {
@@ -424,14 +451,12 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     }
 
     public bool TryGetObject<T>([NotNullWhen(true)] out T? document) {
-        if (_json.ValueKind == JsonValueKind.Array) {
-            TryGetObjectCollection<T>(out var documents);
-            document = documents.FirstOrDefault();
-        } else if (_json.ValueKind == JsonValueKind.Object) {
-            document = _json.Deserialize<T>(Constants.JsonOptions);
-        } else {
-            document = default(T);
-        }
+        document = _json.ValueKind switch {
+            JsonValueKind.Array => TryGetObjectCollection(out List<T>? documents) ? documents.FirstOrDefault() : default,
+            JsonValueKind.Object => _json.Deserialize<T>(Constants.JsonOptions),
+            _ => default(T)
+        };
+
         return document is not null;
     }
 
@@ -518,9 +543,16 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         //]
 
         // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
-        List<SurrealStatus>? statusDocuments = json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
-        
-        foreach (SurrealStatus statusDocument in statusDocuments) {
+        List<SurrealStatus>? docs = json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
+        if (docs is not null && GetFirstStatus(docs, out SurrealResult surrealResult)) {
+            return surrealResult;
+        }
+
+        return new(json, null);
+    }
+
+    private static bool GetFirstStatus(List<SurrealStatus> docs, out SurrealResult res) {
+        foreach (SurrealStatus statusDocument in docs) {
             if (string.IsNullOrEmpty(statusDocument.Status) && string.IsNullOrEmpty(statusDocument.Time)) {
                 break; // This is not a status document and therefore must be a simple array of objects
             }
