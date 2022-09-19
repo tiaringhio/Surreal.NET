@@ -232,6 +232,9 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
             HttpError? err = await JsonSerializer.DeserializeAsync<HttpError>(stream, _options, ct);
             return From(err);
         }
+        
+        var successDocuments = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
+        var successDocument = successDocuments?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
 
         if (await PeekIsEmpty(stream, ct)) {
             // Success and empty message -> invalid json
