@@ -20,9 +20,44 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
     private readonly int _split;
     public string Thing { get; }
 
+    /// <summary>
+    /// Returns the Table part of the Thing
+    /// </summary>
     public ReadOnlySpan<char> Table => Thing.AsSpan(0, _split);
-    public ReadOnlySpan<char> Key => _split == Length ? default : Thing.AsSpan(_split + 1);
+
+    /// <summary>
+    /// Returns the Key part of the Thing, Including any escaping characters
+    /// </summary>
+    /// <remarks>
+    /// Escaping will be removed if it is present
+    /// </remarks>
+    public ReadOnlySpan<char> RawKey => _split == Length ? default : Thing.AsSpan(_split + 1);
+
+    /// <summary>
+    /// Returns the Key part of the Thing
+    /// </summary>
+    /// <remarks>
+    /// Escaping will be removed if it is present
+    /// </remarks>
+    public ReadOnlySpan<char> Key {
+        get {
+            if (_split == Length) {
+                return default;
+            } else if (IsEscaped(_split, Thing)) {
+                var start = _split + 2;
+                var length = Thing.Length - start - 1;
+                return Thing.AsSpan(start, length);
+            } else {
+                return Thing.AsSpan(_split + 1);
+            }
+        }
+    }
+
     public int Length => Thing.Length;
+    
+    public const char RecordSeparator = ':';
+    public const char ComplexCharacterPrefix = '⟨';
+    public const char ComplexCharacterSuffix = '⟩';
 
 #if SURREAL_NET_INTERNAL
     public
@@ -33,7 +68,49 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
             int split,
             string thing) {
         _split = split;
-        Thing = thing;
+        Thing = EscapeComplexCharactersIfRequired(split, thing);
+    }
+
+    private static string EscapeComplexCharactersIfRequired(int split, string thing) {
+        var splitIndex = split + 1;
+        if (!ContainsComplexCharacters(splitIndex, thing)) {
+            return thing;
+        }
+
+        var tableAndSeparator = thing.Substring(0, splitIndex);
+        var key = thing.Substring(splitIndex, thing.Length - splitIndex);
+        return $"{tableAndSeparator}{ComplexCharacterPrefix}{key}{ComplexCharacterSuffix}";
+    }
+    
+    private static bool ContainsComplexCharacters(int split, string thing) {
+        var length = thing.Length;
+        if (split > length) {
+            // This Thing is not split
+            return false;
+        }
+
+        if (thing[split] == ComplexCharacterPrefix && thing[length - 1] == ComplexCharacterSuffix) {
+            // Already escaped, don't escape it again.
+            return false;
+        }
+
+        for (int i = split; i <length; i++) {
+            if (!char.IsLetterOrDigit(thing[i]) && thing[i] != '_') {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    private static bool IsEscaped(int split, string thing) {
+        if (thing.Length < 2) {
+            return false;
+        }
+
+        var length = thing.Length;
+        return thing[split + 1] == ComplexCharacterPrefix &&
+            thing[length - 1] == ComplexCharacterSuffix;
     }
 
     public static SurrealThing From(string? thing) {
