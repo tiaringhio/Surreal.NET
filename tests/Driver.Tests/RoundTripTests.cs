@@ -1,4 +1,4 @@
-﻿using System.Runtime.CompilerServices;
+using System.Runtime.CompilerServices;
 using System.Text.Json.Serialization;
 
 using FluentAssertions.Extensions;
@@ -30,7 +30,7 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Create(thing, Expected);
 
         Assert.NotNull(response);
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
@@ -43,7 +43,7 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Select(thing);
 
         Assert.NotNull(response);
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
@@ -75,7 +75,7 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Query(sql, param);
 
         Assert.NotNull(response);
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
