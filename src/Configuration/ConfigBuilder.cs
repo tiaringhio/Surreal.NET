@@ -56,41 +56,25 @@ public static class ConfigBuilder {
         return config;
     }
 
+
     /// <inheritdoc cref="BasicAuth" />
-    public static BasicAuth WithBasicAuth(
-        this IConfigBuilder config,
-        string? username = null,
-        string? password = null) {
+    public static BasicAuth WithBasicAuth(this IConfigBuilder config, string? username = null, string? password = null) {
         return new(config) { Username = username, Password = password, };
     }
 
     /// <inheritdoc cref="JwtAuth" />
-    public static JwtAuth WithJwtAuth(
-        this IConfigBuilder config,
-        string? token = null) {
+    public static JwtAuth WithJwtAuth(this IConfigBuilder config, string? token = null) {
         return new(config) { Token = token, };
     }
 
     /// <inheritdoc cref="UseRpc" />
-    public static UseRpc WithRpc(
-        this IConfigBuilder config,
-        bool insecure = false) {
+    public static UseRpc WithRpc(this IConfigBuilder config, bool insecure = false) {
         return new(config) { Insecure = insecure, };
     }
 
     /// <inheritdoc cref="UseRest" />
-    public static UseRest WithRest(
-        this IConfigBuilder config,
-        bool insecure = false) {
+    public static UseRest WithRest(this IConfigBuilder config, bool insecure = false) {
         return new(config) { Insecure = insecure, };
-    }
-
-    public sealed class Empty : IConfigBuilder {
-        public IConfigBuilder? Parent => null;
-
-        public void Configure(ref Config config) {
-            // empty
-        }
     }
 
     /// <summary>
