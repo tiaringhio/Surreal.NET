@@ -103,7 +103,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
     public async Task<SurrealRpcResponse> Select(
         SurrealThing thing,
         CancellationToken ct = default) {
-        RpcRequest req = new() { Method = "select", Params = new() { thing.ToString(), }, };
+        RpcRequest req = new() { Method = "select", Params = new() { thing, }, };
         RpcResponse rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }

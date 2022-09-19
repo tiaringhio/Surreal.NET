@@ -160,7 +160,7 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
     }
 
     public override string ToString() {
-        return (string)Escape();
+        return (string)Converter.EscapeComplexCharactersIfRequired(in this);
     }
 
     public sealed class Converter : JsonConverter<SurrealThing> {
