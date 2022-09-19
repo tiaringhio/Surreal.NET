@@ -752,7 +752,7 @@ internal
         return GetBuffer().Slice(0, Pos);
     }
 
-    public string GetString(Encoding? encoding = null) {
+    public string GetAsString(Encoding? encoding = null) {
         return (encoding ?? Encoding.Default).GetString(GetBufferSpan(0, Pos));
     }
 }

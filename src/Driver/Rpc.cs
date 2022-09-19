@@ -26,11 +26,6 @@ internal
     public bool Connected => _ws is not null && _ws.State == WebSocketState.Open;
 
     /// <summary>
-    ///     The <see cref="JsonSerializerOptions" /> used for serialization.
-    /// </summary>
-    public JsonSerializerOptions SerializerOptions { get; } = Constants.CreateJsonOptions();
-
-    /// <summary>
     ///     Generates a random base64 string of the length specified.
     /// </summary>
     public static string GetRandomId(int length) {
@@ -94,8 +89,8 @@ internal
         req.Params ??= EmptyList;
 
         await using PooledMemoryStream stream = new(DefaultBufferSize);
-
-        await JsonSerializer.SerializeAsync(stream, req, SerializerOptions, ct);
+        
+        await JsonSerializer.SerializeAsync(stream, req, Constants.JsonOptions, ct);
         await _ws!.SendAsync(stream.GetConsumedBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
         stream.Position = 0;
 
@@ -109,7 +104,7 @@ internal
         stream.Position = 0;
         stream.SetLength(len);
 
-        RpcResponse rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, SerializerOptions, ct);
+        RpcResponse rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, Constants.JsonOptions, ct);
         return rsp;
     }
 

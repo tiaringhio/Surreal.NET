@@ -140,7 +140,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         CancellationToken ct = default) {
         // Is this the most optimal way?
         string sql = "UPDATE $what MERGE $data RETURN AFTER";
-        Dictionary<string, object?> vars = new() { ["what"] = thing.ToString(), ["data"] = data, };
+        Dictionary<string, object?> vars = new() { ["what"] = thing, ["data"] = data, };
         return await Query(sql, vars, ct);
     }
 
@@ -232,20 +232,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
     private string FormatUrl(
         SurrealThing src,
         IReadOnlyDictionary<string, object?>? addVars = null) {
-        using StrBuilder result = src.Length > 512 ? new(src.Length) : new(stackalloc char[src.Length]);
-        if (!src.Table.IsEmpty) {
-            result.Append(Uri.EscapeDataString(src.Table.ToString()));
-        }
 
-        if (!src.Table.IsEmpty && !src.Key.IsEmpty) {
-            result.Append('/');
-        }
-
-        if (!src.Key.IsEmpty) {
-            result.Append(Uri.EscapeDataString(src.Key.ToString()));
-        }
-
-        return FormatVars(result.ToString(), addVars);
+        return FormatVars(src.ToUri(), addVars);
     }
 
     private string FormatVars(

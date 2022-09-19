@@ -11,64 +11,15 @@ using Rustic;
 namespace Surreal.Net; 
 
 /// <summary>
-///     Converts keys to lower_snake_case for json serialization.
-/// </summary>
-public sealed class NameLowerSnakeCase : JsonNamingPolicy {
-    private static readonly Lazy<NameLowerSnakeCase> s_instance = new(() => new());
-
-    public static NameLowerSnakeCase Instance => s_instance.Value;
-
-    public override string ConvertName(string name) {
-        if (name == null) {
-            throw new ArgumentNullException(nameof(name));
-        }
-
-        for (int i = 0; i < name.Length; i++) {
-            if (!char.IsUpper(name[i])) {
-                continue;
-            }
-
-            return ConvertNameSlow(name, i);
-        }
-
-        return name;
-    }
-
-    private static string ConvertNameSlow(
-        ReadOnlySpan<char> name,
-        int start) {
-        int cap = name.Length + 5;
-        using StrBuilder result = cap > 512 ? new(cap) : new(stackalloc char[cap]);
-        TextInfo converter = CultureInfo.InvariantCulture.TextInfo;
-
-        result.Append(name.Slice(0, start));
-        bool prevUpper = true; // prevent leading _
-        for (int pos = start; pos < name.Length; pos++) {
-            char ch = name[pos];
-            bool upper = char.IsUpper(ch);
-            if (upper && !prevUpper) {
-                result.Append('_');
-            }
-
-            result.Append(upper ? converter.ToLower(ch) : ch);
-            prevUpper = upper;
-        }
-
-        return result.ToString();
-    }
-}
-
-/// <summary>
 /// Collection of repeatedly used constants.
 /// </summary>
 internal static class Constants {
-    [ThreadStatic]
-    private static JsonSerializerOptions? _jsonSerializerOptions;
+    private static readonly Lazy<JsonSerializerOptions> _jsonSerializerOptions = new(CreateJsonOptions);
 
     /// <summary>
     /// Creates or returns the shared <see cref="JsonSerializerOptions"/> instance for this thread.
     /// </summary>
-    public static JsonSerializerOptions JsonOptions => _jsonSerializerOptions ??= CreateJsonOptions();
+    public static JsonSerializerOptions JsonOptions => _jsonSerializerOptions.Value;
 
     /// <summary>
     /// Instantiates a new instance of <see cref="JsonSerializerOptions"/> with default settings.
@@ -86,7 +37,7 @@ internal static class Constants {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             IgnoreReadOnlyFields = false,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            Converters = { new DecimalConv(), new DoubleConv(), new SingleConv(), new TimeOnlyConv(), new DateOnlyConv(), new DateTimeConv(), new DateTimeOffsetConv(), new TimeSpanConv() }
+            Converters = { new DecimalConv(), new DoubleConv(), new SingleConv(), new DateTimeConv() , new DateTimeOffsetConv(), new TimeSpanConv(), new TimeOnlyConv(), new DateOnlyConv() },
         };
     }
 }
