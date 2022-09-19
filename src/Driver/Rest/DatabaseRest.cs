@@ -13,12 +13,17 @@ namespace SurrealDB.Driver.Rest;
 public sealed class DatabaseRest : IDatabase<RestResponse>, IDisposable {
     private readonly HttpClient _client = new();
     private Config.Config _config;
+    private bool _configured;
+    
+    public DatabaseRest() {}
+
+    public DatabaseRest(in Config.Config config) {
+        _config = config;
+    }
 
     private static Task<RestResponse> CompletedOk => Task.FromResult(RestResponse.EmptyOk);
 
     private readonly Dictionary<string, object?> _vars = new();
-
-    private static IReadOnlyDictionary<string, object?> EmptyVars { get; } = new Dictionary<string, object?>(0);
 
     public void Dispose() {
         _client.Dispose();
@@ -28,20 +33,26 @@ public sealed class DatabaseRest : IDatabase<RestResponse>, IDisposable {
         return _config;
     }
 
-    public Task Open(
-        Config.Config config,
-        CancellationToken ct = default) {
-        config.ThrowIfInvalid();
+    public Task Open(Config.Config config, CancellationToken ct = default) {
         _config = config;
+        _configured = false;
+        return Open(ct);
+    }
 
+    public Task Open(CancellationToken ct = default) {
+        if (_configured) {
+            return Task.CompletedTask;
+        }
+        _config.ThrowIfInvalid();
+        _configured = true;
         ConfigureClients();
 
         // Authentication
-        _client.BaseAddress = config.RestEndpoint;
-        SetAuth(config.Username, config.Password);
+        _client.BaseAddress = _config.RestEndpoint;
+        SetAuth(_config.Username, _config.Password);
 
         // Use database
-        SetUse(config.Database, config.Namespace);
+        SetUse(_config.Database, _config.Namespace);
 
         return Task.CompletedTask;
     }

@@ -8,6 +8,13 @@ namespace SurrealDB.Driver.Rpc;
 public sealed class DatabaseRpc : IDatabase<RpcResponse> {
     private readonly WsClient _client = new();
     private Config.Config _config;
+    private bool _configured;
+    
+    public DatabaseRpc() {}
+
+    public DatabaseRpc(in Config.Config config) {
+        _config = config;
+    }
 
     /// <inheritdoc />
     public Config.Config GetConfig() {
@@ -15,21 +22,28 @@ public sealed class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task Open(
-        Config.Config config,
-        CancellationToken ct = default) {
-        config.ThrowIfInvalid();
+    public async Task Open(Config.Config config, CancellationToken ct = default) {
         _config = config;
+        _configured = false;
+        await Open(ct);
+    }
+
+    public async Task Open(CancellationToken ct = default) {
+        if (_configured) {
+            return;
+        }
+        _config.ThrowIfInvalid();
+        _configured = true;
 
         // Open connection
-        InvalidConfigException.ThrowIfNull(config.RpcEndpoint);
-        await _client.Open(config.RpcEndpoint!, ct);
+        InvalidConfigException.ThrowIfNull(_config.RpcEndpoint);
+        await _client.Open(_config.RpcEndpoint!, ct);
 
         // Authenticate
-        await SetAuth(config.Username, config.Password, ct);
+        await SetAuth(_config.Username, _config.Password, ct);
 
         // Use database
-        await SetUse(config.Database, config.Namespace, ct);
+        await SetUse(_config.Database, _config.Namespace, ct);
     }
 
     public async Task Close(CancellationToken ct = default) {
