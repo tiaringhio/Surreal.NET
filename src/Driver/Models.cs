@@ -565,12 +565,10 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
                 continue;
             }
 
-            res = new(result, null);
-            return true;
+            return new(result, null);
         }
-
-        res = default;
-        return false;
+        
+        return new(json, null);
     }
 
     private static SurrealResult FromObject(in JsonElement json) {
