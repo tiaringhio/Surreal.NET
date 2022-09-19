@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Common</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>Common utility for the SurrealDB driver</Description>
+		<PackageVersion>$(SurrealCommonVersion)</PackageVersion>
+		<PackageId>SurrealDB.Common</PackageId>
+		<PackageTags>surrealdb sql nosql database connector</PackageTags>
+	</PropertyGroup>
+
+</Project>

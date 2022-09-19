@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Config</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>Configuration for the SurrealDB driver</Description>
+		<PackageVersion>$(SurrealConfigVersion)</PackageVersion>
+		<PackageId>SurrealDB.Config</PackageId>
+		<PackageTags>surrealdb sql nosql database connector</PackageTags>
+	</PropertyGroup>
+
+</Project>
