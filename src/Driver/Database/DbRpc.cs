@@ -113,7 +113,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
         SurrealThing thing,
         object data,
         CancellationToken ct = default) {
-        RpcRequest req = new() { Method = "create", Async = true, Params = new() { thing.ToString(), data, }, };
+        RpcRequest req = new() { Method = "create", Async = true, Params = new() { thing, data, }, };
         RpcResponse rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }
@@ -123,7 +123,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
         SurrealThing thing,
         object data,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "update", Params = new() { thing.ToString(), data, }, }, ct).ToSurreal();
+        return await _client.Send(new() { Method = "update", Params = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -131,7 +131,7 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
         SurrealThing thing,
         object data,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "change", Params = new() { thing.ToString(), data, }, }, ct).ToSurreal();
+        return await _client.Send(new() { Method = "change", Params = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -139,14 +139,14 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
         SurrealThing thing,
         object data,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "modify", Params = new() { thing.ToString(), data, }, }, ct).ToSurreal();
+        return await _client.Send(new() { Method = "modify", Params = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<SurrealRpcResponse> Delete(
         SurrealThing thing,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "delete", Params = new() { thing.ToString(), }, }, ct).ToSurreal();
+        return await _client.Send(new() { Method = "delete", Params = new() { thing, }, }, ct).ToSurreal();
     }
 
     private async Task SetUse(
