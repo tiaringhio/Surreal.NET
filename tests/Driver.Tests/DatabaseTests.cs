@@ -5,23 +5,21 @@ using Surreal.Net.Database;
 
 namespace Surreal.Net.Tests;
 
-public class DatabaseTests {
-    [Fact]
-    public async Task RpcTestSuite() {
-        await new DatabaseTestDriver<DbRpc, SurrealRpcResponse>().Execute();
-    }
-
-    [Fact]
-    public async Task RestTestSuite() {
-        await new DatabaseTestDriver<DbRest, SurrealRestResponse>().Execute();
-    }
+public sealed class RpcDatabaseTest : DatabaseTestDriver<DbRpc, SurrealRpcResponse> {
+    
 }
 
-public sealed class DatabaseTestDriver<T, U>
+public sealed class RestDatabaseTest : DatabaseTestDriver<DbRest, SurrealRestResponse> {
+    
+}
+
+public abstract class DatabaseTestDriver<T, U>
     : DriverBase<T>
     where T : ISurrealDatabase<U>, new()
     where U : ISurrealResponse {
-    protected override async Task Run() {
+    
+    [Fact]
+    protected override async Task TestSuite() {
         await Database.Open(ConfigHelper.Default);
         Database.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
 
@@ -100,10 +98,10 @@ public abstract class DriverBase<T>
     public T Database { get; }
 
     public async Task Execute() {
-        await Run();
+        await TestSuite();
     }
 
-    protected abstract Task Run();
+    protected abstract Task TestSuite();
 
     [DebuggerStepThrough]
     protected void AssertOk(

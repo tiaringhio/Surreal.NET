@@ -320,7 +320,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
     private HttpRequestMessage ToRequestMessage(
         HttpMethod method,
         string requestUri,
-        string? content = "") {
+        string content = "") {
         // SurrealDb must have a 'Content-Type' header defined,
         // but HttpClient does not allow default request headers to be set.
         // So we need to make PUT and DELETE requests with an empty request body, but with request headers
