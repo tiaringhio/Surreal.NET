@@ -1,11 +1,13 @@
 using System.Runtime.CompilerServices;
 
-namespace Surreal.Net.Tests;
+using SurrealDB.Models;
+
+namespace SurrealDB.Driver.Tests;
 public static class TestHelper {
     
 
     public static void AssertOk(
-        in ISurrealResponse rpcResponse,
+        in IResponse rpcResponse,
         [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
         if (!rpcResponse.TryGetError(out SurrealError err)) {

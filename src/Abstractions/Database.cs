@@ -1,21 +1,24 @@
-﻿namespace Surreal.Net.Database;
+﻿using SurrealDB.Config;
+using SurrealDB.Models;
+
+namespace SurrealDB.Abstractions;
 
 /// <summary>
 ///     Common interface for interacting with a Surreal database instance
 /// </summary>
-public interface ISurrealDatabase<TResponse>
-    where TResponse : ISurrealResponse {
+public interface IDatabase<TResponse>
+    where TResponse : IResponse {
     /// <summary>
     ///     Returns a copy of the current configuration.
     /// </summary>
-    public SurrealConfig GetConfig();
+    public Config.Config GetConfig();
 
     /// <summary>
     ///     Opens the connection to a Surreal database instance using the provided configuration.
     ///     Configures the client with all applicable settings.
     /// </summary>
     public Task Open(
-        SurrealConfig config,
+        Config.Config config,
         CancellationToken ct = default);
 
     /// <summary>
@@ -45,7 +48,7 @@ public interface ISurrealDatabase<TResponse>
     /// </summary>
     /// <param name="auth"> Variables used in a signin query. </param>
     public Task<TResponse> Signup(
-        SurrealAuthentication auth,
+        Authentication auth,
         CancellationToken ct = default);
 
     /// <summary>
@@ -53,17 +56,17 @@ public interface ISurrealDatabase<TResponse>
     /// </summary>
     /// <param name="auth"> Variables used in a signin query. </param>
     /// <remarks>
-    ///     This updates the internal <see cref="SurrealConfig" />.
+    ///     This updates the internal <see cref="Config" />.
     /// </remarks>
     public Task<TResponse> Signin(
-        SurrealAuthentication auth,
+        Authentication auth,
         CancellationToken ct = default);
 
     /// <summary>
     ///     Invalidates the authentication for the current connection.
     /// </summary>
     /// <remarks>
-    ///     This updates the internal <see cref="SurrealConfig" />.
+    ///     This updates the internal <see cref="Config" />.
     /// </remarks>
     public Task<TResponse> Invalidate(CancellationToken ct = default);
 
@@ -72,7 +75,7 @@ public interface ISurrealDatabase<TResponse>
     /// </summary>
     /// <param name="token"> The JWT authentication token. </param>
     /// <remarks>
-    ///     This updates the internal <see cref="SurrealConfig" />.
+    ///     This updates the internal <see cref="Config" />.
     /// </remarks>
     public Task<TResponse> Authenticate(
         string token,
@@ -108,7 +111,7 @@ public interface ISurrealDatabase<TResponse>
     ///     <code>SELECT * FROM $thing;</code>
     /// </remarks>
     public Task<TResponse> Select(
-        SurrealThing thing,
+        Thing thing,
         CancellationToken ct = default);
 
     /// <summary>
@@ -121,7 +124,7 @@ public interface ISurrealDatabase<TResponse>
     ///     <code>CREATE $thing CONTENT $data;</code>
     /// </remarks>
     public Task<TResponse> Create(
-        SurrealThing thing,
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -136,7 +139,7 @@ public interface ISurrealDatabase<TResponse>
     ///     <code>UPDATE $thing CONTENT $data;</code>
     /// </remarks>
     public Task<TResponse> Update(
-        SurrealThing thing,
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -151,7 +154,7 @@ public interface ISurrealDatabase<TResponse>
     ///     <code>UPDATE $thing MERGE $data;</code>
     /// </remarks>
     public Task<TResponse> Change(
-        SurrealThing thing,
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -166,7 +169,7 @@ public interface ISurrealDatabase<TResponse>
     ///     <code>UPDATE $thing PATCH $data;</code>
     /// </remarks>
     public Task<TResponse> Modify(
-        SurrealThing thing,
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -179,25 +182,25 @@ public interface ISurrealDatabase<TResponse>
     ///     <code>DELETE * FROM $thing;</code>
     /// </remarks>
     public Task<TResponse> Delete(
-        SurrealThing thing,
+        Thing thing,
         CancellationToken ct = default);
 }
 
 /// <summary>
 ///     Common interface for interacting with a Surreal database instance
 /// </summary>
-public interface ISurrealDatabase {
+public interface IDatabase {
     /// <summary>
     ///     Returns a copy of the current configuration.
     /// </summary>
-    public SurrealConfig GetConfig();
+    public Config.Config GetConfig();
 
     /// <summary>
     ///     Opens the connection to a Surreal database instance using the provided configuration.
     ///     Configures the client with all applicable settings.
     /// </summary>
     public Task Open(
-        SurrealConfig config,
+        Config.Config config,
         CancellationToken ct = default);
 
     /// <summary>
@@ -208,14 +211,14 @@ public interface ISurrealDatabase {
     /// <summary>
     ///     Retrieves the current session information.
     /// </summary>
-    public Task<ISurrealResponse> Info();
+    public Task<IResponse> Info();
 
     /// <summary>
     ///     Switch to a specific namespace and database.
     /// </summary>
     /// <param name="db"> Switches to a specific namespace. </param>
     /// <param name="ns"> Switches to a specific database. </param>
-    public Task<ISurrealResponse> Use(
+    public Task<IResponse> Use(
         string db,
         string ns,
         CancellationToken ct = default);
@@ -224,8 +227,8 @@ public interface ISurrealDatabase {
     ///     Signs up to a specific authentication scope.
     /// </summary>
     /// <param name="auth"> Variables used in a signin query. </param>
-    public Task<ISurrealResponse> Signup(
-        SurrealAuthentication auth,
+    public Task<IResponse> Signup(
+        Authentication auth,
         CancellationToken ct = default);
 
     /// <summary>
@@ -233,28 +236,28 @@ public interface ISurrealDatabase {
     /// </summary>
     /// <param name="auth"> Variables used in a signin query. </param>
     /// <remarks>
-    ///     This updates the internal <see cref="SurrealConfig" />.
+    ///     This updates the internal <see cref="Config" />.
     /// </remarks>
-    public Task<ISurrealResponse> Signin(
-        SurrealAuthentication auth,
+    public Task<IResponse> Signin(
+        Authentication auth,
         CancellationToken ct = default);
 
     /// <summary>
     ///     Invalidates the authentication for the current connection.
     /// </summary>
     /// <remarks>
-    ///     This updates the internal <see cref="SurrealConfig" />.
+    ///     This updates the internal <see cref="Config" />.
     /// </remarks>
-    public Task<ISurrealResponse> Invalidate(CancellationToken ct = default);
+    public Task<IResponse> Invalidate(CancellationToken ct = default);
 
     /// <summary>
     ///     Authenticates the current connection with a JWT token.
     /// </summary>
     /// <param name="token"> The JWT authentication token. </param>
     /// <remarks>
-    ///     This updates the internal <see cref="SurrealConfig" />.
+    ///     This updates the internal <see cref="Config" />.
     /// </remarks>
-    public Task<ISurrealResponse> Authenticate(
+    public Task<IResponse> Authenticate(
         string token,
         CancellationToken ct = default);
 
@@ -263,7 +266,7 @@ public interface ISurrealDatabase {
     /// </summary>
     /// <param name="key"> Specifies the name of the variable. </param>
     /// <param name="value"> Assigns the value to the variable name. </param>
-    public Task<ISurrealResponse> Let(
+    public Task<IResponse> Let(
         string key,
         object? value,
         CancellationToken ct = default);
@@ -274,7 +277,7 @@ public interface ISurrealDatabase {
     /// #
     /// <param name="sql"> Specifies the SurrealQL statements. </param>
     /// <param name="vars"> Assigns variables which can be used in the query. </param>
-    public Task<ISurrealResponse> Query(
+    public Task<IResponse> Query(
         string sql,
         object? vars,
         CancellationToken ct = default);
@@ -287,8 +290,8 @@ public interface ISurrealDatabase {
     ///     This function will run the following query in the database:
     ///     <code>SELECT * FROM $thing;</code>
     /// </remarks>
-    public Task<ISurrealResponse> Select(
-        SurrealThing thing,
+    public Task<IResponse> Select(
+        Thing thing,
         CancellationToken ct = default);
 
     /// <summary>
@@ -300,8 +303,8 @@ public interface ISurrealDatabase {
     ///     This function will run the following query in the database:
     ///     <code>CREATE $thing CONTENT $data;</code>
     /// </remarks>
-    public Task<ISurrealResponse> Create(
-        SurrealThing thing,
+    public Task<IResponse> Create(
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -315,8 +318,8 @@ public interface ISurrealDatabase {
     ///     This function will run the following query in the database:
     ///     <code>UPDATE $thing CONTENT $data;</code>
     /// </remarks>
-    public Task<ISurrealResponse> Update(
-        SurrealThing thing,
+    public Task<IResponse> Update(
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -330,8 +333,8 @@ public interface ISurrealDatabase {
     ///     This function will run the following query in the database:
     ///     <code>UPDATE $thing MERGE $data;</code>
     /// </remarks>
-    public Task<ISurrealResponse> Change(
-        SurrealThing thing,
+    public Task<IResponse> Change(
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -345,8 +348,8 @@ public interface ISurrealDatabase {
     ///     This function will run the following query in the database:
     ///     <code>UPDATE $thing PATCH $data;</code>
     /// </remarks>
-    public Task<ISurrealResponse> Modify(
-        SurrealThing thing,
+    public Task<IResponse> Modify(
+        Thing thing,
         object data,
         CancellationToken ct = default);
 
@@ -358,7 +361,7 @@ public interface ISurrealDatabase {
     ///     This function will run the following query in the database:
     ///     <code>DELETE * FROM $thing;</code>
     /// </remarks>
-    public Task<ISurrealResponse> Delete(
-        SurrealThing thing,
+    public Task<IResponse> Delete(
+        Thing thing,
         CancellationToken ct = default);
 }

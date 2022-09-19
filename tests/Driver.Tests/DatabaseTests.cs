@@ -1,22 +1,25 @@
 ﻿using System.Diagnostics;
 using System.Runtime.CompilerServices;
 
-using Surreal.Net.Database;
+using SurrealDB.Abstractions;
+using SurrealDB.Driver.Rest;
+using SurrealDB.Driver.Rpc;
+using SurrealDB.Models;
 
-namespace Surreal.Net.Tests;
+namespace SurrealDB.Driver.Tests;
 
-public sealed class RpcDatabaseTest : DatabaseTestDriver<DbRpc, SurrealRpcResponse> {
+public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc, RpcResponse> {
     
 }
 
-public sealed class RestDatabaseTest : DatabaseTestDriver<DbRest, SurrealRestResponse> {
+public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest, RestResponse> {
     
 }
 
 public abstract class DatabaseTestDriver<T, U>
     : DriverBase<T>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
     
     [Fact]
     protected override async Task TestSuite() {
@@ -34,7 +37,7 @@ public abstract class DatabaseTestDriver<T, U>
         //AssertOk(await Database.Invalidate());
 
         (string id1, string id2) = ("id1", "id2");
-        ISurrealResponse res1 = await Database.Create(
+        IResponse res1 = await Database.Create(
             "person",
             new {
                 Title = "Founder & CEO", Name = new { First = "Tobie", Last = "Morgan Hitchcock", }, Marketing = true, Identifier = Random.Shared.Next(),
@@ -43,7 +46,7 @@ public abstract class DatabaseTestDriver<T, U>
 
         AssertOk(res1);
 
-        ISurrealResponse res2 = await Database.Create(
+        IResponse res2 = await Database.Create(
             "person",
             new {
                 Title = "Contributor", Name = new { First = "Prophet", Last = "Lamb", }, Marketing = false, Identifier = Random.Shared.Next(),
@@ -52,14 +55,14 @@ public abstract class DatabaseTestDriver<T, U>
 
         AssertOk(res2);
 
-        SurrealThing thing2 = SurrealThing.From("person", id2);
+        Thing thing2 = Thing.From("person", id2);
         AssertOk(await Database.Update(thing2, new { Marketing = false, }));
 
         AssertOk(await Database.Select(thing2));
 
         AssertOk(await Database.Delete(thing2));
 
-        SurrealThing thing1 = SurrealThing.From("person", id1);
+        Thing thing1 = Thing.From("person", id1);
         AssertOk(
             await Database.Change(
                 thing1,
@@ -105,7 +108,7 @@ public abstract class DriverBase<T>
 
     [DebuggerStepThrough]
     protected void AssertOk(
-        in ISurrealResponse rpcResponse,
+        in IResponse rpcResponse,
         [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
         if (!rpcResponse.TryGetError(out SurrealError err)) {

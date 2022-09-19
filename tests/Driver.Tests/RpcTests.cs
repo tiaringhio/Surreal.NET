@@ -1,4 +1,4 @@
-namespace Surreal.Net.Tests;
+namespace SurrealDB.Driver.Tests;
 
 #if Debug
 public class RpcClientTests

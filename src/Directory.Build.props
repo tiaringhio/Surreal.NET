@@ -1,7 +1,19 @@
 ﻿<Project>
 	<PropertyGroup>
-		<SurrealDriverVersion>1.0.2</SurrealDriverVersion>
-
+		<SurrealDriverRestVersion>1.0.2</SurrealDriverRestVersion>
+		<SurrealDriverRpcVersion>1.0.2</SurrealDriverRpcVersion>
+		<SurrealAbstractionsVersion>1.0.2</SurrealAbstractionsVersion>
+		<SurrealCommonVersion>1.0.2</SurrealCommonVersion>
+		<SurrealConfigVersion>1.0.2</SurrealConfigVersion>
+		<SurrealJsonVersion>1.0.2</SurrealJsonVersion>
+		<SurrealModelsVersion>1.0.2</SurrealModelsVersion>
+		<SurrealWsVersion>1.0.2</SurrealWsVersion>
+	</PropertyGroup>
+	
+	<PropertyGroup>
+		<TargetFramework>net6.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
 	<PropertyGroup>

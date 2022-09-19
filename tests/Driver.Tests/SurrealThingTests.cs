@@ -1,4 +1,6 @@
-namespace Surreal.Net.Tests;
+using SurrealDB.Models;
+
+namespace SurrealDB.Driver.Tests;
 
 public class SurrealThingTests {
 
@@ -13,7 +15,7 @@ public class SurrealThingTests {
     public void TableSurrealThing() {
         var table = "TableName";
 
-        var surrealThing = SurrealThing.From(table);
+        var surrealThing = Thing.From(table);
 
 
         surrealThing.ToString().Should().BeEquivalentTo(table);
@@ -28,7 +30,7 @@ public class SurrealThingTests {
         var table = "TableName";
         var expectedThing = $"{table}:{key}";
 
-        var surrealThing = SurrealThing.From(table, key);
+        var surrealThing = Thing.From(table, key);
         
         surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
@@ -42,7 +44,7 @@ public class SurrealThingTests {
         var table = "TableName";
         var expectedThing = $"{table}:{key}";
 
-        var surrealThing = SurrealThing.From(expectedThing);
+        var surrealThing = Thing.From(expectedThing);
 
         surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
@@ -54,10 +56,10 @@ public class SurrealThingTests {
     [MemberData(nameof(ComplexKeys))]
     public void TableAndKeyWithComplexCharacterSurrealThing(string key) {
         var table = "TableName";
-        var escapedKey = $"{SurrealThing.CHAR_PRE}{key}{SurrealThing.CHAR_SUF}";
+        var escapedKey = $"{Thing.CHAR_PRE}{key}{Thing.CHAR_SUF}";
         var expectedThing = $"{table}:{escapedKey}";
 
-        var surrealThing = SurrealThing.From(table, key).Escape();
+        var surrealThing = Thing.From(table, key).Escape();
 
         surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
@@ -70,10 +72,10 @@ public class SurrealThingTests {
     [MemberData(nameof(ComplexKeys))]
     public void TableAndKeyAlreadyEscapedSurrealThing(string key) {
         var table = "TableName";
-        var escapedKey = $"{SurrealThing.CHAR_PRE}{key}{SurrealThing.CHAR_SUF}";
+        var escapedKey = $"{Thing.CHAR_PRE}{key}{Thing.CHAR_SUF}";
         var expectedThing = $"{table}:{escapedKey}";
 
-        var surrealThing = SurrealThing.From(table, escapedKey).Escape();
+        var surrealThing = Thing.From(table, escapedKey).Escape();
 
 
         surrealThing.ToString().Should().BeEquivalentTo(expectedThing);

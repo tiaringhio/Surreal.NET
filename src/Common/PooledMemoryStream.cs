@@ -1,41 +1,10 @@
-﻿using System.Buffers;
+using System.Buffers;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Surreal.Net;
-
-/// <summary>
-///     Encapsulates the logic of caching the last synchronously completed task of integer.
-///     Used in classes like <see cref="MemoryStream" /> to reduce allocations.
-/// </summary>
-/// <remarks>
-///     Source: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Threading/Tasks/CachedCompletedInt32Task.cs
-/// </remarks>
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    struct CachedCompletedInt32Task {
-    private Task<int>? _task;
-
-    /// <summary> Gets a completed <see cref="Task{Int32}" /> whose result is <paramref name="result" />. </summary>
-    /// <remarks> This method will try to return an already cached task if available. </remarks>
-    /// <param name="result"> The result value for which a <see cref="Task{Int32}" /> is needed. </param>
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public Task<int> GetTask(int result) {
-        if (_task is { } task) {
-            Debug.Assert(task.IsCompletedSuccessfully, "Expected that a stored last task completed successfully");
-            if (task.Result == result) {
-                return task;
-            }
-        }
-
-        return _task = Task.FromResult(result);
-    }
-}
+namespace SurrealDB.Common;
 
 /// <summary>
 /// </summary>
@@ -206,7 +175,7 @@ internal
     }
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal Memory<byte> InternalReadMemory(int count) {
+    public Memory<byte> InternalReadMemory(int count) {
         EnsureNotClosed();
 
         int origPos = Pos;
@@ -508,32 +477,32 @@ internal
 
         switch (loc) {
         case SeekOrigin.Begin: {
-                int tempPosition = unchecked((int)offset);
-                if (offset < 0 || tempPosition < 0) {
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                }
-
-                Pos = tempPosition;
-                break;
+            int tempPosition = unchecked((int)offset);
+            if (offset < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
             }
+
+            Pos = tempPosition;
+            break;
+        }
         case SeekOrigin.Current: {
-                int tempPosition = unchecked(Pos + (int)offset);
-                if (unchecked(Pos + offset) < 0 || tempPosition < 0) {
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                }
-
-                Pos = tempPosition;
-                break;
+            int tempPosition = unchecked(Pos + (int)offset);
+            if (unchecked(Pos + offset) < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
             }
+
+            Pos = tempPosition;
+            break;
+        }
         case SeekOrigin.End: {
-                int tempPosition = unchecked(_length + (int)offset);
-                if (unchecked(_length + offset) < 0 || tempPosition < 0) {
-                    throw new IOException("Attempted to seek before the beginning of the stream.");
-                }
-
-                Pos = tempPosition;
-                break;
+            int tempPosition = unchecked(_length + (int)offset);
+            if (unchecked(_length + offset) < 0 || tempPosition < 0) {
+                throw new IOException("Attempted to seek before the beginning of the stream.");
             }
+
+            Pos = tempPosition;
+            break;
+        }
         default:
             throw new ArgumentException("Invalid SeekOrigin");
         }
@@ -748,8 +717,12 @@ internal
         stream.Write(GetBufferSpan().Slice(0, _length));
     }
 
-    public ReadOnlyMemory<byte> GetConsumedBuffer() {
+    public ReadOnlyMemory<byte> GetBehindBuffer() {
         return GetBuffer().Slice(0, Pos);
+    }
+
+    public ReadOnlyMemory<byte> GetAheadBuffer() {
+        return GetBuffer().Slice(Pos, _length - Pos);
     }
 
     public string GetAsString(Encoding? encoding = null) {

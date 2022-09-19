@@ -4,13 +4,17 @@ using System.Text.Json;
 
 using Rustic;
 
-namespace Surreal.Net.Database;
+using SurrealDB.Abstractions;
+using SurrealDB.Json;
+using SurrealDB.Models;
 
-public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable {
+namespace SurrealDB.Driver.Rest;
+
+public sealed class DatabaseRest : IDatabase<RestResponse>, IDisposable {
     private readonly HttpClient _client = new();
-    private SurrealConfig _config;
+    private Config.Config _config;
 
-    private static Task<SurrealRestResponse> CompletedOk => Task.FromResult(SurrealRestResponse.EmptyOk);
+    private static Task<RestResponse> CompletedOk => Task.FromResult(RestResponse.EmptyOk);
 
     private readonly Dictionary<string, object?> _vars = new();
 
@@ -20,12 +24,12 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         _client.Dispose();
     }
 
-    public SurrealConfig GetConfig() {
+    public Config.Config GetConfig() {
         return _config;
     }
 
     public Task Open(
-        SurrealConfig config,
+        Config.Config config,
         CancellationToken ct = default) {
         config.ThrowIfInvalid();
         _config = config;
@@ -49,11 +53,11 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
     /// <summary>
     ///     UNSUPPORTED FOR REST IMPLEMENTATION
     /// </summary>
-    public Task<SurrealRestResponse> Info(CancellationToken ct = default) {
+    public Task<RestResponse> Info(CancellationToken ct = default) {
         return CompletedOk;
     }
 
-    public Task<SurrealRestResponse> Use(
+    public Task<RestResponse> Use(
         string db,
         string ns,
         CancellationToken ct = default) {
@@ -62,34 +66,34 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return CompletedOk;
     }
 
-    public async Task<SurrealRestResponse> Signup(
-        SurrealAuthentication auth,
+    public async Task<RestResponse> Signup(
+        Authentication auth,
         CancellationToken ct = default) {
         return await Signup(ToJsonContent(auth), ct);
     }
 
-    public async Task<SurrealRestResponse> Signin(
-        SurrealAuthentication auth,
+    public async Task<RestResponse> Signin(
+        Authentication auth,
         CancellationToken ct = default) {
         SetAuth(auth.Username, auth.Password);
         HttpResponseMessage rsp = await _client.PostAsync("signin", ToJsonContent(auth), ct);
         return await rsp.ToSurreal();
     }
 
-    public Task<SurrealRestResponse> Invalidate(CancellationToken ct = default) {
+    public Task<RestResponse> Invalidate(CancellationToken ct = default) {
         SetUse(null, null);
         RemoveAuth();
 
         return CompletedOk;
     }
 
-    public Task<SurrealRestResponse> Authenticate(
+    public Task<RestResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
         throw new NotSupportedException(); // TODO: Is it tho???
     }
 
-    public Task<SurrealRestResponse> Let(
+    public Task<RestResponse> Let(
         string key,
         object? value,
         CancellationToken ct = default) {
@@ -102,7 +106,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return CompletedOk;
     }
 
-    public async Task<SurrealRestResponse> Query(
+    public async Task<RestResponse> Query(
         string sql,
         IReadOnlyDictionary<string, object?>? vars,
         CancellationToken ct = default) {
@@ -111,31 +115,31 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return await Query(content, ct);
     }
 
-    public async Task<SurrealRestResponse> Select(
-        SurrealThing thing,
+    public async Task<RestResponse> Select(
+        Thing thing,
         CancellationToken ct = default) {
         HttpRequestMessage requestMessage = ToRequestMessage(HttpMethod.Get, BuildRequestUri(thing));
         HttpResponseMessage rsp = await _client.SendAsync(requestMessage, ct);
         return await rsp.ToSurreal();
     }
 
-    public async Task<SurrealRestResponse> Create(
-        SurrealThing thing,
+    public async Task<RestResponse> Create(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
         return await Create(thing, ToJsonContent(data), ct);
     }
 
 
-    public async Task<SurrealRestResponse> Update(
-        SurrealThing thing,
+    public async Task<RestResponse> Update(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
         return await Update(thing, ToJsonContent(data), ct);
     }
 
-    public async Task<SurrealRestResponse> Change(
-        SurrealThing thing,
+    public async Task<RestResponse> Change(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
         // Is this the most optimal way?
@@ -144,8 +148,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return await Query(sql, vars, ct);
     }
 
-    public async Task<SurrealRestResponse> Modify(
-        SurrealThing thing,
+    public async Task<RestResponse> Modify(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
         HttpRequestMessage req = ToRequestMessage(HttpMethod.Patch, BuildRequestUri(thing), ToJson(data));
@@ -153,8 +157,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return await rsp.ToSurreal();
     }
 
-    public async Task<SurrealRestResponse> Delete(
-        SurrealThing thing,
+    public async Task<RestResponse> Delete(
+        Thing thing,
         CancellationToken ct = default) {
         HttpRequestMessage requestMessage = ToRequestMessage(HttpMethod.Delete, BuildRequestUri(thing));
         HttpResponseMessage rsp = await _client.SendAsync(requestMessage, ct);
@@ -197,8 +201,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         _client.DefaultRequestHeaders.Add("NS", ns);
     }
 
-    /// <inheritdoc cref="Signup(SurrealAuthentication, CancellationToken)" />
-    public async Task<SurrealRestResponse> Signup(
+    /// <inheritdoc cref="Signup(Authentication, CancellationToken)" />
+    public async Task<RestResponse> Signup(
         HttpContent auth,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync("signup", auth, ct);
@@ -206,23 +210,23 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
     }
 
     /// <inheritdoc cref="Query(string, IReadOnlyDictionary{string, object?}?, CancellationToken)" />
-    public async Task<SurrealRestResponse> Query(
+    public async Task<RestResponse> Query(
         HttpContent sql,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync("sql", sql, ct);
         return await rsp.ToSurreal();
     }
 
-    public async Task<SurrealRestResponse> Create(
-        SurrealThing thing,
+    public async Task<RestResponse> Create(
+        Thing thing,
         HttpContent data,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync(BuildRequestUri(thing), data, ct);
         return await rsp.ToSurreal();
     }
 
-    public async Task<SurrealRestResponse> Update(
-        SurrealThing thing,
+    public async Task<RestResponse> Update(
+        Thing thing,
         HttpContent data,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PutAsync(BuildRequestUri(thing), data, ct);
@@ -230,7 +234,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
     }
 
     private string FormatUrl(
-        SurrealThing src,
+        Thing src,
         IReadOnlyDictionary<string, object?>? addVars = null) {
 
         return FormatVars(src.ToUri(), addVars);
@@ -282,7 +286,7 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
         return result.ToString();
     }
 
-    private string BuildRequestUri(SurrealThing thing) {
+    private string BuildRequestUri(Thing thing) {
         return $"key/{FormatUrl(thing)}";
     }
 
