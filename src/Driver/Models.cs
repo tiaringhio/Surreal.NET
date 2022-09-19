@@ -221,6 +221,9 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
     };
 
+    /// <summary>
+    /// Parses a <see cref="HttpResponseMessage"/> containing JSON to a <see cref="SurrealRestResponse"/>. 
+    /// </summary>
     public static async Task<SurrealRestResponse> From(
         HttpResponseMessage msg,
         CancellationToken ct = default) {
@@ -233,7 +236,33 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
         var successDocuments = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
         var successDocument = successDocuments?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
 
+        if (await PeekIsEmpty(stream, ct)) {
+            // Success and empty message -> invalid json
+            return EmptyOk;
+        }
+
+        var successDocuments = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
+        var successDocument = successDocuments?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
+
         return From(successDocument);
+    }
+
+    /// <summary>
+    /// Attempts to peek the next byte of the stream. 
+    /// </summary>
+    /// <remarks>
+    /// Resets the stream to the original position.
+    /// </remarks>
+    private static async Task<bool> PeekIsEmpty(
+        Stream stream,
+        CancellationToken ct) {
+        Debug.Assert(stream.CanSeek && stream.CanRead);
+        using IMemoryOwner<byte> buffer = MemoryPool<byte>.Shared.Rent(1);
+        // This is more efficient, then ReadByte.
+        // Async, because this is the first request to the networkstream, thus no readahead is possible.
+        int read = await stream.ReadAsync(buffer.Memory.Slice(0, 1), ct);
+        stream.Seek(-read, SeekOrigin.Current);
+        return read <= 0;
     }
 
     public static SurrealRestResponse EmptyOk => new(null, "ok", null, null, default);
