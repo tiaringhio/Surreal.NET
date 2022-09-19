@@ -12,17 +12,21 @@
   </p>
 
 
+## Notice
+
+ Check out [ProphetLamb's repo](https://github.com/ProphetLamb/Surreal.NET) for RPC + REST implementation with full support be the Surreal community.
+
 
 ## Table of contents
 
 - [Table of contents](#table-of-contents)
 - [About the project](#about-the-project)
-- [Contributing](#contributing)
+- [License](#license)
 - [Contributors](#contributors)
 
 # About The Project
 
-This project is aimed to be a .NET wrapper around [SurrealDB](https://surrealdb.com)'s REST API (and in the future also around the Websocket implementation), it's still very much in open development (something is working but maybe not in the right way).
+This project is aimed to be a .NET wrapper around [SurrealDB](https://surrealdb.com)'s REST API, it's still very much in open development (something is working but maybe not in the right way).
 
 ## Contributing
 
