@@ -454,8 +454,10 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         if (_json.ValueKind == JsonValueKind.Array) {
             TryGetObjectCollection<T>(out var documents);
             document = documents.FirstOrDefault();
-        } else {
+        } else if (_json.ValueKind == JsonValueKind.Object) {
             document = _json.Deserialize<T>(Constants.JsonOptions);
+        } else {
+            document = default(T);
         }
         return document is not null;
     }
