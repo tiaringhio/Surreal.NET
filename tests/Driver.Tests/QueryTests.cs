@@ -138,11 +138,9 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
-        Assert.Single(returnedDocuments);
-        var returnedDocument = returnedDocuments.Single();
-        Assert.IsType<TValue>(returnedDocument);
-        Assert.Equal(expectedResult, returnedDocument);
+        Assert.True(result.TryGetObject(out TValue? doc));
+        Assert.IsType<TValue>(doc);
+        doc.Should().BeEquivalentTo(expectedResult);
     }
 
     [Fact]
@@ -162,11 +160,9 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
-        Assert.Single(returnedDocuments);
-        var returnedDocument = returnedDocuments.Single();
-        Assert.IsType<TValue>(returnedDocument);
-        Assert.Equal(expectedResult, returnedDocument);
+        Assert.True(result.TryGetObject(out TValue? doc));
+        Assert.IsType<TValue>(doc);
+        doc.Should().BeEquivalentTo(expectedResult);
     }
 
     [Fact]
@@ -186,11 +182,9 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
-        Assert.Single(returnedDocuments);
-        var returnedDocument = returnedDocuments.Single();
-        Assert.IsType<TValue>(returnedDocument);
-        Assert.Equal(expectedResult, returnedDocument);
+        Assert.True(result.TryGetObject(out TValue? doc));
+        Assert.IsType<TValue>(doc);
+        doc.Should().BeEquivalentTo(expectedResult);
     }
 
     [Fact]
@@ -210,11 +204,9 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
-        Assert.Single(returnedDocuments);
-        var returnedDocument = returnedDocuments.Single();
-        Assert.IsType<TValue>(returnedDocument);
-        Assert.Equal(expectedResult, returnedDocument);
+        Assert.True(result.TryGetObject(out TValue? doc));
+        Assert.IsType<TValue>(doc);
+        doc.Should().BeEquivalentTo(expectedResult);
     }
 }
 
@@ -247,11 +239,9 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<TestObject<TKey, TValue>>? returnedDocuments));
-        Assert.Single(returnedDocuments);
-        var returnedDocument = returnedDocuments.Single();
-        Assert.IsType<TestObject<TKey, TValue>>(returnedDocument);
-        expectedObject.Should().BeEquivalentTo(returnedDocument);
+        Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
+        Assert.IsType<TestObject<TKey, TValue>>(doc);
+        expectedObject.Should().BeEquivalentTo(doc);
     }
 
     [Fact]
@@ -271,11 +261,9 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<TestObject<TKey, TValue>>? returnedDocuments));
-        Assert.Single(returnedDocuments);
-        var returnedDocument = returnedDocuments.Single();
-        Assert.IsType<TestObject<TKey, TValue>>(returnedDocument);
-        expectedObject.Should().BeEquivalentTo(returnedDocument);
+        Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
+        Assert.IsType<TestObject<TKey, TValue>>(doc);
+        expectedObject.Should().BeEquivalentTo(doc);
     }
 
     [Fact]
@@ -295,11 +283,9 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<TestObject<TKey, TValue>>? returnedDocuments));
-        Assert.Single(returnedDocuments);
-        var returnedDocument = returnedDocuments.Single();
-        Assert.IsType<TestObject<TKey, TValue>>(returnedDocument);
-        expectedObject.Should().BeEquivalentTo(returnedDocument);
+        Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
+        Assert.IsType<TestObject<TKey, TValue>>(doc);
+        expectedObject.Should().BeEquivalentTo(doc);
     }
 }
 

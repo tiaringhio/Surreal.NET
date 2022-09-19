@@ -89,7 +89,7 @@ internal
         req.Params ??= EmptyList;
 
         await using PooledMemoryStream stream = new(DefaultBufferSize);
-
+        
         await JsonSerializer.SerializeAsync(stream, req, Constants.JsonOptions, ct);
         await _ws!.SendAsync(stream.GetConsumedBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
         stream.Position = 0;

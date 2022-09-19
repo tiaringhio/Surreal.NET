@@ -66,7 +66,8 @@ public abstract class RoundTripTests<T, U>
     [Fact]
     public async Task CreateAndParameterizedQueryRoundTripTest() {
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
-        await Database.Create(thing, Expected);
+        U rsp = await Database.Create(thing, Expected);
+        rsp.IsOk.Should().BeTrue();
         string sql = "SELECT * FROM $thing";
         Dictionary<string, object?> param = new() {
             ["thing"] = thing,
