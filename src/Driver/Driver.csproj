@@ -1,20 +1,5 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
-	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
-		<ImplicitUsings>enable</ImplicitUsings>
-		<Nullable>enable</Nullable>
-		<RootNamespace>Surreal.Net</RootNamespace>
-		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-	</PropertyGroup>
-
-	<PropertyGroup Label="Nuget Pack Options">
-		<Description>Database driver for SurrealDB</Description>
-		<PackageVersion>$(SurrealDriverVersion)</PackageVersion>
-		<PackageId>Surreal.Net.Driver</PackageId>
-		<PackageTags>surrealdb sql nosql database connector</PackageTags>
-	</PropertyGroup>
-
 	<ItemGroup>
 		<PackageReference Include="Rustic.Common" Version="0.5.80" />
 	</ItemGroup>
@@ -22,5 +7,10 @@
 
 	<ItemGroup>
 		<None Include="$(SolutionDir)/README.md" Pack="true" PackagePath="/" />
+	</ItemGroup>
+
+
+	<ItemGroup>
+	  <ProjectReference Include="$(SolutionDir)/src/Ws/Ws.csproj" />
 	</ItemGroup>
 </Project>

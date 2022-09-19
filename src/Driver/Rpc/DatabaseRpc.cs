@@ -1,17 +1,22 @@
-﻿namespace Surreal.Net.Database;
+﻿using SurrealDB.Abstractions;
+using SurrealDB.Config;
+using SurrealDB.Models;
+using SurrealDB.Ws;
 
-public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
-    private readonly JsonRpcClient _client = new();
-    private SurrealConfig _config;
+namespace SurrealDB.Driver.Rpc;
+
+public sealed class DatabaseRpc : IDatabase<RpcResponse> {
+    private readonly WsClient _client = new();
+    private Config.Config _config;
 
     /// <inheritdoc />
-    public SurrealConfig GetConfig() {
+    public Config.Config GetConfig() {
         return _config;
     }
 
     /// <inheritdoc />
     public async Task Open(
-        SurrealConfig config,
+        Config.Config config,
         CancellationToken ct = default) {
         config.ThrowIfInvalid();
         _config = config;
@@ -33,16 +38,16 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
 
     /// <param name="ct"> </param>
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Info(CancellationToken ct) {
+    public async Task<RpcResponse> Info(CancellationToken ct) {
         return await _client.Send(new() { Method = "info", }).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Use(
+    public async Task<RpcResponse> Use(
         string? db,
         string? ns,
         CancellationToken ct = default) {
-        RpcResponse rsp = await _client.Send(new() { Method = "use", Params = new() { db, ns, }, }, ct);
+        WsResponse rsp = await _client.Send(new() { Method = "use", Params = new() { db, ns, }, }, ct);
 
         if (!rsp.Error.HasValue) {
             _config.Database = db;
@@ -53,36 +58,36 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Signup(
-        SurrealAuthentication auth,
+    public async Task<RpcResponse> Signup(
+        Authentication auth,
         CancellationToken ct = default) {
         return await _client.Send(new() { Method = "signup", Params = new() { auth, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Signin(
-        SurrealAuthentication auth,
+    public async Task<RpcResponse> Signin(
+        Authentication auth,
         CancellationToken ct = default) {
-        RpcResponse rsp = await _client.Send(new() { Method = "signin", Params = new() { auth, }, }, ct);
+        WsResponse rsp = await _client.Send(new() { Method = "signin", Params = new() { auth, }, }, ct);
 
         // TODO: Update auth
         return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Invalidate(CancellationToken ct = default) {
+    public async Task<RpcResponse> Invalidate(CancellationToken ct = default) {
         return await _client.Send(new() { Method = "invalidate", }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Authenticate(
+    public async Task<RpcResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
         return await _client.Send(new() { Method = "authenticate", Params = new() { token, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Let(
+    public async Task<RpcResponse> Let(
         string key,
         object? value,
         CancellationToken ct = default) {
@@ -90,61 +95,61 @@ public sealed class DbRpc : ISurrealDatabase<SurrealRpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Query(
+    public async Task<RpcResponse> Query(
         string sql,
         IReadOnlyDictionary<string, object?>? vars,
         CancellationToken ct = default) {
-        RpcRequest req = new() { Method = "query", Params = new() { sql, vars, }, };
-        RpcResponse rsp = await _client.Send(req, ct);
+        WsRequest req = new() { Method = "query", Params = new() { sql, vars, }, };
+        WsResponse rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Select(
-        SurrealThing thing,
+    public async Task<RpcResponse> Select(
+        Thing thing,
         CancellationToken ct = default) {
-        RpcRequest req = new() { Method = "select", Params = new() { thing, }, };
-        RpcResponse rsp = await _client.Send(req, ct);
+        WsRequest req = new() { Method = "select", Params = new() { thing, }, };
+        WsResponse rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Create(
-        SurrealThing thing,
+    public async Task<RpcResponse> Create(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
-        RpcRequest req = new() { Method = "create", Async = true, Params = new() { thing, data, }, };
-        RpcResponse rsp = await _client.Send(req, ct);
+        WsRequest req = new() { Method = "create", Async = true, Params = new() { thing, data, }, };
+        WsResponse rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Update(
-        SurrealThing thing,
+    public async Task<RpcResponse> Update(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
         return await _client.Send(new() { Method = "update", Params = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Change(
-        SurrealThing thing,
+    public async Task<RpcResponse> Change(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
         return await _client.Send(new() { Method = "change", Params = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Modify(
-        SurrealThing thing,
+    public async Task<RpcResponse> Modify(
+        Thing thing,
         object data,
         CancellationToken ct = default) {
         return await _client.Send(new() { Method = "modify", Params = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<SurrealRpcResponse> Delete(
-        SurrealThing thing,
+    public async Task<RpcResponse> Delete(
+        Thing thing,
         CancellationToken ct = default) {
         return await _client.Send(new() { Method = "delete", Params = new() { thing, }, }, ct).ToSurreal();
     }

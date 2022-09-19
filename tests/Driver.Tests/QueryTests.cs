@@ -1,24 +1,27 @@
 using System.Text.Json.Serialization;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Surreal.Net.Database;
 
-namespace Surreal.Net.Tests;
+using SurrealDB.Abstractions;
+using SurrealDB.Driver.Rest;
+using SurrealDB.Driver.Rpc;
+using SurrealDB.Models;
 
-public class RestStringQueryTests : StringQueryTests<DbRest, SurrealRestResponse> { }
-public class RpcStringQueryTests : StringQueryTests<DbRpc, SurrealRpcResponse> { }
+namespace SurrealDB.Driver.Tests;
 
-public class RpcIntQueryTests : IntQueryTests<DbRpc, SurrealRpcResponse> { }
-public class RestIntQueryTests : IntQueryTests<DbRest, SurrealRestResponse> { }
+public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> { }
+public class RpcStringQueryTests : StringQueryTests<DatabaseRpc, RpcResponse> { }
 
-public class RpcGuidQueryTests : GuidQueryTests<DbRpc, SurrealRpcResponse> { }
-public class RestGuidQueryTests : GuidQueryTests<DbRest, SurrealRestResponse> { }
+public class RpcIntQueryTests : IntQueryTests<DatabaseRpc, RpcResponse> { }
+public class RestIntQueryTests : IntQueryTests<DatabaseRest, RestResponse> { }
 
-public class RpcFloatQueryTests : FloatQueryTests<DbRpc, SurrealRpcResponse> { }
-public class RestFloatQueryTests : FloatQueryTests<DbRest, SurrealRestResponse> { }
+public class RpcGuidQueryTests : GuidQueryTests<DatabaseRpc, RpcResponse> { }
+public class RestGuidQueryTests : GuidQueryTests<DatabaseRest, RestResponse> { }
+
+public class RpcFloatQueryTests : FloatQueryTests<DatabaseRpc, RpcResponse> { }
+public class RestFloatQueryTests : FloatQueryTests<DatabaseRest, RestResponse> { }
 
 public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
 
     protected override string RandomKey() {
         return RandomString();
@@ -36,8 +39,8 @@ public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
 }
 
 public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
 
     protected override int RandomKey() {
         return RandomInt();
@@ -57,8 +60,8 @@ public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
 }
 
 public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
 
     protected override float RandomKey() {
         return RandomFloat();
@@ -78,8 +81,8 @@ public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float
 }
 
 public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, int, int>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
 
     protected override int RandomKey() {
         return RandomInt();
@@ -99,8 +102,8 @@ public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, int, int>
 }
 
 public abstract class GuidQueryTests <T, U> : QueryTests<T, U, Guid, Guid>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
 
     protected override Guid RandomKey() {
         return RandomGuid();
@@ -116,8 +119,8 @@ public abstract class GuidQueryTests <T, U> : QueryTests<T, U, Guid, Guid>
 }
 
 public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey, TValue>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
     
     protected abstract string ValueCast();
 
@@ -137,7 +140,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out TValue? doc));
         Assert.IsType<TValue>(doc);
         doc.Should().BeEquivalentTo(expectedResult);
@@ -159,7 +162,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out TValue? doc));
         Assert.IsType<TValue>(doc);
         doc.Should().BeEquivalentTo(expectedResult);
@@ -181,7 +184,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out TValue? doc));
         Assert.IsType<TValue>(doc);
         doc.Should().BeEquivalentTo(expectedResult);
@@ -203,7 +206,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out TValue? doc));
         Assert.IsType<TValue>(doc);
         doc.Should().BeEquivalentTo(expectedResult);
@@ -211,8 +214,8 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
 }
 
 public abstract class QueryTests<T, U, TKey, TValue>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
     protected T Database;
 
     protected QueryTests() {
@@ -227,7 +230,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
     public async Task SimpleSelectQueryTest() {
         var expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
         
-        SurrealThing thing = SurrealThing.From("object", expectedObject.Key!.ToString());
+        Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
         string sql = "SELECT * FROM $thing";
         Dictionary<string, object?> param = new() {
@@ -238,7 +241,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
         Assert.IsType<TestObject<TKey, TValue>>(doc);
         expectedObject.Should().BeEquivalentTo(doc);
@@ -248,7 +251,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
     public async Task SimpleSelectFromWhereQueryTest() {
         var expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
 
-        SurrealThing thing = SurrealThing.From("object", expectedObject.Key!.ToString());
+        Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
 
         string sql = "SELECT * FROM object WHERE id = $thing";
@@ -260,7 +263,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
         Assert.IsType<TestObject<TKey, TValue>>(doc);
         expectedObject.Should().BeEquivalentTo(doc);
@@ -270,7 +273,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
     public async Task SimpleSelectFromWhereValueQueryTest() {
         var expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
 
-        SurrealThing thing = SurrealThing.From("object", expectedObject.Key!.ToString());
+        Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
 
         string sql = "SELECT * FROM object WHERE Value = $value";
@@ -282,7 +285,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
         Assert.IsType<TestObject<TKey, TValue>>(doc);
         expectedObject.Should().BeEquivalentTo(doc);

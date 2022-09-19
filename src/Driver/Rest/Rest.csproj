@@ -1,0 +1,24 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Driver.Rest</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>REST based database driver for SurrealDB</Description>
+		<PackageVersion>$(SurrealDriverRestVersion)</PackageVersion>
+		<PackageId>SurrealDB.Driver.Rest</PackageId>
+		<PackageTags>surrealdb sql nosql database connector rest</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
+	  <ProjectReference Include="..\..\Config\Config.csproj" />
+	  <ProjectReference Include="..\Rpc\Rpc.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Rustic.Common" Version="0.5.80" />
+	</ItemGroup>
+
+</Project>

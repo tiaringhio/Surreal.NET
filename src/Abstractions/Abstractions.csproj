@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Abstractions</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>Abstractions for the SurrealDB driver</Description>
+		<PackageVersion>$(SurrealAbstractionsVersion)</PackageVersion>
+		<PackageId>SurrealDB.Abstractions</PackageId>
+		<PackageTags>surrealdb sql nosql database connector abstractions</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Config\Config.csproj" />
+	  <ProjectReference Include="..\Models\Models.csproj" />
+	</ItemGroup>
+
+</Project>

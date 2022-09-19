@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Json</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>JSON utility for the SurrealDB driver</Description>
+		<PackageVersion>$(SurrealJsonVersion)</PackageVersion>
+		<PackageId>SurrealDB.Json</PackageId>
+		<PackageTags>surrealdb sql nosql database connector</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Rustic.Common" Version="0.5.80" />
+	</ItemGroup>
+
+</Project>

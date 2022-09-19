@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Ws</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>Websocket utility for the SurrealDB driver</Description>
+		<PackageVersion>$(SurrealWsVersion)</PackageVersion>
+		<PackageId>SurrealDB.Ws</PackageId>
+		<PackageTags>surrealdb sql nosql database connector</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Common\Common.csproj" />
+	  <ProjectReference Include="..\Json\Json.csproj" />
+	</ItemGroup>
+	
+</Project>

@@ -1,8 +1,10 @@
-﻿using System.Net.WebSockets;
+using System.Net.WebSockets;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
-namespace Surreal.Net;
+using SurrealDB.Common;
+using SurrealDB.Json;
+
+namespace SurrealDB.Ws;
 
 /// <summary>
 ///     The client used to connect to the Surreal server via JSON RPC.
@@ -12,7 +14,7 @@ public
 #else
 internal
 #endif
-    sealed class JsonRpcClient : IDisposable, IAsyncDisposable {
+    sealed class WsClient : IDisposable, IAsyncDisposable {
     public const int DefaultBufferSize = 16 * 1024;
 
     // Do not get any funny ideas and fill this fucker up.
@@ -81,8 +83,8 @@ internal
     ///     Sends the specified request to the Surreal server, and returns the response.
     /// </summary>
     /// <param name="req"> The request to send </param>
-    public async Task<RpcResponse> Send(
-        RpcRequest req,
+    public async Task<WsResponse> Send(
+        WsRequest req,
         CancellationToken ct = default) {
         ThrowIfDisconnected();
         req.Id ??= GetRandomId(6);
@@ -91,7 +93,7 @@ internal
         await using PooledMemoryStream stream = new(DefaultBufferSize);
         
         await JsonSerializer.SerializeAsync(stream, req, Constants.JsonOptions, ct);
-        await _ws!.SendAsync(stream.GetConsumedBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
+        await _ws!.SendAsync(stream.GetBehindBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
         stream.Position = 0;
 
         ValueWebSocketReceiveResult res;
@@ -104,7 +106,7 @@ internal
         stream.Position = 0;
         stream.SetLength(len);
 
-        RpcResponse rsp = await JsonSerializer.DeserializeAsync<RpcResponse>(stream, Constants.JsonOptions, ct);
+        WsResponse rsp = await JsonSerializer.DeserializeAsync<WsResponse>(stream, Constants.JsonOptions, ct);
         return rsp;
     }
 
@@ -119,69 +121,4 @@ internal
             throw new InvalidOperationException("The connection is already open");
         }
     }
-}
-
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    struct RpcError {
-    [JsonPropertyName("code")]
-    public int Code { get; set; }
-
-    [JsonPropertyName("message"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
-    public string? Message { get; set; }
-}
-
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    struct RpcRequest {
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    [JsonPropertyName("async"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
-    public bool Async { get; set; }
-
-    [JsonPropertyName("method")]
-    public string? Method { get; set; }
-
-    [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
-    public List<object?> Params { get; set; }
-}
-
-
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    struct RpcResponse {
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    [JsonPropertyName("error"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
-    public RpcError? Error { get; set; }
-
-    [JsonPropertyName("result"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
-    public JsonElement Result { get; set; }
-}
-
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    struct RpcNotification {
-    [JsonPropertyName("id")]
-    public string? Id { get; set; }
-
-    [JsonPropertyName("method")]
-    public string? Method { get; set; }
-
-    [JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
-    public List<object?>? Params { get; set; }
 }

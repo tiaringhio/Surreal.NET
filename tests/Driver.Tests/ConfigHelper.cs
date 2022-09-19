@@ -1,4 +1,6 @@
-﻿namespace Surreal.Net.Tests;
+﻿using SurrealDB.Config;
+
+namespace SurrealDB.Driver.Tests;
 
 public static class ConfigHelper {
     public const string Loopback = "127.0.0.1";
@@ -8,7 +10,7 @@ public static class ConfigHelper {
     public const string Database = "test";
     public const string Namespace = "test";
 
-    public static SurrealConfig Default => SurrealConfig.Create()
+    public static Config.Config Default => Config.Config.Create()
        .WithAddress(Loopback)
        .WithPort(Port)
        .WithNamespace(Namespace)

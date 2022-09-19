@@ -1,0 +1,20 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Driver.Rpc</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>Websocket RPC based database driver for SurrealDB</Description>
+		<PackageVersion>$(SurrealDriverRpcVersion)</PackageVersion>
+		<PackageId>SurrealDB.Driver.Rpc</PackageId>
+		<PackageTags>surrealdb sql nosql database connector websockets</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
+	  <ProjectReference Include="..\..\Config\Config.csproj" />
+	  <ProjectReference Include="..\..\Ws\Ws.csproj" />
+	</ItemGroup>
+
+</Project>

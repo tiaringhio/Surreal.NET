@@ -3,19 +3,23 @@ using System.Text.Json.Serialization;
 
 using FluentAssertions.Extensions;
 
-using Surreal.Net.Database;
+using SurrealDB.Abstractions;
+using SurrealDB.Driver.Rest;
+using SurrealDB.Driver.Rpc;
+using SurrealDB.Json;
+using SurrealDB.Models;
 
-namespace Surreal.Net.Tests;
+namespace SurrealDB.Driver.Tests;
 
-public class RpcRoundTripTests : RoundTripTests<DbRpc, SurrealRpcResponse> {
+public class RpcRoundTripTests : RoundTripTests<DatabaseRpc, RpcResponse> {
 }
 
-public class RestRoundTripTests : RoundTripTests<DbRest, SurrealRestResponse> {
+public class RestRoundTripTests : RoundTripTests<DatabaseRest, RestResponse> {
 }
 
 public abstract class RoundTripTests<T, U>
-    where T : ISurrealDatabase<U>, new()
-    where U : ISurrealResponse {
+    where T : IDatabase<U>, new()
+    where U : IResponse {
     protected T Database;
     protected RoundTripObject Expected = new();
 
@@ -26,46 +30,46 @@ public abstract class RoundTripTests<T, U>
 
     [Fact]
     public async Task CreateRoundTripTest() {
-        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
         U response = await Database.Create(thing, Expected);
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
     [Fact]
     public async Task CreateAndSelectRoundTripTest() {
-        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, Expected);
         U response = await Database.Select(thing);
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
     [Fact]
     public async Task CreateAndQueryRoundTripTest() {
-        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
         await Database.Create(thing, Expected);
         string sql = $"SELECT * FROM \"{thing}\"";
         U response = await Database.Query(sql, null);
 
         response.Should().NotBeNull();
         AssertOk(response);
-        response.TryGetResult(out SurrealResult result).Should().BeTrue();
+        response.TryGetResult(out Result result).Should().BeTrue();
         result.TryGetObject(out RoundTripObject? returnedDocument).Should().BeTrue();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument!);
     }
 
     [Fact]
     public async Task CreateAndParameterizedQueryRoundTripTest() {
-        SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
         U rsp = await Database.Create(thing, Expected);
         rsp.IsOk.Should().BeTrue();
         string sql = "SELECT * FROM $thing";
@@ -77,13 +81,13 @@ public abstract class RoundTripTests<T, U>
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(response.TryGetResult(out Result result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
     protected void AssertOk(
-        in ISurrealResponse rpcResponse,
+        in IResponse rpcResponse,
         [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
         if (!rpcResponse.TryGetError(out SurrealError err)) {
