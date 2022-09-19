@@ -393,12 +393,32 @@ public enum SurrealResultKind : byte {
     UnsignedInteger,
     Float,
     Boolean,
+    Patch
 }
 
 public struct SurrealStatus {
     public JsonElement Result { get; set; }
     public string Status { get; set; }
     public string Time { get; set; }
+}
+
+public struct JsonPatch {
+    [JsonPropertyName("op")]
+    public Operation Op { get; set; }
+    [JsonPropertyName("path")]
+    public string? Path { get; set; }
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
+    
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum Operation {
+        Add,
+        Remove,
+        Replace,
+        Copy,
+        Move,
+        Test
+    }
 }
 
 /// <summary>
@@ -441,6 +461,16 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     public bool TryGetObject(out JsonElement document) {
         document = _json;
         return GetKind() == SurrealResultKind.Object;
+    }
+
+    public bool TryGetPatches([NotNullWhen(true)] out List<JsonPatch>? patches) {
+        if (_sentinelOrValue is List<JsonPatch> p) {
+            patches = p;
+            return true;
+        }
+
+        patches = default;
+        return false;
     }
     
     public bool TryGetObjectCollection<T>([NotNullWhen(true)] out List<T>? document) {
@@ -540,6 +570,14 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         //  }
         //]
 
+        // When merging the response is in the following format:
+        // `[[{"op": "replace", "path": "/Title", "value": "@@ +123 -123 @@ NEW_VALUE"}]]
+        // otherwise we have a list of status responses of length one.
+        // Handle the merge case.
+        if (GetJsonPath(in json, out List<JsonPatch>? patches)) {
+            return new(json, patches);
+        }
+        
         // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
         List<SurrealStatus>? docs = json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
         if (docs is not null && GetFirstStatus(docs, out SurrealResult surrealResult)) {
@@ -547,6 +585,32 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         }
 
         return new(json, null);
+    }
+
+    public static bool GetJsonPath(in JsonElement json, [NotNullWhen(true)] out List<JsonPatch>? patches) {
+        Debug.Assert(json.ValueKind == JsonValueKind.Array);
+        patches = null;
+        if (json.GetArrayLength() != 1) {
+            return false;
+        }
+        var outerEn = json.EnumerateArray();
+        if (!outerEn.MoveNext()) {
+            return false;
+        }
+
+        JsonElement inner = outerEn.Current;
+        if (inner.ValueKind != JsonValueKind.Array) {
+            return false;
+        }
+
+        var innerEn = inner.EnumerateArray();
+        patches = new();
+        while (innerEn.MoveNext()) {
+            JsonPatch p = innerEn.Current.Deserialize<JsonPatch>(Constants.JsonOptions);
+            patches.Add(p);
+        }
+        
+        return true;
     }
 
     private static bool GetFirstStatus(List<SurrealStatus> docs, out SurrealResult res) {
@@ -562,8 +626,8 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
                 // Skip over the statuses with no results
                 continue;
             }
-
-            res = new(result, null);
+            // Unbox embedded status
+            res = From(in result);
             return true;
         }
 
@@ -609,6 +673,10 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
             return _int64ValueField == DocumentValue ? SurrealResultKind.Document : SurrealResultKind.String;
         }
 
+        if (_sentinelOrValue is List<JsonPatch> patches) {
+            return SurrealResultKind.Patch;
+        }
+ 
         if (ReferenceEquals(NoneSentinel, _sentinelOrValue)) {
             return SurrealResultKind.None;
         }
