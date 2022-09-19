@@ -451,14 +451,12 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
     }
 
     public bool TryGetObject<T>([NotNullWhen(true)] out T? document) {
-        if (_json.ValueKind == JsonValueKind.Array) {
-            TryGetObjectCollection<T>(out var documents);
-            document = documents.FirstOrDefault();
-        } else if (_json.ValueKind == JsonValueKind.Object) {
-            document = _json.Deserialize<T>(Constants.JsonOptions);
-        } else {
-            document = default(T);
-        }
+        document = _json.ValueKind switch {
+            JsonValueKind.Array => TryGetObjectCollection(out List<T>? documents) ? documents.FirstOrDefault() : default,
+            JsonValueKind.Object => _json.Deserialize<T>(Constants.JsonOptions),
+            _ => default(T)
+        };
+
         return document is not null;
     }
 
@@ -545,9 +543,16 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         //]
 
         // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
-        List<SurrealStatus>? statusDocuments = json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
-        
-        foreach (SurrealStatus statusDocument in statusDocuments) {
+        List<SurrealStatus>? docs = json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
+        if (docs is not null && GetFirstStatus(docs, out SurrealResult surrealResult)) {
+            return surrealResult;
+        }
+
+        return new(json, null);
+    }
+
+    private static bool GetFirstStatus(List<SurrealStatus> docs, out SurrealResult res) {
+        foreach (SurrealStatus statusDocument in docs) {
             if (string.IsNullOrEmpty(statusDocument.Status) && string.IsNullOrEmpty(statusDocument.Time)) {
                 break; // This is not a status document and therefore must be a simple array of objects
             }
@@ -560,10 +565,12 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
                 continue;
             }
 
-            return new(result, null);
+            res = new(result, null);
+            return true;
         }
-        
-        return new(json, null);
+
+        res = default;
+        return false;
     }
 
     private static SurrealResult FromObject(in JsonElement json) {
