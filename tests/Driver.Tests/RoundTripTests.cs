@@ -60,11 +60,11 @@ public abstract class RoundTripTests<T, U>
         string sql = $"SELECT * FROM \"{thing}\"";
         U response = await Database.Query(sql, null);
 
-        Assert.NotNull(response);
+        response.Should().NotBeNull();
         AssertOk(response);
-        Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
+        response.TryGetResult(out SurrealResult result).Should().BeTrue();
+        result.TryGetObject(out RoundTripObject? returnedDocument).Should().BeTrue();
+        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument!);
     }
 
     [Fact]
