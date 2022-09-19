@@ -232,24 +232,8 @@ public sealed class DbRest : ISurrealDatabase<SurrealRestResponse>, IDisposable 
     private string FormatUrl(
         SurrealThing src,
         IReadOnlyDictionary<string, object?>? addVars = null) {
-        using StrBuilder result = src.Length > 512 ? new(src.Length) : new(stackalloc char[src.Length]);
-        if (!src.Table.IsEmpty) {
-            result.Append(EscapeDataSpan(src.Table));
-        }
 
-        if (!src.Table.IsEmpty && !src.Key.IsEmpty) {
-            result.Append('/');
-        }
-
-        if (!src.Key.IsEmpty) {
-            result.Append(EscapeDataSpan(src.Key));
-        }
-
-        return FormatVars(result.ToString(), addVars);
-    }
-
-    private static string EscapeDataSpan(in ReadOnlySpan<char> sp) {
-        return Uri.EscapeDataString(sp.ToString());
+        return FormatVars(src.ToUri(), addVars);
     }
 
     private string FormatVars(

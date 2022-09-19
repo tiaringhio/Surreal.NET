@@ -8,6 +8,8 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Rustic;
+
 namespace Surreal.Net;
 
 /// <summary>
@@ -159,6 +161,36 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
         return Thing.GetHashCode();
     }
 
+    public string ToUri() {
+        if (Length <= 0) {
+            return "";
+        }
+        var escape = Converter.ContainsComplexCharacters(in this);
+        var len = Length + (escape ? 2 : 0);
+        using StrBuilder result = len > 512 ? new(len) : new(stackalloc char[len]);
+        if (!Table.IsEmpty) {
+            result.Append(Uri.EscapeDataString(Table.ToString()));
+        }
+
+        if (Key.IsEmpty) {
+            return result.ToString();
+        }
+
+        if (!Table.IsEmpty) {
+            result.Append('/');
+        }
+
+        if (escape) {
+            result.Append(CHAR_PRE);
+        }
+        result.Append(Uri.EscapeDataString(Key.ToString()));
+        if (escape) {
+            result.Append(CHAR_SUF);
+        }
+
+        return result.ToString();
+    }
+
     public override string ToString() {
         return (string)Converter.EscapeComplexCharactersIfRequired(in this);
     }
@@ -181,25 +213,20 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
         }
 
         internal static SurrealThing EscapeComplexCharactersIfRequired(in SurrealThing thing) {
-            if (thing.IsKeyEscaped || !ContainsComplexCharacters(in thing)) {
+            if (!ContainsComplexCharacters(in thing)) {
                 return thing;
             }
 
             return thing.Escape();
         }
 
-        private static bool ContainsComplexCharacters(in SurrealThing thing) {
-            if (!thing.GetKeyOffset(out int rec)) {
+        internal static bool ContainsComplexCharacters(in SurrealThing thing) {
+            if (thing.IsKeyEscaped || !thing.GetKeyOffset(out int rec)) {
                 // This Thing is not split
                 return false;
             }
             ReadOnlySpan<char> text = (string)thing;
             int len = text.Length;
-
-            if (text[rec] == CHAR_PRE && text[len - 1] == CHAR_SUF) {
-                // Already escaped, don't escape it again.
-                return false;
-            }
 
             for (int i = rec; i < len; i++) {
                 char ch = text[i];
@@ -344,7 +371,11 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
     }
 
     private static SurrealRestResponse From(HttpSuccess? success) {
-        return new(success?.time, success?.status, null, null, success?.result ?? default);
+        if (success is null) {
+            return new(success?.time, success?.status, null, null, default);
+        }
+        JsonElement e = SurrealRpcResponse.IntoSingle(success.result);
+        return new(success?.time, success?.status, null, null, e);
     }
 
     private record HttpError(
@@ -438,7 +469,7 @@ public readonly struct SurrealRpcResponse : ISurrealResponse {
         return new(rsp.Id, default, res);
     }
 
-    private static JsonElement IntoSingle(in JsonElement root) {
+    internal static JsonElement IntoSingle(in JsonElement root) {
         if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() > 1) {
             return root;
         }
