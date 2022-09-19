@@ -1,6 +1,7 @@
 using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.Diagnostics.Contracts;
 using System.Net;
 using System.Runtime.CompilerServices;
 using System.Text.Encodings.Web;
@@ -17,47 +18,11 @@ namespace Surreal.Net;
 /// </remarks>
 [JsonConverter(typeof(Converter))]
 public readonly struct SurrealThing : IEquatable<SurrealThing> {
-    private readonly int _split;
-    public string Thing { get; }
-
-    /// <summary>
-    /// Returns the Table part of the Thing
-    /// </summary>
-    public ReadOnlySpan<char> Table => Thing.AsSpan(0, _split);
-
-    /// <summary>
-    /// Returns the Key part of the Thing, Including any escaping characters
-    /// </summary>
-    /// <remarks>
-    /// Escaping will be removed if it is present
-    /// </remarks>
-    public ReadOnlySpan<char> RawKey => _split == Length ? default : Thing.AsSpan(_split + 1);
-
-    /// <summary>
-    /// Returns the Key part of the Thing
-    /// </summary>
-    /// <remarks>
-    /// Escaping will be removed if it is present
-    /// </remarks>
-    public ReadOnlySpan<char> Key {
-        get {
-            if (_split == Length) {
-                return default;
-            } else if (IsEscaped(_split, Thing)) {
-                var start = _split + 2;
-                var length = Thing.Length - start - 1;
-                return Thing.AsSpan(start, length);
-            } else {
-                return Thing.AsSpan(_split + 1);
-            }
-        }
-    }
-
-    public int Length => Thing.Length;
+    public const char CHAR_SEP = ':';
+    public const char CHAR_PRE = '⟨';
+    public const char CHAR_SUF = '⟩';
     
-    public const char RecordSeparator = ':';
-    public const char ComplexCharacterPrefix = '⟨';
-    public const char ComplexCharacterSuffix = '⟩';
+    private readonly int _split;
 
 #if SURREAL_NET_INTERNAL
     public
@@ -68,49 +33,74 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
             int split,
             string thing) {
         _split = split;
-        Thing = EscapeComplexCharactersIfRequired(split, thing);
-    }
-
-    private static string EscapeComplexCharactersIfRequired(int split, string thing) {
-        var splitIndex = split + 1;
-        if (!ContainsComplexCharacters(splitIndex, thing)) {
-            return thing;
-        }
-
-        var tableAndSeparator = thing.Substring(0, splitIndex);
-        var key = thing.Substring(splitIndex, thing.Length - splitIndex);
-        return $"{tableAndSeparator}{ComplexCharacterPrefix}{key}{ComplexCharacterSuffix}";
+        Thing = thing;
     }
     
-    private static bool ContainsComplexCharacters(int split, string thing) {
-        var length = thing.Length;
-        if (split > length) {
-            // This Thing is not split
+    /// <summary>
+    /// Returns the underlying string.
+    /// </summary>
+    public string Thing { get; }
+
+    /// <summary>
+    /// Returns the Table part of the Thing
+    /// </summary>
+    public ReadOnlySpan<char> Table => Thing.AsSpan(0, _split);
+
+    /// <summary>
+    /// Returns the Key part of the Thing.
+    /// </summary>
+    public ReadOnlySpan<char> Key => GetKeyOffset(out int rec) ? Thing.AsSpan(rec) : default;
+
+    /// <summary>
+    /// If the <see cref="Key"/> is present returns the <see cref="Table"/> part including the separator; otherwise returns the <see cref="Table"/>.
+    /// </summary>
+    public ReadOnlySpan<char> TableAndSeparator => GetKeyOffset(out int rec) ? Thing.AsSpan(0, rec) : Thing;
+
+    public bool HasKey => _split < Length;
+
+    public int Length => Thing.Length;
+
+    /// <summary>
+    /// Indicates whether the <see cref="Key"/> is escaped. true if no <see cref="Key"/> is present.
+    /// </summary>
+    public bool IsKeyEscaped => GetKeyOffset(out int rec) ? Thing[rec] == CHAR_PRE && Thing[Thing.Length - 1] == CHAR_SUF : true;
+
+    /// <summary>
+    /// Returns the unescaped key, if tne key is escaped
+    /// </summary>
+    public bool TryUnescapeKey(out ReadOnlySpan<char> key) {
+        if (!GetKeyOffset(out int off) || !IsKeyEscaped) {
+            key = default;
             return false;
         }
 
-        if (thing[split] == ComplexCharacterPrefix && thing[length - 1] == ComplexCharacterSuffix) {
-            // Already escaped, don't escape it again.
-            return false;
-        }
-
-        for (int i = split; i <length; i++) {
-            if (!char.IsLetterOrDigit(thing[i]) && thing[i] != '_') {
-                return true;
-            }
-        }
-
-        return false;
+        int escOff = off + 1;
+        key = Thing.AsSpan(escOff, Thing.Length - escOff - 1);
+        return true;
     }
 
-    private static bool IsEscaped(int split, string thing) {
-        if (thing.Length < 2) {
-            return false;
-        }
+    /// <summary>
+    /// Escapes the <see cref="SurrealThing"/> if not already <see cref="IsKeyEscaped"/>.
+    /// </summary>
+    /// <returns></returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SurrealThing Escape() {
+        return IsKeyEscaped ? this : new(_split, $"{TableAndSeparator}{CHAR_PRE}{Key}{CHAR_SUF}");
+    }
 
-        var length = thing.Length;
-        return thing[split + 1] == ComplexCharacterPrefix &&
-            thing[length - 1] == ComplexCharacterSuffix;
+    /// <summary>
+    /// Uneescapes the <see cref="SurrealThing"/> if not already <see cref="IsKeyEscaped"/>.
+    /// </summary>
+    /// <returns></returns>
+    [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
+    public SurrealThing Unescape() {
+        return TryUnescapeKey(out ReadOnlySpan<char> key) ? new(_split, $"{TableAndSeparator}{key}") : this;
+    }
+
+    [Pure]
+    private bool GetKeyOffset(out int off) {
+        off = _split + 1;
+        return HasKey;
     }
 
     public static SurrealThing From(string? thing) {
@@ -118,7 +108,7 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
             return default;
         }
 
-        int split = thing.IndexOf(':');
+        int split = thing.IndexOf(CHAR_SEP);
         return new(split <= 0 ? thing.Length : split, thing);
     }
 
@@ -133,7 +123,7 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
         int chars = keyOffset + Key.Length;
         Span<char> builder = stackalloc char[chars];
         table.CopyTo(builder);
-        builder[table.Length] = ':';
+        builder[table.Length] = CHAR_SEP;
         Key.CopyTo(builder.Slice(keyOffset));
         return new(table.Length, builder.ToString());
     }
@@ -152,9 +142,25 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
         return From(thing);
     }
 
-    // Double implicit operators can result in problem, so we use explicit operators instead.
+    // Double implicit operators can result in syntax problems, so we use the explicit operator instead.
     public static explicit operator string(in SurrealThing thing) {
         return thing.Thing;
+    }
+
+    public bool Equals(SurrealThing other) {
+        return Thing == other.Thing;
+    }
+
+    public override bool Equals(object? obj) {
+        return obj is SurrealThing other && Equals(other);
+    }
+
+    public override int GetHashCode() {
+        return Thing.GetHashCode();
+    }
+
+    public override string ToString() {
+        return (string)this;
     }
 
     public sealed class Converter : JsonConverter<SurrealThing> {
@@ -176,31 +182,46 @@ public readonly struct SurrealThing : IEquatable<SurrealThing> {
             Utf8JsonWriter writer,
             SurrealThing value,
             JsonSerializerOptions options) {
-            writer.WriteStringValue((string)value);
+            writer.WriteStringValue((string)EscapeComplexCharactersIfRequired(in value));
         }
 
         public override void WriteAsPropertyName(
             Utf8JsonWriter writer,
             SurrealThing value,
             JsonSerializerOptions options) {
-            writer.WritePropertyName((string)value);
+            writer.WritePropertyName((string)EscapeComplexCharactersIfRequired(in value));
         }
-    }
 
-    public bool Equals(SurrealThing other) {
-        return Thing == other.Thing;
-    }
+        internal static SurrealThing EscapeComplexCharactersIfRequired(in SurrealThing thing) {
+            if (thing.IsKeyEscaped || !ContainsComplexCharacters(in thing)) {
+                return thing;
+            }
 
-    public override bool Equals(object? obj) {
-        return obj is SurrealThing other && Equals(other);
-    }
+            return thing.Escape();
+        }
 
-    public override int GetHashCode() {
-        return Thing.GetHashCode();
-    }
+        private static bool ContainsComplexCharacters(in SurrealThing thing) {
+            if (!thing.GetKeyOffset(out int rec)) {
+                // This Thing is not split
+                return false;
+            }
+            ReadOnlySpan<char> text = (string)thing;
+            int len = text.Length;
 
-    public override string ToString() {
-        return (string)this;
+            if (text[rec] == CHAR_PRE && text[len - 1] == CHAR_SUF) {
+                // Already escaped, don't escape it again.
+                return false;
+            }
+
+            for (int i = rec; i < len; i++) {
+                char ch = text[i];
+                if (!char.IsLetterOrDigit(ch) && ch != '_') {
+                    return true;
+                }
+            }
+
+            return false;
+        }
     }
 }
 

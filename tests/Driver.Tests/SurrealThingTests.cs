@@ -15,8 +15,11 @@ public class SurrealThingTests {
 
         var surrealThing = SurrealThing.From(table);
 
-        Assert.Equal(table, surrealThing.ToString());
-        Assert.Equal(table, surrealThing.Table.ToString());
+
+        surrealThing.ToString().Should().BeEquivalentTo(table);
+        surrealThing.Table.ToString().Should().BeEquivalentTo(table);
+        surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo(table);
+        surrealThing.Key.ToString().Should().BeEmpty();
     }
     
     [Theory]
@@ -26,10 +29,11 @@ public class SurrealThingTests {
         var expectedThing = $"{table}:{key}";
 
         var surrealThing = SurrealThing.From(table, key);
-
-        Assert.Equal(expectedThing, surrealThing.ToString());
-        Assert.Equal(table, surrealThing.Table.ToString());
-        Assert.Equal(key, surrealThing.Key.ToString());
+        
+        surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
+        surrealThing.Table.ToString().Should().BeEquivalentTo(table);
+        surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
+        surrealThing.Key.ToString().Should().BeEquivalentTo(key);
     }
     
     [Theory]
@@ -40,38 +44,42 @@ public class SurrealThingTests {
 
         var surrealThing = SurrealThing.From(expectedThing);
 
-        Assert.Equal(expectedThing, surrealThing.ToString());
-        Assert.Equal(table, surrealThing.Table.ToString());
-        Assert.Equal(key, surrealThing.Key.ToString());
+        surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
+        surrealThing.Table.ToString().Should().BeEquivalentTo(table);
+        surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
+        surrealThing.Key.ToString().Should().BeEquivalentTo(key);
     }
     
     [Theory]
     [MemberData(nameof(ComplexKeys))]
     public void TableAndKeyWithComplexCharacterSurrealThing(string key) {
         var table = "TableName";
-        var escapedKey = $"{SurrealThing.ComplexCharacterPrefix}{key}{SurrealThing.ComplexCharacterSuffix}";
+        var escapedKey = $"{SurrealThing.CHAR_PRE}{key}{SurrealThing.CHAR_SUF}";
         var expectedThing = $"{table}:{escapedKey}";
 
-        var surrealThing = SurrealThing.From(table, key);
+        var surrealThing = SurrealThing.From(table, key).Escape();
 
-        Assert.Equal(expectedThing, surrealThing.ToString());
-        Assert.Equal(table, surrealThing.Table.ToString());
-        Assert.Equal(key, surrealThing.Key.ToString());
-        Assert.Equal(escapedKey, surrealThing.RawKey.ToString());
+        surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
+        surrealThing.Table.ToString().Should().BeEquivalentTo(table);
+        surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
+        surrealThing.Unescape().Key.ToString().Should().BeEquivalentTo(key);
+        surrealThing.Key.ToString().Should().BeEquivalentTo(escapedKey);
     }
     
     [Theory]
     [MemberData(nameof(ComplexKeys))]
     public void TableAndKeyAlreadyEscapedSurrealThing(string key) {
         var table = "TableName";
-        var escapedKey = $"{SurrealThing.ComplexCharacterPrefix}{key}{SurrealThing.ComplexCharacterSuffix}";
+        var escapedKey = $"{SurrealThing.CHAR_PRE}{key}{SurrealThing.CHAR_SUF}";
         var expectedThing = $"{table}:{escapedKey}";
 
-        var surrealThing = SurrealThing.From(table, escapedKey);
+        var surrealThing = SurrealThing.From(table, escapedKey).Escape();
 
-        Assert.Equal(expectedThing, surrealThing.ToString());
-        Assert.Equal(table, surrealThing.Table.ToString());
-        Assert.Equal(key, surrealThing.Key.ToString());
-        Assert.Equal(escapedKey, surrealThing.RawKey.ToString());
+
+        surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
+        surrealThing.Table.ToString().Should().BeEquivalentTo(table);
+        surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
+        surrealThing.Unescape().Key.ToString().Should().BeEquivalentTo(key);
+        surrealThing.Key.ToString().Should().BeEquivalentTo(escapedKey);
     }
 }
