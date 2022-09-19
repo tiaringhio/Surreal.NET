@@ -17,7 +17,7 @@
 
 - [Table of contents](#table-of-contents)
 - [About the project](#about-the-project)
-- [License](#license)
+- [Contributing](#contributing)
 - [Contributors](#contributors)
 
 # About The Project
