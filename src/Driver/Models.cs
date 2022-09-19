@@ -417,7 +417,8 @@ public struct JsonPatch {
         Replace,
         Copy,
         Move,
-        Test
+        Test,
+        Change
     }
 }
 
@@ -574,7 +575,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         // `[[{"op": "replace", "path": "/Title", "value": "@@ +123 -123 @@ NEW_VALUE"}]]
         // otherwise we have a list of status responses of length one.
         // Handle the merge case.
-        if (GetJsonPath(in json, out List<JsonPatch>? patches)) {
+        if (GetJsonPatches(in json, out List<JsonPatch>? patches)) {
             return new(json, patches);
         }
         
@@ -587,7 +588,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return new(json, null);
     }
 
-    public static bool GetJsonPath(in JsonElement json, [NotNullWhen(true)] out List<JsonPatch>? patches) {
+    public static bool GetJsonPatches(in JsonElement json, [NotNullWhen(true)] out List<JsonPatch>? patches) {
         Debug.Assert(json.ValueKind == JsonValueKind.Array);
         patches = null;
         if (json.GetArrayLength() != 1) {
