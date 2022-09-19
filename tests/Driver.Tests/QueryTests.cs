@@ -13,6 +13,9 @@ public class RestIntQueryTests : IntQueryTests<DbRest, SurrealRestResponse> { }
 public class RpcGuidQueryTests : GuidQueryTests<DbRpc, SurrealRpcResponse> { }
 public class RestGuidQueryTests : GuidQueryTests<DbRest, SurrealRestResponse> { }
 
+public class RpcFloatQueryTests : FloatQueryTests<DbRpc, SurrealRpcResponse> { }
+public class RestFloatQueryTests : FloatQueryTests<DbRest, SurrealRestResponse> { }
+
 public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
     where T : ISurrealDatabase<U>, new()
     where U : ISurrealResponse {
@@ -32,7 +35,7 @@ public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
     }
 }
 
-public abstract class IntQueryTests <T, U> : QueryTests<T, U, int, int>
+public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
     where T : ISurrealDatabase<U>, new()
     where U : ISurrealResponse {
 
@@ -41,7 +44,53 @@ public abstract class IntQueryTests <T, U> : QueryTests<T, U, int, int>
     }
 
     protected override int RandomValue() {
+        return 7; // Can't go too high otherwise the maths operations might overflow
+    }
+
+    protected override string ValueCast() {
+        return "<int>";
+    }
+
+    private static int RandomInt() {
+        return Random.Shared.Next();
+    }
+}
+
+public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float>
+    where T : ISurrealDatabase<U>, new()
+    where U : ISurrealResponse {
+
+    protected override float RandomKey() {
+        return RandomFloat();
+    }
+
+    protected override float RandomValue() {
+        return 7f; // Can't go too high otherwise the maths operations might overflow
+    }
+
+    protected override string ValueCast() {
+        return "<float>";
+    }
+
+    private static float RandomFloat() {
+        return Random.Shared.NextSingle();
+    }
+}
+
+public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, int, int>
+    where T : ISurrealDatabase<U>, new()
+    where U : ISurrealResponse {
+
+    protected override int RandomKey() {
         return RandomInt();
+    }
+
+    protected override int RandomValue() {
+        return 7; // Can't go to high otherwise the maths operations might overflow
+    }
+
+    protected override string ValueCast() {
+        return "<int>";
     }
 
     private static int RandomInt() {
@@ -63,6 +112,109 @@ public abstract class GuidQueryTests <T, U> : QueryTests<T, U, Guid, Guid>
 
     private static Guid RandomGuid() {
         return Guid.NewGuid();
+    }
+}
+
+public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey, TValue>
+    where T : ISurrealDatabase<U>, new()
+    where U : ISurrealResponse {
+    
+    protected abstract string ValueCast();
+
+    [Fact]
+    public async Task AdditionQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! + (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+
+        string sql = $"SELECT * FROM {ValueCast()}($val1 + $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
+        Assert.Single(returnedDocuments);
+        var returnedDocument = returnedDocuments.Single();
+        Assert.IsType<TValue>(returnedDocument);
+        Assert.Equal(expectedResult, returnedDocument);
+    }
+
+    [Fact]
+    public async Task SubtractionQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! - (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+
+        string sql = $"SELECT * FROM {ValueCast()}($val1 - $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
+        Assert.Single(returnedDocuments);
+        var returnedDocument = returnedDocuments.Single();
+        Assert.IsType<TValue>(returnedDocument);
+        Assert.Equal(expectedResult, returnedDocument);
+    }
+
+    [Fact]
+    public async Task MultiplicationQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! * (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+
+        string sql = $"SELECT * FROM {ValueCast()}($val1 * $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
+        Assert.Single(returnedDocuments);
+        var returnedDocument = returnedDocuments.Single();
+        Assert.IsType<TValue>(returnedDocument);
+        Assert.Equal(expectedResult, returnedDocument);
+    }
+
+    [Fact]
+    public async Task DivisionQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! / (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+
+        string sql = $"SELECT * FROM {ValueCast()}($val1 / $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection(out List<TValue>? returnedDocuments));
+        Assert.Single(returnedDocuments);
+        var returnedDocument = returnedDocuments.Single();
+        Assert.IsType<TValue>(returnedDocument);
+        Assert.Equal(expectedResult, returnedDocument);
     }
 }
 
@@ -112,6 +264,30 @@ public abstract class QueryTests<T, U, TKey, TValue>
         string sql = "SELECT * FROM object WHERE id = $thing";
         Dictionary<string, object?> param = new() {
             ["thing"] = thing
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out SurrealResult result));
+        Assert.True(result.TryGetObjectCollection(out List<TestObject<TKey, TValue>>? returnedDocuments));
+        Assert.Single(returnedDocuments);
+        var returnedDocument = returnedDocuments.Single();
+        Assert.IsType<TestObject<TKey, TValue>>(returnedDocument);
+        expectedObject.Should().BeEquivalentTo(returnedDocument);
+    }
+
+    [Fact]
+    public async Task SimpleSelectFromWhereValueQueryTest() {
+        var expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
+
+        SurrealThing thing = SurrealThing.From("object", expectedObject.Key!.ToString());
+        await Database.Create(thing, expectedObject);
+
+        string sql = "SELECT * FROM object WHERE Value = $value";
+        Dictionary<string, object?> param = new() {
+            ["value"] = expectedObject.Value
         };
 
         U response = await Database.Query(sql, param);
