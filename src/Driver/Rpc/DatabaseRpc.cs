@@ -1,28 +1,28 @@
 ﻿using SurrealDB.Abstractions;
-using SurrealDB.Config;
+using SurrealDB.Configuration;
 using SurrealDB.Models;
 using SurrealDB.Ws;
 
 namespace SurrealDB.Driver.Rpc;
 
-public sealed class DatabaseRpc : IDatabase<RpcResponse> {
+public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     private readonly WsClient _client = new();
-    private Config.Config _config;
+    private Config _config;
     private bool _configured;
     
     public DatabaseRpc() {}
 
-    public DatabaseRpc(in Config.Config config) {
+    public DatabaseRpc(in Config config) {
         _config = config;
     }
 
     /// <inheritdoc />
-    public Config.Config GetConfig() {
+    public Config GetConfig() {
         return _config;
     }
 
     /// <inheritdoc />
-    public async Task Open(Config.Config config, CancellationToken ct = default) {
+    public async Task Open(Config config, CancellationToken ct = default) {
         _config = config;
         _configured = false;
         await Open(ct);

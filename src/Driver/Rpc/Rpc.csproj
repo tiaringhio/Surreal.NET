@@ -13,7 +13,7 @@
 
 	<ItemGroup>
 	  <ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
-	  <ProjectReference Include="..\..\Config\Config.csproj" />
+	  <ProjectReference Include="..\..\Configuration\Configuration.csproj" />
 	  <ProjectReference Include="..\..\Ws\Ws.csproj" />
 	</ItemGroup>
 

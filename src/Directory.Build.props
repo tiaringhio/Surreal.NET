@@ -5,9 +5,11 @@
 		<SurrealAbstractionsVersion>1.0.2</SurrealAbstractionsVersion>
 		<SurrealCommonVersion>1.0.2</SurrealCommonVersion>
 		<SurrealConfigVersion>1.0.2</SurrealConfigVersion>
+		<SurrealHostingExtensionsVersion>1.0.2</SurrealHostingExtensionsVersion>
 		<SurrealJsonVersion>1.0.2</SurrealJsonVersion>
 		<SurrealModelsVersion>1.0.2</SurrealModelsVersion>
 		<SurrealWsVersion>1.0.2</SurrealWsVersion>
+		<SurrealExtensionsServiceVersion>1.0.2</SurrealExtensionsServiceVersion>
 	</PropertyGroup>
 	
 	<PropertyGroup>

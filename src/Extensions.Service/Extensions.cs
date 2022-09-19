@@ -1,0 +1,32 @@
+using Microsoft.Extensions.DependencyInjection;
+
+using SurrealDB.Abstractions;
+using SurrealDB.Configuration;
+using SurrealDB.Driver.Rest;
+using SurrealDB.Driver.Rpc;
+
+namespace SurrealDB.Extensions.Service; 
+
+public static class Extensions {
+    public static IServiceCollection AddSurrealDb(this IServiceCollection services, Action<IConfigBuilder> configure) {
+        ConfigBuilder.Empty builder = new();
+        configure(builder);
+        Config config = builder.Build();
+
+        if (config.RestEndpoint is not null) {
+            DatabaseRest inst = new(in config);
+            services.AddSingleton(typeof(IDatabase), inst);
+            services.AddSingleton(typeof(IDatabase<RestResponse>), inst);
+            services.AddSingleton(typeof(DatabaseRest), inst);
+        }
+
+        if (config.RpcEndpoint is not null) {
+            DatabaseRpc inst = new(in config);
+            services.AddSingleton(typeof(IDatabase), inst);
+            services.AddSingleton(typeof(IDatabase<RpcResponse>), inst);
+            services.AddSingleton(typeof(DatabaseRpc), inst);
+        }
+        
+        return services;
+    }
+}

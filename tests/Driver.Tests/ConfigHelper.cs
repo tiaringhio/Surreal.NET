@@ -1,4 +1,4 @@
-﻿using SurrealDB.Config;
+﻿using SurrealDB.Configuration;
 
 namespace SurrealDB.Driver.Tests;
 
@@ -10,7 +10,7 @@ public static class ConfigHelper {
     public const string Database = "test";
     public const string Namespace = "test";
 
-    public static Config.Config Default => Config.Config.Create()
+    public static Config Default => Config.Create()
        .WithAddress(Loopback)
        .WithPort(Port)
        .WithNamespace(Namespace)

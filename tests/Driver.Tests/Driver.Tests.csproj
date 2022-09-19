@@ -6,7 +6,7 @@
 	
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Abstractions\Abstractions.csproj" />
-		<ProjectReference Include="..\..\src\Config\Config.csproj" />
+		<ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
 		<ProjectReference Include="..\..\src\Driver\Rest\Rest.csproj" />
 	</ItemGroup>
 

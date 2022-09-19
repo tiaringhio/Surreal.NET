@@ -1,4 +1,4 @@
-namespace SurrealDB.Config;
+namespace SurrealDB.Configuration;
 
 /// <summary>
 ///     Available authentication methods

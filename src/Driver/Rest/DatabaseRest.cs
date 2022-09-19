@@ -10,14 +10,14 @@ using SurrealDB.Models;
 
 namespace SurrealDB.Driver.Rest;
 
-public sealed class DatabaseRest : IDatabase<RestResponse>, IDisposable {
+public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable {
     private readonly HttpClient _client = new();
-    private Config.Config _config;
+    private Configuration.Config _config;
     private bool _configured;
     
     public DatabaseRest() {}
 
-    public DatabaseRest(in Config.Config config) {
+    public DatabaseRest(in Configuration.Config config) {
         _config = config;
     }
 
@@ -29,11 +29,11 @@ public sealed class DatabaseRest : IDatabase<RestResponse>, IDisposable {
         _client.Dispose();
     }
 
-    public Config.Config GetConfig() {
+    public Configuration.Config GetConfig() {
         return _config;
     }
 
-    public Task Open(Config.Config config, CancellationToken ct = default) {
+    public Task Open(Configuration.Config config, CancellationToken ct = default) {
         _config = config;
         _configured = false;
         return Open(ct);

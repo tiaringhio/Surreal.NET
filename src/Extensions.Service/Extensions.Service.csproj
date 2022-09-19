@@ -1,0 +1,22 @@
+<Project Sdk="Microsoft.NET.Sdk">
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Extensions.Service</RootNamespace>
+	</PropertyGroup>
+
+	<PropertyGroup Label="Nuget Pack Options">
+		<Description>Websocket RPC based database driver for SurrealDB</Description>
+		<PackageVersion>$(SurrealExtensionsServiceVersion)</PackageVersion>
+		<PackageId>SurrealDB.Extensions.Service</PackageId>
+		<PackageTags>surrealdb sql nosql database connector websockets</PackageTags>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\Driver\Rest\Rest.csproj" />
+		<ProjectReference Include="..\Driver\Rpc\Rpc.csproj" />
+	</ItemGroup>
+
+</Project>

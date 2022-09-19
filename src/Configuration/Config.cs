@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics.Contracts;
 using System.Net;
 
-namespace SurrealDB.Config;
+namespace SurrealDB.Configuration;
 
 public struct Config {
     /// <summary>

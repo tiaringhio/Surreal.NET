@@ -1,6 +1,6 @@
 using System.Net;
 
-namespace SurrealDB.Config;
+namespace SurrealDB.Configuration;
 
 /// <summary>
 ///     Component that configures a <see cref="Config" />.
@@ -83,6 +83,14 @@ public static class ConfigBuilder {
         this IConfigBuilder config,
         bool insecure = false) {
         return new(config) { Insecure = insecure, };
+    }
+
+    public sealed class Empty : IConfigBuilder {
+        public IConfigBuilder? Parent => null;
+
+        public void Configure(ref Config config) {
+            // empty
+        }
     }
 
     /// <summary>

@@ -3,7 +3,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Runtime.Serialization;
 
-namespace SurrealDB.Config;
+namespace SurrealDB.Configuration;
 
 /// <summary>
 ///     Exception thrown if a <see cref="IConfigBuilder" /> contained invalid configuration.
