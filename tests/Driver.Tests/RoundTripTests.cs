@@ -32,9 +32,8 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
-        Assert.Single(returnedDocument);
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
+        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
+        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
     }
 
     [Fact]
@@ -48,10 +47,8 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-
-        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
-        Assert.Single(returnedDocument);
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
+        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
+        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
     }
 
     [Fact]
@@ -66,9 +63,8 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
-        Assert.Single(returnedDocument);
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
+        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
+        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
     }
 
     [Fact]
@@ -87,9 +83,8 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
-        Assert.True(result.TryGetObjectCollection(out List<RoundTripObject>? returnedDocument));
-        Assert.Single(returnedDocument);
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument.Single());
+        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
+        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
     }
 
     protected void AssertOk(

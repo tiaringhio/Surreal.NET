@@ -298,6 +298,9 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
         UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
     };
 
+    /// <summary>
+    /// Parses a <see cref="HttpResponseMessage"/> containing JSON to a <see cref="SurrealRestResponse"/>. 
+    /// </summary>
     public static async Task<SurrealRestResponse> From(
         HttpResponseMessage msg,
         CancellationToken ct = default) {
@@ -306,23 +309,35 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
             HttpError? err = await JsonSerializer.DeserializeAsync<HttpError>(stream, _options, ct);
             return From(err);
         }
-
-        // Handle empty response
-        if (!await PeekIsJson(stream, ct)) {
+        
+        if (await PeekIsEmpty(stream, ct)) {
+            // Success and empty message -> invalid json
             return EmptyOk;
         }
+        
+        var docs = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, _options, ct);
+        var doc = docs?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
 
-        return await JsonSerializer.DeserializeAsync<SurrealRestResponse>(stream, _options, ct);
+
+        return From(doc);
     }
 
-    private static async Task<bool> PeekIsJson(
+    /// <summary>
+    /// Attempts to peek the next byte of the stream. 
+    /// </summary>
+    /// <remarks>
+    /// Resets the stream to the original position.
+    /// </remarks>
+    private static async Task<bool> PeekIsEmpty(
         Stream stream,
         CancellationToken ct) {
         Debug.Assert(stream.CanSeek && stream.CanRead);
         using IMemoryOwner<byte> buffer = MemoryPool<byte>.Shared.Rent(1);
+        // This is more efficient, then ReadByte.
+        // Async, because this is the first request to the networkstream, thus no readahead is possible.
         int read = await stream.ReadAsync(buffer.Memory.Slice(0, 1), ct);
         stream.Seek(-read, SeekOrigin.Current);
-        return read > 0 && (char)buffer.Memory.Span[0] == '{';
+        return read <= 0;
     }
 
     public static SurrealRestResponse EmptyOk => new(null, "ok", null, null, default);
@@ -331,10 +346,20 @@ public readonly struct SurrealRestResponse : ISurrealResponse {
         return new(null, "HTTP_ERR", error?.description, error?.details, default);
     }
 
+    private static SurrealRestResponse From(HttpSuccess? success) {
+        return new(success?.time, success?.status, null, null, success?.result ?? default);
+    }
+
     private record HttpError(
         int code,
         string details,
-        string description);
+        string description,
+        string information);
+
+    private record HttpSuccess(
+        string time,
+        string status,
+        JsonElement result);
 }
 
 public static class SurrealRestClientExtensions {
@@ -413,7 +438,7 @@ public readonly struct SurrealRpcResponse : ISurrealResponse {
 
         return new(rsp.Id, default, SurrealResult.From(rsp.Result));
     }
-
+    
     [DoesNotReturn]
     private static void ThrowIdMissing() {
         throw new InvalidOperationException("Response does not have an id.");
@@ -445,12 +470,33 @@ public enum SurrealResultKind : byte {
     UnsignedInteger,
     Float,
     Boolean,
+    Patch
 }
 
 public struct SurrealStatus {
     public JsonElement Result { get; set; }
     public string Status { get; set; }
     public string Time { get; set; }
+}
+
+public struct JsonPatch {
+    [JsonPropertyName("op")]
+    public Operation Op { get; set; }
+    [JsonPropertyName("path")]
+    public string? Path { get; set; }
+    [JsonPropertyName("value")]
+    public string? Value { get; set; }
+    
+    [JsonConverter(typeof(JsonStringEnumConverter))]
+    public enum Operation {
+        Add,
+        Remove,
+        Replace,
+        Copy,
+        Move,
+        Test,
+        Change
+    }
 }
 
 /// <summary>
@@ -495,52 +541,28 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return GetKind() == SurrealResultKind.Object;
     }
 
-    [Obsolete("This is a hack to get around a proper ORM, will be revised once an ORM is available.")]
+    public bool TryGetPatches([NotNullWhen(true)] out List<JsonPatch>? patches) {
+        if (_sentinelOrValue is List<JsonPatch> p) {
+            patches = p;
+            return true;
+        }
+
+        patches = default;
+        return false;
+    }
+    
     public bool TryGetObjectCollection<T>([NotNullWhen(true)] out List<T>? document) {
-        // Try to unpack this document
-
-        // Some results come as a simple array of objects
-        // Others come embedded into a 'status' document that can have multiple result sets
-        //[
-        //  {
-        //    "result": [ ... ],
-        //    "status": "OK",
-        //    "time": "71.775µs"
-        //  }
-        //]
-        if (_json.ValueKind != JsonValueKind.Array) {
-            document = default;
-            return false;
-        }
-
-        // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
-        List<SurrealStatus>? statusDocuments = _json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
-
-        if (statusDocuments == null) {
-            // Not the 'embeded status' document type, try the simple array of objects
-            document = _json.Deserialize<List<T>>(Constants.JsonOptions);
-            return document != null;
-        }
-
-        foreach (SurrealStatus statusDocument in statusDocuments) {
-            if (string.IsNullOrEmpty(statusDocument.Status) && string.IsNullOrEmpty(statusDocument.Time)) {
-                break; // This is not a status document
-            }
-
-            JsonElement result = statusDocument.Result;
-
-            // This probably is a status document
-            if (result.ValueKind != JsonValueKind.Array) {
-                // Skip over the statuses with no results
-                // Often from requests that have variables etc
-                continue;
-            }
-
-            document = result.Deserialize<List<T>>(Constants.JsonOptions)!;
-            return document is not null;
-        }
-
         document = _json.Deserialize<List<T>>(Constants.JsonOptions);
+        return document is not null;
+    }
+
+    public bool TryGetObject<T>([NotNullWhen(true)] out T? document) {
+        document = _json.ValueKind switch {
+            JsonValueKind.Array => TryGetObjectCollection(out List<T>? documents) ? documents.FirstOrDefault() : default,
+            JsonValueKind.Object => _json.Deserialize<T>(Constants.JsonOptions),
+            _ => default(T)
+        };
+
         return document is not null;
     }
 
@@ -603,7 +625,7 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
         return json.ValueKind switch {
             JsonValueKind.Undefined => new(json, NoneSentinel),
             JsonValueKind.Object => FromObject(json),
-            JsonValueKind.Array => new(json, null),
+            JsonValueKind.Array => FromArray(json),
             JsonValueKind.String => new(json, json.GetString()),
             JsonValueKind.Number => FromNumber(json),
             JsonValueKind.True => new(json, BooleanSentinel, TrueValue),
@@ -611,6 +633,84 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
             JsonValueKind.Null => new(json, NoneSentinel),
             _ => ThrowUnknownJsonValueKind(json),
         };
+    }
+
+    public static SurrealResult FromArray(in JsonElement json) {
+        // Try to unpack this document
+
+        // Some results come as a simple array of objects (basically just the result array)
+        // Others come embedded into a 'status document' that can have multiple result sets
+        //[
+        //  {
+        //    "result": [ ... ],
+        //    "status": "OK",
+        //    "time": "71.775µs"
+        //  }
+        //]
+
+        // When merging the response is in the following format:
+        // `[[{"op": "replace", "path": "/Title", "value": "@@ +123 -123 @@ NEW_VALUE"}]]
+        // otherwise we have a list of status responses of length one.
+        // Handle the merge case.
+        if (GetJsonPatches(in json, out List<JsonPatch>? patches)) {
+            return new(json, patches);
+        }
+        
+        // First see if it the 'embeded status' document type, quick and dirty as a proof of concept
+        List<SurrealStatus>? docs = json.Deserialize<List<SurrealStatus>>(Constants.JsonOptions);
+        if (docs is not null && GetFirstStatus(docs, out SurrealResult surrealResult)) {
+            return surrealResult;
+        }
+
+        return new(json, null);
+    }
+
+    public static bool GetJsonPatches(in JsonElement json, [NotNullWhen(true)] out List<JsonPatch>? patches) {
+        Debug.Assert(json.ValueKind == JsonValueKind.Array);
+        patches = null;
+        if (json.GetArrayLength() != 1) {
+            return false;
+        }
+        var outerEn = json.EnumerateArray();
+        if (!outerEn.MoveNext()) {
+            return false;
+        }
+
+        JsonElement inner = outerEn.Current;
+        if (inner.ValueKind != JsonValueKind.Array) {
+            return false;
+        }
+
+        var innerEn = inner.EnumerateArray();
+        patches = new();
+        while (innerEn.MoveNext()) {
+            JsonPatch p = innerEn.Current.Deserialize<JsonPatch>(Constants.JsonOptions);
+            patches.Add(p);
+        }
+        
+        return true;
+    }
+
+    private static bool GetFirstStatus(List<SurrealStatus> docs, out SurrealResult res) {
+        foreach (SurrealStatus statusDocument in docs) {
+            if (string.IsNullOrEmpty(statusDocument.Status) && string.IsNullOrEmpty(statusDocument.Time)) {
+                break; // This is not a status document and therefore must be a simple array of objects
+            }
+
+            // This probably is a status document
+            JsonElement result = statusDocument.Result;
+
+            if (result.ValueKind != JsonValueKind.Array) {
+                // Skip over the statuses with no results
+                continue;
+            }
+            // Unbox embedded status
+            res = From(in result);
+            return true;
+        }
+
+        res = default;
+        return false;
     }
 
     private static SurrealResult FromObject(in JsonElement json) {
@@ -651,6 +751,10 @@ public readonly struct SurrealResult : IEquatable<SurrealResult>, IComparable<Su
             return _int64ValueField == DocumentValue ? SurrealResultKind.Document : SurrealResultKind.String;
         }
 
+        if (_sentinelOrValue is List<JsonPatch> patches) {
+            return SurrealResultKind.Patch;
+        }
+ 
         if (ReferenceEquals(NoneSentinel, _sentinelOrValue)) {
             return SurrealResultKind.None;
         }
