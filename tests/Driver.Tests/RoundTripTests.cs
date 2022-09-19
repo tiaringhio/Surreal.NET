@@ -1,4 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
+using System.Text.Json.Serialization;
 
 using FluentAssertions.Extensions;
 
@@ -16,6 +17,7 @@ public abstract class RoundTripTests<T, U>
     where T : ISurrealDatabase<U>, new()
     where U : ISurrealResponse {
     protected T Database;
+    protected RoundTripObject Expected = new();
 
     protected RoundTripTests() {
         Database = new();
@@ -24,39 +26,33 @@ public abstract class RoundTripTests<T, U>
 
     [Fact]
     public async Task CreateRoundTripTest() {
-        RoundTripObject expectedObject = new();
-
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
-        U response = await Database.Create(thing, expectedObject);
+        U response = await Database.Create(thing, Expected);
 
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
+        RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
     [Fact]
     public async Task CreateAndSelectRoundTripTest() {
-        RoundTripObject expectedObject = new();
-
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
-        await Database.Create(thing, expectedObject);
+        await Database.Create(thing, Expected);
         U response = await Database.Select(thing);
 
         Assert.NotNull(response);
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
+        RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
     [Fact]
     public async Task CreateAndQueryRoundTripTest() {
-        RoundTripObject expectedObject = new();
-
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
-        await Database.Create(thing, expectedObject);
+        await Database.Create(thing, Expected);
         string sql = $"SELECT * FROM \"{thing}\"";
         U response = await Database.Query(sql, null);
 
@@ -64,15 +60,13 @@ public abstract class RoundTripTests<T, U>
         AssertOk(response);
         response.TryGetResult(out SurrealResult result).Should().BeTrue();
         result.TryGetObject(out RoundTripObject? returnedDocument).Should().BeTrue();
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument!);
+        RoundTripObject.AssertAreEqual(Expected, returnedDocument!);
     }
 
     [Fact]
     public async Task CreateAndParameterizedQueryRoundTripTest() {
-        RoundTripObject expectedObject = new();
-
         SurrealThing thing = SurrealThing.From("object", Random.Shared.Next().ToString());
-        await Database.Create(thing, expectedObject);
+        await Database.Create(thing, Expected);
         string sql = "SELECT * FROM $thing";
         Dictionary<string, object?> param = new() {
             ["thing"] = thing,
@@ -84,7 +78,7 @@ public abstract class RoundTripTests<T, U>
         AssertOk(response);
         Assert.True(response.TryGetResult(out SurrealResult result));
         Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
-        RoundTripObject.AssertAreEqual(expectedObject, returnedDocument);
+        RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
     protected void AssertOk(
@@ -166,6 +160,7 @@ public class RoundTripObject {
 
     public DateTime MaxUtcDateTime { get; set; } = DateTime.MaxValue.AsUtc(); // This fails to roundtrip, the fractions part of the date gets 00 prepended to it
     public DateTime MinUtcDateTime { get; set; } = DateTime.MinValue.AsUtc();
+    [JsonConverter(typeof(DateTimeConv))]
     public DateTime NowUtcDateTime { get; set; } = DateTime.Now.AsUtc();
 
     public Guid Guid { get; set; } = Guid.NewGuid();

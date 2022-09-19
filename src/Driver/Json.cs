@@ -62,13 +62,12 @@ public sealed class NameLowerSnakeCase : JsonNamingPolicy {
 /// Collection of repeatedly used constants.
 /// </summary>
 internal static class Constants {
-    [ThreadStatic]
-    private static JsonSerializerOptions? _jsonSerializerOptions;
+    private static readonly Lazy<JsonSerializerOptions> _jsonSerializerOptions = new(CreateJsonOptions);
 
     /// <summary>
     /// Creates or returns the shared <see cref="JsonSerializerOptions"/> instance for this thread.
     /// </summary>
-    public static JsonSerializerOptions JsonOptions => _jsonSerializerOptions ??= CreateJsonOptions();
+    public static JsonSerializerOptions JsonOptions => _jsonSerializerOptions.Value;
 
     /// <summary>
     /// Instantiates a new instance of <see cref="JsonSerializerOptions"/> with default settings.
@@ -86,7 +85,7 @@ internal static class Constants {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             IgnoreReadOnlyFields = false,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            Converters = { new DecimalConv(), new DoubleConv(), new SingleConv(), new TimeOnlyConv(), new DateOnlyConv(), new DateTimeConv(), new DateTimeOffsetConv(), new TimeSpanConv() }
+            Converters = { new DecimalConv(), new DoubleConv(), new SingleConv(), new DateTimeConv() , new DateTimeOffsetConv(), new TimeSpanConv(), new TimeOnlyConv(), new DateOnlyConv() },
         };
     }
 }
