@@ -173,8 +173,8 @@ public class RoundTripObject {
     public FlagsEnum UndefinedFlagsEnum { get; set; } = (FlagsEnum)(1 << 8);
 
     public static void AssertAreEqual(
-        RoundTripObject a,
-        RoundTripObject b) {
+        RoundTripObject? a,
+        RoundTripObject? b) {
         Assert.NotNull(a);
         Assert.NotNull(b);
 

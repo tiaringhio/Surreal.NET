@@ -33,7 +33,7 @@ public class WeatherForecastController : ControllerBase
     }
 
     [HttpGet(Name = "WeatherForecast")]
-    public async Task<ActionResult<WeatherForecast>> Get(CancellationToken ct = default) {
+    public async Task<ActionResult<WeatherForecast?>> Get(CancellationToken ct = default) {
         await _db.Open(ct);
 
         RpcResponse query = await _db.Select("weather", ct);
