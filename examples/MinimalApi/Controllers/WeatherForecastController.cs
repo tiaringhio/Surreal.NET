@@ -37,8 +37,8 @@ public class WeatherForecastController : ControllerBase
         await _db.Open(ct);
 
         RpcResponse query = await _db.Select("weather", ct);
-        if (query.TryGetResult(out var res) && res.TryGetObject(out WeatherForecast? prediction)) {
-            return prediction;
+        if (query.TryGetResult(out var res)) {
+            return res.GetObject<WeatherForecast>();
         }
 
         return new NoContentResult();
