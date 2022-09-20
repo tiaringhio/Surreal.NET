@@ -1,12 +1,4 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-
-using SurrealDB.Abstractions;
-using SurrealDB.Driver.Rest;
-using SurrealDB.Driver.Rpc;
-using SurrealDB.Models;
-
-namespace SurrealDB.Driver.Tests;
+﻿namespace SurrealDB.Driver.Tests.Database;
 
 public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc, RpcResponse> {
     
@@ -23,15 +15,15 @@ public abstract class DatabaseTestDriver<T, U>
     
     [Fact]
     protected override async Task TestSuite() {
-        await Database.Open(ConfigHelper.Default);
-        Database.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
+        await Database.Open(TestHelper.Default);
+        Database.GetConfig().Should().BeEquivalentTo(TestHelper.Default);
 
-        U useResp = await Database.Use(ConfigHelper.Database, ConfigHelper.Namespace);
+        U useResp = await Database.Use(TestHelper.Database, TestHelper.Namespace);
         AssertOk(useResp);
         U infoResp = await Database.Info();
         AssertOk(infoResp);
 
-        U signInStatus = await Database.Signin(new() { Username = ConfigHelper.User, Password = ConfigHelper.Pass, });
+        U signInStatus = await Database.Signin(new() { Username = TestHelper.User, Password = TestHelper.Pass, });
 
         AssertOk(signInStatus);
         //AssertOk(await Database.Invalidate());

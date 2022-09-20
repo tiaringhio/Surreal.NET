@@ -1,8 +1,6 @@
-using SurrealDB.Models;
-
 namespace SurrealDB.Driver.Tests;
 
-public class SurrealThingTests {
+public class ThingTests {
 
     private static readonly List<string> Keys = new() { "{0}ThingKey", "Thing{0}Key", "ThingKey{0}", "{0}" };
     private static readonly List<char> ComplexChars = new() { '-', ' ', '❤'};

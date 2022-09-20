@@ -1,14 +1,14 @@
-namespace SurrealDB.Driver.Tests;
+namespace SurrealDB.Driver.Tests.Ws;
 
-#if Debug
-public class RpcClientTests
+
+public class WsClientTests
 {
-    public readonly JsonRpcClient Client = new();
+    public readonly WsClient Client = new();
 
     [Fact]
     public async Task Open()
     {
-        await Client.Open(ConfigHelper.Default.RpcEndpoint!);
+        await Client.Open(TestHelper.Default.RpcEndpoint!);
     }
 
     [Fact]
@@ -20,7 +20,7 @@ public class RpcClientTests
             Method = "signin",
             Params = new()
             {
-                new{ user = ConfigHelper.Default.Username, pass = ConfigHelper.Default.Password }
+                new{ user = TestHelper.Default.Username, pass = TestHelper.Default.Password }
             }
         });
         rsp.Error.Should().BeNull();
@@ -36,8 +36,8 @@ public class RpcClientTests
             Method = "use",
             Params = new()
             {
-                ConfigHelper.Default.Database!,
-                ConfigHelper.Default.Username!
+                TestHelper.Default.Database!,
+                TestHelper.Default.Username!
             }
         });
         rsp.Error.Should().BeNull();
@@ -127,4 +127,3 @@ public class RpcClientTests
         });
     }
 }
-#endif

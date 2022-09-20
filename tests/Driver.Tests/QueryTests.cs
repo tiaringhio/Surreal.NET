@@ -1,10 +1,3 @@
-using System.Text.Json.Serialization;
-
-using SurrealDB.Abstractions;
-using SurrealDB.Driver.Rest;
-using SurrealDB.Driver.Rpc;
-using SurrealDB.Models;
-
 namespace SurrealDB.Driver.Tests.Queries;
 
 public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> { }
@@ -260,7 +253,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
     protected QueryTests() {
         Database = new();
-        Database.Open(ConfigHelper.Default).Wait();
+        Database.Open(TestHelper.Default).Wait();
     }
 
     protected abstract TKey RandomKey();
