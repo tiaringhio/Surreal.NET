@@ -129,12 +129,6 @@ public readonly struct RpcResponse : IResponse {
         return root;
     }
 
-    private record SurrealStatusResponse {
-        public string? time;
-        public string? status;
-        public JsonElement? result;
-    }
-
     public static JsonElement IntoSingle(in JsonElement root) {
         if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() > 1) {
             return root;
