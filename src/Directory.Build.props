@@ -1,4 +1,6 @@
-﻿<Project>
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Import Project="..\Directory.Build.props" />
+
 	<PropertyGroup>
 		<SurrealDriverRestVersion>1.0.2</SurrealDriverRestVersion>
 		<SurrealDriverRpcVersion>1.0.2</SurrealDriverRpcVersion>
@@ -11,27 +13,15 @@
 		<SurrealWsVersion>1.0.2</SurrealWsVersion>
 		<SurrealExtensionsServiceVersion>1.0.2</SurrealExtensionsServiceVersion>
 	</PropertyGroup>
-	
+
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<PropertyGroup>
-		<Authors>ProphetLamb</Authors>
-		<Owners>ProhetLamb</Owners>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Copyright>Copyright (c) ProphetLamb 2022</Copyright>
-		<PackageProjectUrl>https://github.com/ProphetLamb/Surreal.Net</PackageProjectUrl>
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/ProphetLamb/Surreal.Net.git</RepositoryUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-	</PropertyGroup>
-
-
 	<PropertyGroup Condition="$(Configuration)=='Release'" Label="Nuget Pack Options">
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>

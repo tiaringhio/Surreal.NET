@@ -1,4 +1,5 @@
-<Project>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Import Project="..\Directory.Build.props" />
 
 	<PropertyGroup>
 		<TargetFramework>net6.0</TargetFramework>
