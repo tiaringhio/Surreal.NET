@@ -44,7 +44,7 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
 
     public JsonElement Inner => _json;
 
-    public T GetObject<T>() {
+    public T? GetObject<T>() {
         var obj = _json.Deserialize<T>(Constants.JsonOptions);
         return obj;
     }
