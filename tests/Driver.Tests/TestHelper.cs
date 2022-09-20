@@ -14,7 +14,7 @@ public static class TestHelper {
             return;
         }
 
-        Exception ex = new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
+        Exception ex = new($"Expected Ok, got error code {err.Code} ({err.Message}) in {caller}");
         throw ex;
     }
 }

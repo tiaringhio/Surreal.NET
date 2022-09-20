@@ -160,8 +160,8 @@ public readonly struct Thing : IEquatable<Thing> {
         if (Length <= 0) {
             return "";
         }
-        var escape = Converter.ContainsComplexCharacters(in this);
-        var len = Length + (escape ? 2 : 0);
+
+        var len = Length;
         using StrBuilder result = len > 512 ? new(len) : new(stackalloc char[len]);
         if (!Table.IsEmpty) {
             result.Append(Uri.EscapeDataString(Table.ToString()));
@@ -175,13 +175,10 @@ public readonly struct Thing : IEquatable<Thing> {
             result.Append('/');
         }
 
-        if (escape) {
-            result.Append(CHAR_PRE);
+        if (!TryUnescapeKey(out var key)) {
+            key = Key;
         }
-        result.Append(Uri.EscapeDataString(Key.ToString()));
-        if (escape) {
-            result.Append(CHAR_SUF);
-        }
+        result.Append(Uri.EscapeDataString(key.ToString()));
 
         return result.ToString();
     }

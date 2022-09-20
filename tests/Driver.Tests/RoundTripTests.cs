@@ -36,7 +36,7 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
+        var returnedDocument = result.GetObject<RoundTripObject>();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
@@ -49,7 +49,7 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
+        var returnedDocument = result.GetObject<RoundTripObject>();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
@@ -61,10 +61,10 @@ public abstract class RoundTripTests<T, U>
         U response = await Database.Query(sql, null);
 
         response.Should().NotBeNull();
-        AssertOk(response);
+        TestHelper.AssertOk(response);
         response.TryGetResult(out Result result).Should().BeTrue();
-        result.TryGetObject(out RoundTripObject? returnedDocument).Should().BeTrue();
-        RoundTripObject.AssertAreEqual(Expected, returnedDocument!);
+        var returnedDocument = result.GetObject<RoundTripObject>();
+        RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     }
 
     [Fact]
@@ -82,20 +82,8 @@ public abstract class RoundTripTests<T, U>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out RoundTripObject? returnedDocument));
+        var returnedDocument = result.GetObject<RoundTripObject>();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
-    }
-
-    protected void AssertOk(
-        in IResponse rpcResponse,
-        [CallerArgumentExpression("rpcResponse")]
-        string caller = "") {
-        if (!rpcResponse.TryGetError(out SurrealError err)) {
-            return;
-        }
-
-        Exception ex = new($"Expected Ok, got {err.Code} ({err.Message}) in {caller}");
-        throw ex;
     }
 }
 

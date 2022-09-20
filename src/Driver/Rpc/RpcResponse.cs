@@ -72,10 +72,67 @@ public readonly struct RpcResponse : IResponse {
             WsError err = rsp.Error.Value;
             return new(rsp.Id, new(err.Code, err.Message), default);
         }
+
+        var result = UnpackFromStatusDocument(rsp.Result);
+        result = IntoSingle(result);
         
         // SurrealDB likes to returns a list of one result. Unbox this response, to conform with the REST client
-        Result res = Result.From(IntoSingle(rsp.Result));
+        Result res = Result.From(IntoSingle(result));
         return new(rsp.Id, default, res);
+    }
+
+    public static JsonElement UnpackFromStatusDocument(in JsonElement root) {
+        // Some results come as a simple array of objects (basically just a results array)
+        // [ { }, { }, ... ]
+        // Others come embedded into a 'status document' that can have multiple result sets
+        //[
+        //  {
+        //    "result": [ { }, { }, ... ],
+        //    "status": "OK",
+        //    "time": "71.775µs"
+        //  }
+        //]
+
+        if (root.ValueKind != JsonValueKind.Array) {
+            return root;
+        }
+
+        foreach (var resultStatusDoc in root.EnumerateArray()) {
+            if (resultStatusDoc.ValueKind != JsonValueKind.Object) {
+                // if this was a status document, we would expect an object here
+                return root;
+            }
+
+            var propertyCount = 0;
+            JsonElement? resultProperty = null;
+            foreach (var resultStatusDocProperty in resultStatusDoc.EnumerateObject()) {
+                propertyCount++;
+                if (resultStatusDocProperty.NameEquals("result")) {
+                    resultProperty = resultStatusDocProperty.Value;
+                }
+                else if (!resultStatusDocProperty.NameEquals("status") && !resultStatusDocProperty.NameEquals("time")) {
+                    // this property is not part of the 'status document',
+                    // at this point we can be confident that it is just a simple array of objects
+                    // so lets just return it
+                    return root;
+                }
+            }
+
+            if (propertyCount == 3) {
+                // We ended up with 3 properties, so this must be a status document
+                return resultProperty!.Value;
+            }
+        }
+
+        // if we get here then all the properties had valid status document names
+        // but was missing some of them
+        return root;
+    }
+
+    private record SurrealStatusResponse {
+        public string? time;
+        public string? status;
+        public JsonElement? result;
     }
 
     public static JsonElement IntoSingle(in JsonElement root) {

@@ -22,6 +22,7 @@ public class SurrealThingTests {
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
         surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo(table);
         surrealThing.Key.ToString().Should().BeEmpty();
+        surrealThing.ToUri().Should().BeEquivalentTo(table);
     }
     
     [Theory]
@@ -36,6 +37,7 @@ public class SurrealThingTests {
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
         surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
         surrealThing.Key.ToString().Should().BeEquivalentTo(key);
+        surrealThing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
     
     [Theory]
@@ -50,6 +52,7 @@ public class SurrealThingTests {
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
         surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
         surrealThing.Key.ToString().Should().BeEquivalentTo(key);
+        surrealThing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
     
     [Theory]
@@ -66,6 +69,7 @@ public class SurrealThingTests {
         surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
         surrealThing.Unescape().Key.ToString().Should().BeEquivalentTo(key);
         surrealThing.Key.ToString().Should().BeEquivalentTo(escapedKey);
+        surrealThing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
     
     [Theory]
@@ -83,5 +87,6 @@ public class SurrealThingTests {
         surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
         surrealThing.Unescape().Key.ToString().Should().BeEquivalentTo(key);
         surrealThing.Key.ToString().Should().BeEquivalentTo(escapedKey);
+        surrealThing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
 }

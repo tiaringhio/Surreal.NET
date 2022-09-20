@@ -5,19 +5,25 @@ using SurrealDB.Driver.Rest;
 using SurrealDB.Driver.Rpc;
 using SurrealDB.Models;
 
-namespace SurrealDB.Driver.Tests;
+namespace SurrealDB.Driver.Tests.Queries;
 
 public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> { }
 public class RpcStringQueryTests : StringQueryTests<DatabaseRpc, RpcResponse> { }
 
-public class RpcIntQueryTests : IntQueryTests<DatabaseRpc, RpcResponse> { }
-public class RestIntQueryTests : IntQueryTests<DatabaseRest, RestResponse> { }
-
 public class RpcGuidQueryTests : GuidQueryTests<DatabaseRpc, RpcResponse> { }
 public class RestGuidQueryTests : GuidQueryTests<DatabaseRest, RestResponse> { }
 
+public class RpcIntQueryTests : IntQueryTests<DatabaseRpc, RpcResponse> { }
+public class RestIntQueryTests : IntQueryTests<DatabaseRest, RestResponse> { }
+
+public class RpcLongQueryTests : LongQueryTests<DatabaseRpc, RpcResponse> { }
+public class RestLongQueryTests : LongQueryTests<DatabaseRest, RestResponse> { }
+
 public class RpcFloatQueryTests : FloatQueryTests<DatabaseRpc, RpcResponse> { }
 public class RestFloatQueryTests : FloatQueryTests<DatabaseRest, RestResponse> { }
+
+public class RpcDoubleQueryTests : DoubleQueryTests<DatabaseRpc, RpcResponse> { }
+public class RestDoubleQueryTests : DoubleQueryTests<DatabaseRest, RestResponse> { }
 
 public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
     where T : IDatabase<U>, new()
@@ -47,7 +53,7 @@ public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
     }
 
     protected override int RandomValue() {
-        return 7; // Can't go too high otherwise the maths operations might overflow
+        return Random.Shared.Next(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -56,6 +62,35 @@ public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
 
     private static int RandomInt() {
         return Random.Shared.Next();
+    }
+
+    protected override void AssertEquivalency(int a, int b) {
+        b.Should().Be(a);
+    }
+}
+
+public abstract class LongQueryTests <T, U> : MathQueryTests<T, U, long, long>
+    where T : IDatabase<U>, new()
+    where U : IResponse {
+
+    protected override long RandomKey() {
+        return RandomLong();
+    }
+
+    protected override long RandomValue() {
+        return Random.Shared.NextInt64(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
+    }
+
+    protected override string ValueCast() {
+        return "<int>";
+    }
+
+    private static long RandomLong() {
+        return Random.Shared.NextInt64();
+    }
+
+    protected override void AssertEquivalency(long a, long b) {
+        b.Should().Be(a);
     }
 }
 
@@ -68,7 +103,7 @@ public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float
     }
 
     protected override float RandomValue() {
-        return 7f; // Can't go too high otherwise the maths operations might overflow
+        return (RandomFloat() * 20000) - 10000; // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -78,30 +113,38 @@ public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float
     private static float RandomFloat() {
         return Random.Shared.NextSingle();
     }
+
+    protected override void AssertEquivalency(float a, float b) {
+        b.Should().BeApproximately(a, 0.001f);
+    }
 }
 
-public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, int, int>
+public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, double>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
-    protected override int RandomKey() {
-        return RandomInt();
+    protected override double RandomKey() {
+        return RandomDouble();
     }
 
-    protected override int RandomValue() {
-        return 7; // Can't go to high otherwise the maths operations might overflow
+    protected override double RandomValue() {
+        return (RandomDouble() * 20000d) - 10000d; // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
-        return "<int>";
+        return "<float>";
     }
 
-    private static int RandomInt() {
-        return Random.Shared.Next();
+    private static double RandomDouble() {
+        return Random.Shared.NextDouble();
+    }
+
+    protected override void AssertEquivalency(double a, double b) {
+        b.Should().BeApproximately(a, 0.001f);
     }
 }
 
-public abstract class GuidQueryTests <T, U> : QueryTests<T, U, Guid, Guid>
+public abstract class GuidQueryTests<T, U> : QueryTests<T, U, Guid, Guid>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
@@ -123,12 +166,13 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
     where U : IResponse {
     
     protected abstract string ValueCast();
+    protected abstract void AssertEquivalency(TValue a, TValue b);
 
     [Fact]
     public async Task AdditionQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! + (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+        var expectedResult =  (dynamic)val1! + (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 + $val2)";
         Dictionary<string, object?> param = new() {
@@ -141,16 +185,15 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out TValue? doc));
-        Assert.IsType<TValue>(doc);
-        doc.Should().BeEquivalentTo(expectedResult);
+        var resultValue = result.GetObject<TValue>();
+        AssertEquivalency(resultValue, expectedResult);
     }
 
     [Fact]
     public async Task SubtractionQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! - (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+        var expectedResult =  (dynamic)val1! - (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 - $val2)";
         Dictionary<string, object?> param = new() {
@@ -163,16 +206,15 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out TValue? doc));
-        Assert.IsType<TValue>(doc);
-        doc.Should().BeEquivalentTo(expectedResult);
+        var value = result.GetObject<TValue>();
+        AssertEquivalency(value, expectedResult);
     }
 
     [Fact]
     public async Task MultiplicationQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! * (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+        var expectedResult =  (dynamic)val1! * (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 * $val2)";
         Dictionary<string, object?> param = new() {
@@ -185,16 +227,15 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out TValue? doc));
-        Assert.IsType<TValue>(doc);
-        doc.Should().BeEquivalentTo(expectedResult);
+        var value = result.GetObject<TValue>();
+        AssertEquivalency(value, expectedResult);
     }
 
     [Fact]
     public async Task DivisionQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! / (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a generic
+        var expectedResult =  (dynamic)val1! / (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 / $val2)";
         Dictionary<string, object?> param = new() {
@@ -207,9 +248,8 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out TValue? doc));
-        Assert.IsType<TValue>(doc);
-        doc.Should().BeEquivalentTo(expectedResult);
+        var value = result.GetObject<TValue>();
+        AssertEquivalency(value, expectedResult);
     }
 }
 
@@ -242,9 +282,8 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
-        Assert.IsType<TestObject<TKey, TValue>>(doc);
-        expectedObject.Should().BeEquivalentTo(doc);
+        var doc = result.GetObject<TestObject<TKey, TValue>>();
+        doc.Should().BeEquivalentTo(expectedObject);
     }
 
     [Fact]
@@ -264,9 +303,8 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
-        Assert.IsType<TestObject<TKey, TValue>>(doc);
-        expectedObject.Should().BeEquivalentTo(doc);
+        var doc = result.GetObject<TestObject<TKey, TValue>>();
+        doc.Should().BeEquivalentTo(expectedObject);
     }
 
     [Fact]
@@ -286,9 +324,8 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        Assert.True(result.TryGetObject(out TestObject<TKey, TValue>? doc));
-        Assert.IsType<TestObject<TKey, TValue>>(doc);
-        expectedObject.Should().BeEquivalentTo(doc);
+        var doc = result.GetObject<TestObject<TKey, TValue>>();
+        doc.Should().BeEquivalentTo(expectedObject);
     }
 }
 
