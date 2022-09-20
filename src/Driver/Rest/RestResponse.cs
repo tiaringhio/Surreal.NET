@@ -18,12 +18,7 @@ public readonly struct RestResponse : IResponse {
     private readonly string? _description;
     private readonly JsonElement _result;
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        RestResponse(
+    public RestResponse(
             string? time,
             string? status,
             string? description,

@@ -3,12 +3,7 @@ using System.Text.Json.Serialization;
 
 namespace SurrealDB.Ws;
 
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    struct WsResponse {
+public struct WsResponse {
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 

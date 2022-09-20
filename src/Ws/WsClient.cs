@@ -9,12 +9,7 @@ namespace SurrealDB.Ws;
 /// <summary>
 ///     The client used to connect to the Surreal server via JSON RPC.
 /// </summary>
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    sealed class WsClient : IDisposable, IAsyncDisposable {
+public sealed class WsClient : IDisposable, IAsyncDisposable {
     public const int DefaultBufferSize = 16 * 1024;
 
     // Do not get any funny ideas and fill this fucker up.

@@ -4,12 +4,7 @@ namespace SurrealDB.Models;
 ///     The result of a failed query to the Surreal database.
 /// </summary>
 public readonly struct SurrealError {
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        SurrealError(
+    public SurrealError(
             int code,
             string? message) {
         Code = code;

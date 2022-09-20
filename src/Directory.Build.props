@@ -30,8 +30,4 @@
 		<GenerateDocumentationFile>true</GenerateDocumentationFile>
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
-
-	<PropertyGroup Condition="$(Configuration)=='Debug'">
-		<DefineConstants>$(DefineConstants);SURREAL_NET_INTERNAL</DefineConstants>
-	</PropertyGroup>
 </Project>

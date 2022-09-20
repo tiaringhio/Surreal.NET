@@ -21,12 +21,7 @@ public readonly struct Thing : IEquatable<Thing> {
     
     private readonly int _split;
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        Thing(
+    public Thing(
             int split,
             string inner) {
         _split = split;

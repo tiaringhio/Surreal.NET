@@ -11,12 +11,7 @@ namespace SurrealDB.Common;
 /// <remarks>
 ///     Based on: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/IO/MemoryStream.cs
 /// </remarks>
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    sealed class PooledMemoryStream : Stream {
+public sealed class PooledMemoryStream : Stream {
     private readonly MemoryPool<byte> _pool;
     private IMemoryOwner<byte> _buffer; // Either allocated internally or externally.
     private int _length; // Number of bytes within the memory stream

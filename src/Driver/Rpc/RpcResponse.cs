@@ -12,12 +12,7 @@ namespace SurrealDB.Driver.Rpc;
 public readonly struct RpcResponse : IResponse {
     private readonly SurrealError _error;
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        RpcResponse(
+public RpcResponse(
             string id,
             SurrealError error,
             Result result) {
@@ -58,12 +53,7 @@ public readonly struct RpcResponse : IResponse {
         (result, error) = (UncheckedResult, _error);
     }
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        static RpcResponse From(in WsResponse rsp) {
+public static RpcResponse From(in WsResponse rsp) {
         if (rsp.Id is null) {
             ThrowIdMissing();
         }
