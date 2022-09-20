@@ -103,7 +103,7 @@ public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float
     }
 
     protected override float RandomValue() {
-        return (RandomFloat() * 20000) - 10000; // Can't go too high otherwise the maths operations might overflow
+        return (RandomFloat() * 2000) - 1000; // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -115,7 +115,7 @@ public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float
     }
 
     protected override void AssertEquivalency(float a, float b) {
-        b.Should().BeApproximately(a, 0.001f);
+        b.Should().BeApproximately(a, 0.1f);
     }
 }
 
@@ -128,7 +128,7 @@ public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, dou
     }
 
     protected override double RandomValue() {
-        return (RandomDouble() * 20000d) - 10000d; // Can't go too high otherwise the maths operations might overflow
+        return (RandomDouble() * 2000d) - 1000d; // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -140,7 +140,7 @@ public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, dou
     }
 
     protected override void AssertEquivalency(double a, double b) {
-        b.Should().BeApproximately(a, 0.001f);
+        b.Should().BeApproximately(a, 0.1f);
     }
 }
 
