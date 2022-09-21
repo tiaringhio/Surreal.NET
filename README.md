@@ -59,7 +59,7 @@ While Surreal .NET support `Microsoft.Hosting` integration for usage in a [web A
 I highly recommend looking at the [examples](./examples/) for basic usage, but for now lets take a look at a basic console app with the RPC library.
 
 ```xml
-<PackageReference Include="SurrealDB.Driver.Rest" Version="1.0.2	" />
+<PackageReference Include="SurrealDB.Driver.Rest" Version="1.0.2" />
 ```
 
 ```csharp
