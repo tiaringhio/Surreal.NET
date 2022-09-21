@@ -12,7 +12,11 @@ public abstract class DatabaseTestDriver<T, U>
     : DriverBase<T>
     where T : IDatabase<U>, new()
     where U : IResponse {
-    
+
+    protected DatabaseTestDriver() {
+        TestHelper.EnsureDB();
+    }
+
     [Fact]
     protected override async Task TestSuite() {
         await Database.Open(TestHelper.Default);

@@ -22,6 +22,10 @@ public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
+    protected StringQueryTests() {
+        TestHelper.EnsureDB();
+    }
+
     protected override string RandomKey() {
         return RandomString();
     }

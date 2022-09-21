@@ -35,4 +35,11 @@ public static class TestHelper {
         Exception ex = new($"Expected Ok, got error code {err.Code} ({err.Message}) in {caller}");
         throw ex;
     }
+
+    public static void EnsureDB() {
+        // Assume we have surreal as a command in PATH
+        Process.Start(new ProcessStartInfo("killall", "surreal")).WaitForExit();
+        Process.Start(new ProcessStartInfo("surreal", $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug"));
+    }
+
 }

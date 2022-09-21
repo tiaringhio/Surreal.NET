@@ -1,8 +1,13 @@
-namespace SurrealDB.Driver.Tests.Ws;
+namespace SurrealDB.Driver.Tests;
 
 
 public class WsClientTests
 {
+    public WsClientTests() {
+        TestHelper.EnsureDB();
+    }
+    
+    
     public readonly WsClient Client = new();
 
     [Fact]

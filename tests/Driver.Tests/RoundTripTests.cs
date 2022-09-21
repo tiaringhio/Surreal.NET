@@ -9,13 +9,15 @@ public class RestRoundTripTests : RoundTripTests<DatabaseRest, RestResponse> {
 public abstract class RoundTripTests<T, U>
     where T : IDatabase<U>, new()
     where U : IResponse {
-    protected T Database;
-    protected RoundTripObject Expected = new();
 
     protected RoundTripTests() {
+        TestHelper.EnsureDB();
         Database = new();
         Database.Open(TestHelper.Default).Wait();
     }
+
+    protected T Database;
+    protected RoundTripObject Expected = new();
 
     [Fact]
     public async Task CreateRoundTripTest() {
