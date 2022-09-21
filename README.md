@@ -47,7 +47,7 @@ Contributions are what make the open source community such an amazing place to b
 
 ## Coverage
 
-![Coverage](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graphs/sunburst.svg?token=fcndEq1d3w)
+[![codecov](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graph/badge.svg?token=fcndEq1d3w)](https://codecov.io/gh/ProphetLamb/Surreal.Net)
 
 ## Contributors ✨
 
