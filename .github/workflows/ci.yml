@@ -21,10 +21,10 @@ jobs:
         run: dotnet build --no-restore
       - name: Test
         run: |
-          mkdir ~/bin
-          export INSTALL_DIR=~/bin
+          mkdir ~/.local/bin
+          export INSTALL_DIR=~/.local/bin
           curl -sSf https://install.surrealdb.com | sh
-          export PATH="$HOME/bin/:$PATH"
+          export PATH="$HOME/.local/bin/:$PATH"
 
           dotnet test --no-build --verbosity normal
           docker-compose -f "tests/db/docker-compose.yml" down

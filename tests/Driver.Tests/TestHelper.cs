@@ -37,9 +37,30 @@ public static class TestHelper {
     }
 
     public static void EnsureDB() {
+        string? path = GetFullPath("surreal");
         // Assume we have surreal as a command in PATH
         Process.Start(new ProcessStartInfo("killall", "surreal")).WaitForExit();
-        Process.Start(new ProcessStartInfo("surreal", $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug"));
+        Process.Start(new ProcessStartInfo(path!, $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug"));
     }
+    
+    
+    
+    public static string? GetFullPath(string file)
+    {
+        if (File.Exists(file)) {
+            return Path.GetFullPath(file);
+        }
 
+        var values = Environment.GetEnvironmentVariable("PATH");
+        if (values is null) {
+            return null;
+        }
+        foreach (var path in values.Split(Path.PathSeparator))
+        {
+            var fullPath = Path.Combine(path, file);
+            if (File.Exists(fullPath))
+                return fullPath;
+        }
+        return null;
+    }
 }
