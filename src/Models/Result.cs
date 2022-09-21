@@ -15,12 +15,7 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
     private readonly object? _sentinelOrValue;
     private readonly long _int64ValueField;
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        Result(
+    public Result(
             JsonElement json,
             object? sentinelOrValue) {
         _json = json;
@@ -28,12 +23,7 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
         _int64ValueField = 0;
     }
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        Result(
+    public Result(
             JsonElement json,
             object? sentinelOrValue,
             long int64ValueField) {
@@ -44,7 +34,7 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
 
     public JsonElement Inner => _json;
 
-    public T GetObject<T>() {
+    public T? GetObject<T>() {
         var obj = _json.Deserialize<T>(Constants.JsonOptions);
         return obj;
     }

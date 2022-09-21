@@ -14,19 +14,14 @@ namespace SurrealDB.Models;
 ///     `table_name:record_id`
 /// </remarks>
 [JsonConverter(typeof(Converter))]
-public readonly struct Thing : IEquatable<Thing> {
+public readonly record struct Thing {
     public const char CHAR_SEP = ':';
     public const char CHAR_PRE = '⟨';
     public const char CHAR_SUF = '⟩';
     
     private readonly int _split;
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        Thing(
+    public Thing(
             int split,
             string inner) {
         _split = split;
@@ -144,18 +139,6 @@ public readonly struct Thing : IEquatable<Thing> {
         return thing.Inner;
     }
 
-    public bool Equals(Thing other) {
-        return Inner == other.Inner;
-    }
-
-    public override bool Equals(object? obj) {
-        return obj is Thing other && Equals(other);
-    }
-
-    public override int GetHashCode() {
-        return Inner.GetHashCode();
-    }
-
     public string ToUri() {
         if (Length <= 0) {
             return "";
@@ -175,7 +158,7 @@ public readonly struct Thing : IEquatable<Thing> {
             result.Append('/');
         }
 
-        if (!TryUnescapeKey(out var key)) {
+        if (!TryUnescapeKey(out ReadOnlySpan<char> key)) {
             key = Key;
         }
         result.Append(Uri.EscapeDataString(key.ToString()));
