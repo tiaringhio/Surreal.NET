@@ -8,7 +8,6 @@ public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest, RestResp
 
 }
 
-
 [Collection("SurrealDBRequired")]
 public abstract class DatabaseTestDriver<T, U>
     : DriverBase<T>
