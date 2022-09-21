@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install SurrealDB
+        run: |
+          mkdir -p ~/.local/bin
+          export INSTALL_DIR=~/.local/bin
+          curl -sSf https://install.surrealdb.com | sh
+          export PATH="$HOME/.local/bin/:$PATH"
       - uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
@@ -19,17 +25,21 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: Test
+        shell: bash
+      - name: Run Tests
         run: |
-          # install SurrealDB
-          mkdir ~/.local/bin
-          export INSTALL_DIR=~/.local/bin
-          curl -sSf https://install.surrealdb.com | sh
-          export PATH="$HOME/.local/bin/:$PATH"
-
-          # tests actions/setup-dotnet writes coverage to ./coverage.cobertura.xml
-          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
-      - name: Coverage
+          dotnet test --no-build --verbosity normal --logger "trx;LogFileName=$(pwd)/test-results.trx" --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura\" /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
+        shell: bash
+      - name: Test Report
+        if: success() || failure()
+        uses: phoenix-actions/test-reporting@v8
+        with:
+          name: unittest-results
+          path: test-results.trx
+          reporter: dotnet-trx
+          fail-on-error: false
+      - name: Test Coverage
+        if: success() || failure()
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

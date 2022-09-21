@@ -1,11 +1,11 @@
 name: Publish
 on:
+  workflow_dispatch:
   release:
-    types: [ published ]
+    types: [published]
 
 jobs:
   publish:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -15,8 +15,8 @@ jobs:
         with:
           dotnet-version: 6.0.x
       - name: Build
-        run: dotnet build -c Release
+        run: dotnet build -c:Release
       - name: Pack
-        run: dotnet pack ./src/Core/Core.csproj -c Release
+        run: dotnet pack -c:Release -o:$(pwd)/publish
       - name: Publish
-        run: dotnet nuget push ./src/Core/bin/Release/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push $(pwd)/publish/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
