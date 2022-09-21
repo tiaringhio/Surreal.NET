@@ -26,11 +26,19 @@ jobs:
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
         shell: bash
-      - name: Test Coverage
-        uses: codecov/codecov-action@v3
+      - name: Run Tests
         run: |
           dotnet test --no-build --verbosity normal --logger "trx;LogFileName=$(pwd)/test-results.trx" --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura\" /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
         shell: bash
+      - name: Test Report
+        if: success() || failure()
+        uses: dorny/test-reporter@v1
+        with:
+          name: unittest-results
+          path: test-results.trx
+      - name: Test Coverage
+        if: success() || failure()
+        uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           files: ./coverage.cobertura.xml
@@ -38,8 +46,3 @@ jobs:
           name: Surreal.Net
           fail_ci_if_error: true
           verbose: true
-      - name: Test Report
-        if: success() || failure()
-        with:
-          name: unittest-results
-          path: test-results.trx
