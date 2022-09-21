@@ -34,5 +34,8 @@ msbuild.wrn
 # Idea Folder
 .idea/
 
-# Code coverage
+# Test resultws
+TestResults/
+coverage/
+test-results.trx
 coverage*.xml
