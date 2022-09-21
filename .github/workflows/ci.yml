@@ -19,12 +19,13 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: SurrealDB
+      - name: Install SurrealDB
         run: /
           mkdir ~/.local/bin
           export INSTALL_DIR=~/.local/bin
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
+        shell: bash
       - name: Test
         run: |
           # writes coverage to ./coverage.cobertura.xml
