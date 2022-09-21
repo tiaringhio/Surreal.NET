@@ -7,6 +7,15 @@
   "commitConvention": "angular",
   "contributors": [
     {
+      "login": "ProphetLamb",
+      "name": "ProphetLamb",
+      "avatar_url": "https://avatars.githubusercontent.com/u/19748542?v=4",
+      "profile": "https://github.com/ProphetLamb",
+      "contributions": [
+        "code"
+      ]
+    },
+    {
       "login": "StephenGilboy",
       "name": "Stephen Gilboy",
       "avatar_url": "https://avatars.githubusercontent.com/u/827735?v=4",
