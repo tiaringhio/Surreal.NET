@@ -1,7 +1,9 @@
+using Newtonsoft.Json.Linq;
+
 namespace SurrealDB.Driver.Tests.Queries;
 
 public class RestGeneralQueryTests : GeneralQueryTests<DatabaseRest, RestResponse> { }
-public class RpcGeneralgQueryTests : GeneralQueryTests<DatabaseRpc, RpcResponse> { }
+public class RpcGeneralQueryTests : GeneralQueryTests<DatabaseRpc, RpcResponse> { }
 
 public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> { }
 public class RpcStringQueryTests : StringQueryTests<DatabaseRpc, RpcResponse> { }
@@ -196,7 +198,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<
     public async Task AdditionQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! + (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! + (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 + $val2)";
         Dictionary<string, object?> param = new() {
@@ -217,7 +219,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<
     public async Task SubtractionQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! - (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! - (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 - $val2)";
         Dictionary<string, object?> param = new() {
@@ -238,7 +240,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<
     public async Task MultiplicationQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! * (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! * (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 * $val2)";
         Dictionary<string, object?> param = new() {
@@ -259,7 +261,7 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<
     public async Task DivisionQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! / (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! / (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM {ValueCast()}($val1 / $val2)";
         Dictionary<string, object?> param = new() {
@@ -277,8 +279,6 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<
     }
 }
 
-
-
 public abstract class InequalityQueryTests<T, U, TKey, TValue> : EqualityQueryTests<T, U, TKey, TValue>
     where T : IDatabase<U>, new()
     where U : IResponse {
@@ -287,7 +287,7 @@ public abstract class InequalityQueryTests<T, U, TKey, TValue> : EqualityQueryTe
     public async Task LessThanQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! < (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! < (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM ($val1 < $val2)";
         Dictionary<string, object?> param = new() {
@@ -308,7 +308,7 @@ public abstract class InequalityQueryTests<T, U, TKey, TValue> : EqualityQueryTe
     public async Task LessThanOrEqualToQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! <= (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! <= (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM ($val1 <= $val2)";
         Dictionary<string, object?> param = new() {
@@ -329,7 +329,7 @@ public abstract class InequalityQueryTests<T, U, TKey, TValue> : EqualityQueryTe
     public async Task GreaterThanQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! > (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! > (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM ($val1 > $val2)";
         Dictionary<string, object?> param = new() {
@@ -350,7 +350,7 @@ public abstract class InequalityQueryTests<T, U, TKey, TValue> : EqualityQueryTe
     public async Task GreaterThanOrEqualToQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! > (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! > (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM ($val1 >= $val2)";
         Dictionary<string, object?> param = new() {
@@ -376,7 +376,7 @@ public abstract class EqualityQueryTests<T, U, TKey, TValue> : QueryTests<T, U, 
     public async Task EqualsQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! == (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! == (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM ($val1 = $val2)";
         Dictionary<string, object?> param = new() {
@@ -397,7 +397,7 @@ public abstract class EqualityQueryTests<T, U, TKey, TValue> : QueryTests<T, U, 
     public async Task NotEqualsQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult =  (dynamic)val1! != (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! != (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM ($val1 != $val2)";
         Dictionary<string, object?> param = new() {
@@ -505,6 +505,20 @@ public abstract class GeneralQueryTests<T, U>
         Database.Open(TestHelper.Default).Wait();
     }
 
+    private record GroupedCountries {
+        string country;
+        string total;
+    }
+
+    private class MathRequestDocument {
+        public float f1 {get; set;}
+        public float f2 {get; set;}
+    }
+
+    private class MathResultDocument {
+        public float result {get; set;}
+    }
+
     [Fact]
     public async Task SimpleFuturesQueryTest() {
         string sql = "select * from <future> { time::now() };";
@@ -518,7 +532,7 @@ public abstract class GeneralQueryTests<T, U>
         doc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(10));
     }
 
-        [Fact]
+      [Fact]
     public async Task CountAndGroupQueryTest() {
         string sql = @"SELECT
 	country,
@@ -554,9 +568,102 @@ GROUP BY country;";
         doc.Should().BeEquivalentTo("4768b3fc7ac751e03a614e2349abf3bf");
     }
 
-    private record GroupedCountries {
-        string country;
-        string total;
+    [Fact]
+    public async Task SimpleAdditionQueryTest() {
+        MathRequestDocument expectedObject = new MathRequestDocument {
+            f1 = 1,
+            f2 = 1,
+        };
+        var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
+
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        await Database.Create(thing, expectedObject);
+
+        string sql = "SELECT (f1 + f2) as result FROM $record";
+        Dictionary<string, object?> param = new() {
+            ["record"] = thing
+        };
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        MathResultDocument? doc = result.GetObject<MathResultDocument>();
+        doc.Should().BeEquivalentTo(expectedResult);
+    }
+
+    [Fact]
+    public async Task EpsilonAdditionQueryTest() {
+        MathRequestDocument expectedObject = new MathRequestDocument {
+            f1 = float.Epsilon,
+            f2 = float.Epsilon,
+        };
+        var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
+
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        await Database.Create(thing, expectedObject);
+
+        string sql = "SELECT (f1 + f2) as result FROM $record";
+        Dictionary<string, object?> param = new() {
+            ["record"] = thing
+        };
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        MathResultDocument? doc = result.GetObject<MathResultDocument>();
+        Assert.NotNull(doc);
+        doc.result.Should().BeApproximately(expectedResult.result, 0.000001f);
+    }
+
+    [Fact]
+    public async Task MinValueAdditionQueryTest() {
+        MathRequestDocument expectedObject = new MathRequestDocument {
+            f1 = float.MinValue,
+            f2 = float.MaxValue,
+        };
+        var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
+
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        await Database.Create(thing, expectedObject);
+
+        string sql = "SELECT (f1 + f2) as result FROM $record";
+        Dictionary<string, object?> param = new() {
+            ["record"] = thing
+        };
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        MathResultDocument? doc = result.GetObject<MathResultDocument>();
+        Assert.NotNull(doc);
+        doc.result.Should().BeApproximately(expectedResult.result, 0.001f);
+    }
+
+    [Fact]
+    public async Task MaxValueSubtractionQueryTest() {
+        MathRequestDocument expectedObject = new MathRequestDocument {
+            f1 = float.MaxValue,
+            f2 = float.MinValue,
+        };
+        var expectedResult = new MathResultDocument { result = expectedObject.f1 - expectedObject.f2 };
+
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        await Database.Create(thing, expectedObject);
+
+        string sql = "SELECT (f1 - f2) as result FROM $record";
+        Dictionary<string, object?> param = new() {
+            ["record"] = thing
+        };
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        MathResultDocument? doc = result.GetObject<MathResultDocument>();
+        doc.Should().BeEquivalentTo(expectedResult);
     }
 }
 
