@@ -23,6 +23,15 @@
       "contributions": [
         "code"
       ]
+    },
+    {
+    "login": "Du-z",
+      "name": "Brian Duhs",
+      "avatar_url": "https://avatars.githubusercontent.com/u/16366766?v=4",
+      "profile": "https://github.com/Du-z",
+      "contributions": [
+        "test", "code"
+      ]
     }
   ],
   "contributorsPerLine": 7,

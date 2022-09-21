@@ -63,12 +63,14 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
     <tr>
       <td align="center"><a href="https://github.com/StephenGilboy"><img src="https://avatars.githubusercontent.com/u/827735?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Stephen Gilboy</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=StephenGilboy" title="Code">💻</a></td>
       <td align="center"><a href="https://antoniosbarotsis.github.io/"><img src="https://avatars.githubusercontent.com/u/50240570?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tony</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=AntoniosBarotsis" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/Du-z"><img src="https://avatars.githubusercontent.com/u/16366766?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brian Duhs</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=Du-z" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
 
 <!-- markdownlint-restore -->
 <!-- prettier-ignore-end -->
+
 <!-- ALL-CONTRIBUTORS-LIST:END -->
 
 This project follows the [all-contributors](https://github.com/all-contributors/all-contributors) specification. Contributions of any kind welcome!
