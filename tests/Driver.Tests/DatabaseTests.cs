@@ -1,37 +1,34 @@
-﻿using System.Diagnostics;
-using System.Runtime.CompilerServices;
-
-using SurrealDB.Abstractions;
-using SurrealDB.Driver.Rest;
-using SurrealDB.Driver.Rpc;
-using SurrealDB.Models;
-
-namespace SurrealDB.Driver.Tests;
+﻿namespace SurrealDB.Driver.Tests.Database;
 
 public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc, RpcResponse> {
-    
+
 }
 
 public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest, RestResponse> {
-    
+
 }
 
+[Collection("SurrealDBRequired")]
 public abstract class DatabaseTestDriver<T, U>
     : DriverBase<T>
     where T : IDatabase<U>, new()
     where U : IResponse {
-    
+
+    public DatabaseTestDriver() {
+        TestHelper.EnsureDB();
+    }
+
     [Fact]
     protected override async Task TestSuite() {
-        await Database.Open(ConfigHelper.Default);
-        Database.GetConfig().Should().BeEquivalentTo(ConfigHelper.Default);
+        await Database.Open(TestHelper.Default);
+        Database.GetConfig().Should().BeEquivalentTo(TestHelper.Default);
 
-        U useResp = await Database.Use(ConfigHelper.Database, ConfigHelper.Namespace);
+        U useResp = await Database.Use(TestHelper.Database, TestHelper.Namespace);
         AssertOk(useResp);
         U infoResp = await Database.Info();
         AssertOk(infoResp);
 
-        U signInStatus = await Database.Signin(new() { Username = ConfigHelper.User, Password = ConfigHelper.Pass, });
+        U signInStatus = await Database.Signin(new() { Username = TestHelper.User, Password = TestHelper.Pass, });
 
         AssertOk(signInStatus);
         //AssertOk(await Database.Invalidate());
@@ -40,7 +37,10 @@ public abstract class DatabaseTestDriver<T, U>
         IResponse res1 = await Database.Create(
             "person",
             new {
-                Title = "Founder & CEO", Name = new { First = "Tobie", Last = "Morgan Hitchcock", }, Marketing = true, Identifier = Random.Shared.Next(),
+                Title = "Founder & CEO",
+                Name = new { First = "Tobie", Last = "Morgan Hitchcock", },
+                Marketing = true,
+                Identifier = Random.Shared.Next(),
             }
         );
 
@@ -49,7 +49,10 @@ public abstract class DatabaseTestDriver<T, U>
         IResponse res2 = await Database.Create(
             "person",
             new {
-                Title = "Contributor", Name = new { First = "Prophet", Last = "Lamb", }, Marketing = false, Identifier = Random.Shared.Next(),
+                Title = "Contributor",
+                Name = new { First = "Prophet", Last = "Lamb", },
+                Marketing = false,
+                Identifier = Random.Shared.Next(),
             }
         );
 
@@ -67,7 +70,10 @@ public abstract class DatabaseTestDriver<T, U>
             await Database.Change(
                 thing1,
                 new {
-                    Title = "Founder & CEO", Name = new { First = "Tobie", Last = "Hitchcock Morgan", }, Marketing = false, Identifier = Random.Shared.Next(),
+                    Title = "Founder & CEO",
+                    Name = new { First = "Tobie", Last = "Hitchcock Morgan", },
+                    Marketing = false,
+                    Identifier = Random.Shared.Next(),
                 }
             )
         );

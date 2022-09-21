@@ -14,7 +14,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable 
     private readonly HttpClient _client = new();
     private Configuration.Config _config;
     private bool _configured;
-    
+
     public DatabaseRest() {}
 
     public DatabaseRest(in Configuration.Config config) {

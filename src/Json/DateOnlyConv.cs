@@ -37,7 +37,6 @@ public sealed class DateOnlyConv : JsonConverter<DateOnly> {
         rem = rem.Slice(3);
         int m = Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
         slc = rem.Slice(1, 2);
-        rem = rem.Slice(3);
         int d = Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
         return new(y, m , d);
     }

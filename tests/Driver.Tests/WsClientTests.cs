@@ -1,14 +1,20 @@
+using System.Text.Json;
+
 namespace SurrealDB.Driver.Tests;
 
-#if Debug
-public class RpcClientTests
+[Collection("SurrealDBRequired")]
+public class WsClientTests
 {
-    public readonly JsonRpcClient Client = new();
+    public WsClientTests() {
+        TestHelper.EnsureDB();
+    }
+    
+    public readonly WsClient Client = new();
 
     [Fact]
     public async Task Open()
     {
-        await Client.Open(ConfigHelper.Default.RpcEndpoint!);
+        await Client.Open(TestHelper.Default.RpcEndpoint!);
     }
 
     [Fact]
@@ -17,14 +23,15 @@ public class RpcClientTests
         await Open();
         var rsp = await Client.Send(new()
         {
-            Method = "signin",
-            Params = new()
+            method = "signin",
+            parameters = new()
             {
-                new{ user = ConfigHelper.Default.Username, pass = ConfigHelper.Default.Password }
+                new{ user = TestHelper.Default.Username, pass = TestHelper.Default.Password }
             }
         });
-        rsp.Error.Should().BeNull();
-        rsp.Result.Should().NotBeNull();
+        
+        (rsp.error == default).Should().BeTrue();
+        rsp.result.ValueKind.Should().NotBe(JsonValueKind.Undefined);
     }
 
     [Fact]
@@ -33,15 +40,16 @@ public class RpcClientTests
         await Signin();
         var rsp = await Client.Send(new()
         {
-            Method = "use",
-            Params = new()
+            method = "use",
+            parameters = new()
             {
-                ConfigHelper.Default.Database!,
-                ConfigHelper.Default.Username!
+                TestHelper.Default.Database!,
+                TestHelper.Default.Username!
             }
         });
-        rsp.Error.Should().BeNull();
-        rsp.Result.Should().NotBeNull();
+        
+        (rsp.error == default).Should().BeTrue();
+        rsp.result.ValueKind.Should().NotBe(JsonValueKind.Undefined);
     }
 
     [Fact]
@@ -63,16 +71,16 @@ public class RpcClientTests
 
         var rsp = await Client.Send(new()
         {
-            Method = "create",
-            Params = new()
+            method = "create",
+            parameters = new()
             {
                 "person",
                 person
             }
         });
 
-        rsp.Error.Should().BeNull();
-        rsp.Result.Should().NotBeNull();
+        (rsp.error == default).Should().BeTrue();
+        rsp.result.ValueKind.Should().NotBe(JsonValueKind.Undefined);
     }
 
     [Fact]
@@ -81,8 +89,8 @@ public class RpcClientTests
         await Create();
         var rsp = await Client.Send(new()
         {
-            Method = "change",
-            Params = new()
+            method = "change",
+            parameters = new()
             {
                 "person:jamie",
                 new
@@ -91,7 +99,7 @@ public class RpcClientTests
                 }
             }
         });
-        rsp.Error.Should().BeNull();
+        (rsp.error == default).Should().BeTrue();
     }
 
     [Fact]
@@ -100,13 +108,13 @@ public class RpcClientTests
         await Change();
         var rsp = await Client.Send(new()
         {
-            Method = "select",
-            Params = new()
+            method = "select",
+            parameters = new()
             {
                 "person"
             }
         });
-        rsp.Error.Should().BeNull();
+        (rsp.error == default).Should().BeTrue();
     }
 
     [Fact]
@@ -115,8 +123,8 @@ public class RpcClientTests
         await Select();
         var rsp = await Client.Send(new()
         {
-            Method = "query",
-            Params = new()
+            method = "query",
+            parameters = new()
             {
                 "SELECT marketing, count() FROM type::table($tb) GROUP BY marketing",
                 new
@@ -127,4 +135,3 @@ public class RpcClientTests
         });
     }
 }
-#endif
