@@ -1,10 +1,15 @@
-site_name: My Docs
+site_name: Surreal.Net
+repo_url: https://github.com/ProphetLamb/Surreal.Net
+edit_uri: ""
 
 theme:
   name: material
 
   palette:
     scheme: slate
+  
+plugins:
+  - search
 
 markdown_extensions:
   - pymdownx.highlight:
@@ -13,3 +18,5 @@ markdown_extensions:
   - pymdownx.snippets
   - pymdownx.superfences
 
+extra_css:
+  - ./stylesheets/extra.css
