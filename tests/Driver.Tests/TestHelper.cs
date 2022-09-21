@@ -42,10 +42,19 @@ public static class TestHelper {
         string? path = GetFullPath("surreal");
         // Assume we have surreal as a command in PATH
         Debug.Assert(path is not null);
-        // Kill running surrealdb instances
-        Process.Start(new ProcessStartInfo("killall", "surreal"))!.WaitForExit();
+        // Find process blocking Port
+        ProcessPort pp = PortHelper.ByPort(Port).Result;
+        if (!pp.IsDefault) {
+            // Kill process blocking Port by PID
+            if (Environment.OSVersion.Platform == PlatformID.Unix) {
+                Process.Start("kill", $"{pp.ProcessId}");
+            } else {
+                // Windows
+                Process.Start("taskkill", $"/PID {pp.ProcessId}");
+            }
+        }
         // Start new instances
-        Process.Start(new ProcessStartInfo(path!, $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug"));
+        Process.Start(path!, $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug");
         Thread.Sleep(150); // wait for surrealdb to start
     }
 
