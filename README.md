@@ -54,9 +54,9 @@ choco install surreal --pre
 iwr https://windows.surrealdb.com -useb | iex
 ```
 
-While Surreal .NET support `Microsoft.Hosting` integration for usage in a [web API](./examples/MinimalApi/Controllers/WeatherForecastController.cs) the library can be included in a [console app](./examples/ConsoleRpc/Program.cs) aswell.
+While Surreal .NET can be registered as a [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-6.0) service for usage in a [web API](./examples/MinimalApi/Controllers/WeatherForecastController.cs), the library can also be included in a [console app](./examples/ConsoleRpc/Program.cs).
 
-I highly recommend looking at the [examples](./examples/) for basic usage, but for now lets take a look at a basic console app with the RPC library.
+I highly recommend taking a looksie at the [examples](./examples/), but for now let's review a basic console app with the RPC library.
 
 ```xml
 <PackageReference Include="SurrealDB.Driver.Rest" Version="1.0.2" />
