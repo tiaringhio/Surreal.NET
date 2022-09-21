@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
+using SurrealDB.Abstractions;
 using SurrealDB.Driver.Rpc;
 
 namespace MinimalApi.Controllers;
@@ -11,10 +12,10 @@ public class WeatherForecastController : ControllerBase
         "Freezing", "Bracing", "Chilly", "Cool", "Mild", "Warm", "Balmy", "Hot", "Sweltering", "Scorching"
     };
 
-    private readonly DatabaseRpc _db;
+    private readonly IDatabase _db;
     private readonly ILogger<WeatherForecastController> _logger;
 
-    public WeatherForecastController(DatabaseRpc db, ILogger<WeatherForecastController> logger) {
+    public WeatherForecastController(IDatabase db, ILogger<WeatherForecastController> logger) {
         _db = db;
         _logger = logger;
     }
@@ -36,7 +37,7 @@ public class WeatherForecastController : ControllerBase
     public async Task<ActionResult<WeatherForecast?>> Get(CancellationToken ct = default) {
         await _db.Open(ct);
 
-        RpcResponse query = await _db.Select("weather", ct);
+        var query = await _db.Select("weather", ct);
         if (query.TryGetResult(out var res)) {
             return res.GetObject<WeatherForecast>();
         }
