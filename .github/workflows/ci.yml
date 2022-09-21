@@ -10,6 +10,12 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Install SurrealDB
+        run: |
+          mkdir ~/.local/bin
+          export INSTALL_DIR=~/.local/bin
+          curl -sSf https://install.surrealdb.com | sh
+          export PATH="$HOME/.local/bin/:$PATH"
       - uses: actions/checkout@v3
       - name: Setup .NET
         uses: actions/setup-dotnet@v2
@@ -19,12 +25,6 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: Install SurrealDB
-        run: |
-          mkdir ~/.local/bin
-          export INSTALL_DIR=~/.local/bin
-          curl -sSf https://install.surrealdb.com | sh
-          export PATH="$HOME/.local/bin/:$PATH"
         shell: bash
       - name: Run Tests
         run: |
