@@ -263,7 +263,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
     [Fact]
     public async Task SimpleSelectQueryTest() {
-        var expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
+        TestObject<TKey, TValue>? expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
         
         Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
@@ -277,13 +277,13 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        var doc = result.GetObject<TestObject<TKey, TValue>>();
+        TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
         doc.Should().BeEquivalentTo(expectedObject);
     }
 
     [Fact]
     public async Task SimpleSelectFromWhereQueryTest() {
-        var expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
+        TestObject<TKey, TValue>? expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
 
         Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
@@ -298,13 +298,13 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        var doc = result.GetObject<TestObject<TKey, TValue>>();
+        TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
         doc.Should().BeEquivalentTo(expectedObject);
     }
 
     [Fact]
     public async Task SimpleSelectFromWhereValueQueryTest() {
-        var expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
+        TestObject<TKey, TValue>? expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
 
         Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
@@ -319,7 +319,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
-        var doc = result.GetObject<TestObject<TKey, TValue>>();
+        TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
         doc.Should().BeEquivalentTo(expectedObject);
     }
 }

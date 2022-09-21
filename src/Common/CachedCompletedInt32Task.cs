@@ -10,7 +10,7 @@ namespace SurrealDB.Common;
 /// <remarks>
 ///     Source: https://source.dot.net/#System.Private.CoreLib/src/libraries/System.Private.CoreLib/src/System/Threading/Tasks/CachedCompletedInt32Task.cs
 /// </remarks>
-public struct CachedCompletedInt32Task {
+public record struct CachedCompletedInt32Task {
     private Task<int>? _task;
 
     /// <summary> Gets a completed <see cref="Task{Int32}" /> whose result is <paramref name="result" />. </summary>

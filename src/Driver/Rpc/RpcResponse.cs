@@ -53,22 +53,21 @@ public RpcResponse(
         (result, error) = (UncheckedResult, _error);
     }
 
-public static RpcResponse From(in WsResponse rsp) {
-        if (rsp.Id is null) {
+public static RpcResponse From(in WsClient.Response rsp) {
+        if (rsp.id is null) {
             ThrowIdMissing();
         }
 
-        if (rsp.Error.HasValue) {
-            WsError err = rsp.Error.Value;
-            return new(rsp.Id, new(err.Code, err.Message), default);
+        if (rsp.error != default) {
+            return new(rsp.id, new(rsp.error.code, rsp.error.message), default);
         }
 
-        var result = UnpackFromStatusDocument(rsp.Result);
+        var result = UnpackFromStatusDocument(rsp.result);
         result = IntoSingle(result);
         
         // SurrealDB likes to returns a list of one result. Unbox this response, to conform with the REST client
         Result res = Result.From(IntoSingle(result));
-        return new(rsp.Id, default, res);
+        return new(rsp.id, default, res);
     }
 
     public static JsonElement UnpackFromStatusDocument(in JsonElement root) {
