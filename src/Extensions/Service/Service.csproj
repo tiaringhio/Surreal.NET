@@ -4,7 +4,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup Label="Nuget Pack Options">
-		<Description>Websocket RPC based database driver for SurrealDB</Description>
+		<Description>Service integration into the ASP.NET Core ecosystem.</Description>
 		<PackageVersion>$(SurrealExtensionsServiceVersion)</PackageVersion>
 		<PackageId>SurrealDB.Extensions.Service</PackageId>
 		<PackageTags>surrealdb sql nosql database connector websockets</PackageTags>

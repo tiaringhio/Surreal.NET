@@ -19,16 +19,28 @@
 
 ## Table of contents
 
+- [Table of contents](#table-of-contents)
+- [About](#about)
+	- [Primary NuGet Packages](#primary-nuget-packages)
 - [Quick-start](#quick-start)
-	- [Contributing](#contributing)
-	- [Coverage](#coverage)
-	- [Contributors ✨](#contributors-)
+- [Contributing](#contributing)
+- [Coverage](#coverage)
+- [Contributors ✨](#contributors-)
 
 ## About
 
 Surreal .NET is a database driver for [SurrealDB](https://surrealdb.com). The connector can access the database via JSON-RPC as well as REST.
 
-# Quick-start
+### Primary NuGet Packages
+
+| Name                           | Description                                                                                                                | Nuget                                                                                                                                      |
+| ------------------------------ | -------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `SurrealDB.Driver.Rpc`         | Websocket RPC based database driver for SurrealDB                                                                          | [![NuGet Badge](https://buildstats.info/nuget/SurrealDB.Driver.Rpc)](https://www.nuget.org/packages/SurrealDB.Driver.Rpc/)                 |
+| `SurrealDB.Driver.Rest`        | REST based database driver for SurrealDB.                                                                                  | [![NuGet Badge](https://buildstats.info/nuget/SurrealDB.Driver.Rpc)](https://www.nuget.org/packages/SurrealDB.Driver.Rest/)                |
+| `SurrealDB.Extensions.Service` | Service integration into the [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-6.0) ecosystem. | [![NuGet Badge](https://buildstats.info/nuget/SurrealDB.Extensions.Service)](https://www.nuget.org/packages/SurrealDB.Extensions.Service/) |
+
+
+## Quick-start
 
 Firstly install [SurrealDB](https://surrealdb.com) on your system. See the [installation instructions](https://surrealdb.com/install):
 ```bash
@@ -121,9 +133,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
   <tbody>
     <tr>
       <td align="center"><a href="https://github.com/ProphetLamb"><img src="https://avatars.githubusercontent.com/u/19748542?v=4?s=100" width="100px;" alt=""/><br /><sub><b>ProphetLamb</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=ProphetLamb" title="Code">💻</a></td>
+      <td align="center"><a href="https://github.com/Du-z"><img src="https://avatars.githubusercontent.com/u/16366766?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brian Duhs</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=Du-z" title="Code">💻</a><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=Du-z" title="Tests">⚠️</a></td>
       <td align="center"><a href="https://github.com/StephenGilboy"><img src="https://avatars.githubusercontent.com/u/827735?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Stephen Gilboy</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=StephenGilboy" title="Code">💻</a></td>
       <td align="center"><a href="https://antoniosbarotsis.github.io/"><img src="https://avatars.githubusercontent.com/u/50240570?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tony</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=AntoniosBarotsis" title="Code">💻</a></td>
-      <td align="center"><a href="https://github.com/Du-z"><img src="https://avatars.githubusercontent.com/u/16366766?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brian Duhs</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=Du-z" title="Tests">⚠️</a></td>
     </tr>
   </tbody>
 </table>
