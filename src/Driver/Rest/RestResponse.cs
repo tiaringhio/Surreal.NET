@@ -63,7 +63,6 @@ public readonly struct RestResponse : IResponse {
         if (IsError) {
             result = default;
             error = new(1, _detail);
-            ;
             return false;
         }
 

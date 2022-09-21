@@ -115,6 +115,7 @@ public sealed class PooledMemoryStream : Stream {
     }
 
     public override void Flush() {
+        // A memory stream cannot be flushed.
     }
 
     public override Task FlushAsync(CancellationToken cancellationToken) {
