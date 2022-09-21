@@ -27,7 +27,7 @@ jobs:
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
 
-          # writes coverage to ./coverage.cobertura.xml
+          # tests actions/setup-dotnet writes coverage to ./coverage.cobertura.xml
           dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
       - name: Coverage
         uses: codecov/codecov-action@v3
