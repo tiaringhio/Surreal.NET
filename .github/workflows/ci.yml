@@ -12,7 +12,7 @@ jobs:
     steps:
       - name: Install SurrealDB
         run: |
-          mkdir ~/.local/bin
+          mkdir -p ~/.local/bin
           export INSTALL_DIR=~/.local/bin
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
