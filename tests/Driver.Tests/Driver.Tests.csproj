@@ -8,6 +8,7 @@
 		<ProjectReference Include="..\..\src\Abstractions\Abstractions.csproj" />
 		<ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
 		<ProjectReference Include="..\..\src\Driver\Rest\Rest.csproj" />
+		<ProjectReference Include="..\..\src\Driver\Rpc\Rpc.csproj" />
 	</ItemGroup>
 	
 	<ItemGroup>

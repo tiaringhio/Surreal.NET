@@ -1,6 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
+using SurrealDB.Common;
 using SurrealDB.Models;
 using SurrealDB.Ws;
 
@@ -63,10 +64,10 @@ public static RpcResponse From(in WsClient.Response rsp) {
         }
 
         var result = UnpackFromStatusDocument(rsp.result);
-        result = IntoSingle(result);
+        result = result.IntoSingle();
         
         // SurrealDB likes to returns a list of one result. Unbox this response, to conform with the REST client
-        Result res = Result.From(IntoSingle(result));
+        Result res = Result.From(result);
         return new(rsp.id, default, res);
     }
 
@@ -116,23 +117,6 @@ public static RpcResponse From(in WsClient.Response rsp) {
         // if we get here then all the properties had valid status document names
         // but was missing some of them
         return root;
-    }
-
-    public static JsonElement IntoSingle(in JsonElement root) {
-        if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() > 1) {
-            return root;
-        }
-        
-        var en = root.EnumerateArray();
-        while (en.MoveNext()) {
-            JsonElement cur = en.Current;
-            // Return the first not null element
-            if (cur.ValueKind is not JsonValueKind.Null or JsonValueKind.Undefined) {
-                return cur;
-            }
-        }
-        // No content in the array.
-        return default;
     }
     
     [DoesNotReturn]
