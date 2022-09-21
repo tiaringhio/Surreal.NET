@@ -39,7 +39,6 @@ public static class TestHelper {
     }
 
     public static void EnsureDB() {
-        return;
         string? path = GetFullPath("surreal");
         // Assume we have surreal as a command in PATH
         Debug.Assert(path is not null);
