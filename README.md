@@ -74,17 +74,17 @@ Config cfg = Config.Create()
     .WithDatabase("test")
     .WithNamespace("test")
     .WithBasicAuth("root", "root")
-    // Tell the configuration to connect to the server using RPC.
+    // Tell the configuration to connect to the server using RPC, and without TLS.
     .WithRpc(insecure: true).Build();
 
 // Create a RPC database connection with the configuration.
 DatabaseRpc db = new(cfg);
 // Connect using the defined connection.
 await db.Open();
-// Crete a struct with the fields we want to insert, nesting is supported.
+// Create a struct with the fields we want to insert, nesting is supported.
 Person you = new("Max Mustermann", 39, new("Musterstraße 1", 12345, "Musterstadt"), "0123456789", "max@mustermann.de");
 // Insert the struct into the database, table = person, id = maxmustermann.
-// If not id is specified a random one will be generated, the id can be read from the response.
+// If id` is not specified it will be random-generated, the id can be read from the response.
 RpcResponse create = await db.Create("person:maxmustermann", you);
 // Read the struct from the database to verify it was inserted correctly.
 RpcResponse select = await db.Select("person:maxmustermann");
