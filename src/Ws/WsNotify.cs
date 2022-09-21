@@ -2,12 +2,7 @@
 
 namespace SurrealDB.Ws;
 
-#if SURREAL_NET_INTERNAL
-public
-#else
-internal
-#endif
-    struct WsNotify {
+public struct WsNotify {
     [JsonPropertyName("id")]
     public string? Id { get; set; }
 
