@@ -46,7 +46,7 @@ public static class TestHelper {
         Process.Start(new ProcessStartInfo("killall", "surreal"))!.WaitForExit();
         // Start new instances
         Process.Start(new ProcessStartInfo(path!, $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug"));
-        Thread.Sleep(250); // wait for surrealdb to start
+        Thread.Sleep(150); // wait for surrealdb to start
     }
 
     public static string? GetFullPath(string file)
