@@ -1,15 +1,4 @@
-using System.Runtime.CompilerServices;
-using System.Text.Json.Serialization;
-
-using FluentAssertions.Extensions;
-
-using SurrealDB.Abstractions;
-using SurrealDB.Driver.Rest;
-using SurrealDB.Driver.Rpc;
-using SurrealDB.Json;
-using SurrealDB.Models;
-
-namespace SurrealDB.Driver.Tests;
+namespace SurrealDB.Driver.Tests.RoundTrip;
 
 public class RpcRoundTripTests : RoundTripTests<DatabaseRpc, RpcResponse> {
 }
@@ -17,16 +6,19 @@ public class RpcRoundTripTests : RoundTripTests<DatabaseRpc, RpcResponse> {
 public class RestRoundTripTests : RoundTripTests<DatabaseRest, RestResponse> {
 }
 
+[Collection("SurrealDBRequired")]
 public abstract class RoundTripTests<T, U>
     where T : IDatabase<U>, new()
     where U : IResponse {
+
+    public RoundTripTests() {
+        TestHelper.EnsureDB();
+        Database = new();
+        Database.Open(TestHelper.Default).Wait();
+    }
+
     protected T Database;
     protected RoundTripObject Expected = new();
-
-    protected RoundTripTests() {
-        Database = new();
-        Database.Open(ConfigHelper.Default).Wait();
-    }
 
     [Fact]
     public async Task CreateRoundTripTest() {
@@ -153,7 +145,6 @@ public class RoundTripObject {
 
     public DateTime MaxUtcDateTime { get; set; } = DateTime.MaxValue.AsUtc(); // This fails to roundtrip, the fractions part of the date gets 00 prepended to it
     public DateTime MinUtcDateTime { get; set; } = DateTime.MinValue.AsUtc();
-    [JsonConverter(typeof(DateTimeConv))]
     public DateTime NowUtcDateTime { get; set; } = DateTime.Now.AsUtc();
 
     public Guid Guid { get; set; } = Guid.NewGuid();
@@ -173,8 +164,8 @@ public class RoundTripObject {
     public FlagsEnum UndefinedFlagsEnum { get; set; } = (FlagsEnum)(1 << 8);
 
     public static void AssertAreEqual(
-        RoundTripObject a,
-        RoundTripObject b) {
+        RoundTripObject? a,
+        RoundTripObject? b) {
         Assert.NotNull(a);
         Assert.NotNull(b);
 

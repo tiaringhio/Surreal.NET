@@ -1,9 +1,6 @@
-using SurrealDB.Models;
-
 namespace SurrealDB.Driver.Tests;
 
-public class SurrealThingTests {
-
+public class ThingTests {
     private static readonly List<string> Keys = new() { "{0}ThingKey", "Thing{0}Key", "ThingKey{0}", "{0}" };
     private static readonly List<char> ComplexChars = new() { '-', ' ', '❤'};
     private static readonly List<char> StandardChars = new() { '_', '0'};
@@ -16,8 +13,7 @@ public class SurrealThingTests {
         var table = "TableName";
 
         var surrealThing = Thing.From(table);
-
-
+        
         surrealThing.ToString().Should().BeEquivalentTo(table);
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
         surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo(table);
@@ -80,8 +76,7 @@ public class SurrealThingTests {
         var expectedThing = $"{table}:{escapedKey}";
 
         var surrealThing = Thing.From(table, escapedKey).Escape();
-
-
+        
         surrealThing.ToString().Should().BeEquivalentTo(expectedThing);
         surrealThing.Table.ToString().Should().BeEquivalentTo(table);
         surrealThing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");

@@ -1,4 +1,6 @@
-﻿<Project>
+﻿<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+	<Import Project="..\Directory.Build.props" />
+
 	<PropertyGroup>
 		<SurrealDriverRestVersion>1.0.2</SurrealDriverRestVersion>
 		<SurrealDriverRpcVersion>1.0.2</SurrealDriverRpcVersion>
@@ -11,27 +13,16 @@
 		<SurrealWsVersion>1.0.2</SurrealWsVersion>
 		<SurrealExtensionsServiceVersion>1.0.2</SurrealExtensionsServiceVersion>
 	</PropertyGroup>
-	
+
 	<PropertyGroup>
-		<TargetFramework>net6.0</TargetFramework>
+		<LangVersion>10</LangVersion>
+		<TargetFrameworks>net60</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
 
-	<PropertyGroup>
-		<Authors>ProphetLamb</Authors>
-		<Owners>ProhetLamb</Owners>
-		<PackageLicenseExpression>MIT</PackageLicenseExpression>
-		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
-		<Copyright>Copyright (c) ProphetLamb 2022</Copyright>
-		<PackageProjectUrl>https://github.com/ProphetLamb/Surreal.Net</PackageProjectUrl>
-		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/ProphetLamb/Surreal.Net.git</RepositoryUrl>
-		<PackageReadmeFile>README.md</PackageReadmeFile>
-	</PropertyGroup>
-
-
 	<PropertyGroup Condition="$(Configuration)=='Release'" Label="Nuget Pack Options">
+		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<AllowedOutputExtensionsInPackageBuildOutputFolder>$(AllowedOutputExtensionsInPackageBuildOutputFolder);.pdb;.xml</AllowedOutputExtensionsInPackageBuildOutputFolder>
 		<PublishRepositoryUrl>true</PublishRepositoryUrl>
 		<EmbedUntrackedSources>true</EmbedUntrackedSources>
@@ -41,7 +32,13 @@
 		<GeneratePackageOnBuild>true</GeneratePackageOnBuild>
 	</PropertyGroup>
 
-	<PropertyGroup Condition="$(Configuration)=='Debug'">
-		<DefineConstants>$(DefineConstants);SURREAL_NET_INTERNAL</DefineConstants>
-	</PropertyGroup>
+	<ItemGroup>
+		<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+	</ItemGroup>
+
+	<ItemGroup Condition="!$(DefineConstants.Contains('NET6_0_OR_GREATER'))">
+		<PackageReference Include="System.Memory" Version="4.5.5" />
+		<PackageReference Include="Portable.System.DateTimeOnly" Version="6.0.2" />
+		<PackageReference Include="System.Threading.Tasks.Extensions" Version="4.5.4" />
+	</ItemGroup>
 </Project>

@@ -77,7 +77,6 @@ public struct Config {
         IsValidated = true;
     }
 
-    [Pure]
     public void ThrowIfInvalid() {
         if (!IsValidated) {
             throw new InvalidConfigException("The configuration is not marked as valid.");

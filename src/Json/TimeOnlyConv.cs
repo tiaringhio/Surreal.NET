@@ -42,7 +42,6 @@ public sealed class TimeOnlyConv : JsonConverter<TimeOnly> {
         rem = rem.Slice(3);
         t += TimeSpan.TicksPerSecond * Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
         slc = rem.Slice(1, 9);
-        rem = rem.Slice(10);
         t += Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
         Debug.Assert(t <= 863999999999L);
         return new(t);
