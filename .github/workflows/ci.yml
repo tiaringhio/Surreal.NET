@@ -19,11 +19,22 @@ jobs:
         run: dotnet restore
       - name: Build
         run: dotnet build --no-restore
-      - name: Test
-        run: |
+      - name: SurrealDB
+        run: /
           mkdir ~/.local/bin
           export INSTALL_DIR=~/.local/bin
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
-
-          dotnet test --no-build --verbosity normal
+      - name: Test
+        run: |
+          # writes coverage to ./coverage.cobertura.xml
+          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
+      - name: Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.cobertura.xml
+          flags: unittests
+          name: Surreal.Net
+          fail_ci_if_error: true
+          verbose: true
