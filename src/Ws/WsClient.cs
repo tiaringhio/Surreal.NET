@@ -1,8 +1,10 @@
+using System.Buffers;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using SurrealDB.Common;
+using Microsoft.IO;
+
 using SurrealDB.Json;
 
 namespace SurrealDB.Ws;
@@ -11,7 +13,8 @@ namespace SurrealDB.Ws;
 ///     The client used to connect to the Surreal server via JSON RPC.
 /// </summary>
 public sealed class WsClient : IDisposable, IAsyncDisposable {
-    public const int DefaultBufferSize = 16 * 1024;
+    const int FRAME_SIZE = 4096;
+    private static readonly Lazy<RecyclableMemoryStreamManager> s_manager = new(static () => new());
 
     // Do not get any funny ideas and fill this fucker up.
     public static readonly List<object?> EmptyList = new();
@@ -86,24 +89,43 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
         req.id ??= GetRandomId(6);
         req.parameters ??= EmptyList;
 
-        await using PooledMemoryStream stream = new(DefaultBufferSize);
+        await using RecyclableMemoryStream stream = new(s_manager.Value);
         
         await JsonSerializer.SerializeAsync(stream, req, Constants.JsonOptions, ct);
-        await _ws!.SendAsync(stream.GetBehindBuffer(), WebSocketMessageType.Text, WebSocketMessageFlags.EndOfMessage, ct);
+        // Now Position = Length = EndOfMessage 
+        // Write the buffer to the websocket
         stream.Position = 0;
-
-        ValueWebSocketReceiveResult res;
-        do {
-            res = await _ws.ReceiveAsync(stream.InternalReadMemory(DefaultBufferSize), ct);
-        } while (!res.EndOfMessage);
-
-        // Swap from write to read mode
-        long len = stream.Position - DefaultBufferSize + res.Count;
+        await SendStream(_ws!, stream, ct);
+        // Reset the Position and Length
+        // Read the response from the websocket
         stream.Position = 0;
-        stream.SetLength(len);
-
+        stream.SetLength(0);
+        await ReceiveStream(_ws!, stream, ct);
+        // Read the buffer to json DOM
+        stream.Position = 0;
         Response rsp = await JsonSerializer.DeserializeAsync<Response>(stream, Constants.JsonOptions, ct);
         return rsp;
+    }
+
+    private static async Task SendStream(WebSocket ws, Stream stream, CancellationToken ct) {
+        using IMemoryOwner<byte> frame = MemoryPool<byte>.Shared.Rent(FRAME_SIZE);
+        int read;
+        while ((read = stream.Read(frame.Memory.Span)) > 0) {
+            await ws.SendAsync(frame.Memory.Slice(0, read), WebSocketMessageType.Text, IsLastFrame(stream, FRAME_SIZE), ct);
+        }
+    }
+
+    private static async Task ReceiveStream(WebSocket ws, Stream stream, CancellationToken ct) {
+        using IMemoryOwner<byte> frame = MemoryPool<byte>.Shared.Rent(FRAME_SIZE);
+        ValueWebSocketReceiveResult res;
+        do {
+            res = await ws.ReceiveAsync(frame.Memory, ct);
+            await stream.WriteAsync(frame.Memory.Slice(0, res.Count), ct);
+        } while (!res.EndOfMessage);
+    }
+
+    private static bool IsLastFrame(Stream stream, long frameSize) {
+        return stream.Position + frameSize >= stream.Length;
     }
 
     private void ThrowIfDisconnected() {
