@@ -7,7 +7,6 @@ on:
 
 jobs:
   build:
-
     runs-on: ubuntu-latest
 
     steps:
@@ -22,6 +21,20 @@ jobs:
         run: dotnet build --no-restore
       - name: Test
         run: |
-          docker-compose -f "tests/db/docker-compose.yml" up -d
-          dotnet test --no-build --verbosity normal
-          docker-compose -f "tests/db/docker-compose.yml" down
+          # install SurrealDB
+          mkdir ~/.local/bin
+          export INSTALL_DIR=~/.local/bin
+          curl -sSf https://install.surrealdb.com | sh
+          export PATH="$HOME/.local/bin/:$PATH"
+
+          # tests actions/setup-dotnet writes coverage to ./coverage.cobertura.xml
+          dotnet test --no-build --verbosity normal --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=cobertura /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
+      - name: Coverage
+        uses: codecov/codecov-action@v3
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: ./coverage.cobertura.xml
+          flags: unittests
+          name: Surreal.Net
+          fail_ci_if_error: true
+          verbose: true

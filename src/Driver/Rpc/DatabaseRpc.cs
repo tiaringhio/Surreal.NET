@@ -53,7 +53,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     /// <param name="ct"> </param>
     /// <inheritdoc />
     public async Task<RpcResponse> Info(CancellationToken ct) {
-        return await _client.Send(new() { Method = "info", }).ToSurreal();
+        return await _client.Send(new() { method = "info", }).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -61,9 +61,9 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         string? db,
         string? ns,
         CancellationToken ct = default) {
-        WsResponse rsp = await _client.Send(new() { Method = "use", Params = new() { db, ns, }, }, ct);
+        WsClient.Response rsp = await _client.Send(new() { method = "use", parameters = new(){ db, ns } }, ct);
 
-        if (!rsp.Error.HasValue) {
+        if (rsp.error == default) {
             _config.Database = db;
             _config.Namespace = ns;
         }
@@ -75,14 +75,14 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     public async Task<RpcResponse> Signup(
         Authentication auth,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "signup", Params = new() { auth, }, }, ct).ToSurreal();
+        return await _client.Send(new() { method = "signup", parameters = new() { auth, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<RpcResponse> Signin(
         Authentication auth,
         CancellationToken ct = default) {
-        WsResponse rsp = await _client.Send(new() { Method = "signin", Params = new() { auth, }, }, ct);
+        WsClient.Response rsp = await _client.Send(new() { method = "signin", parameters = new() { auth, }, }, ct);
 
         // TODO: Update auth
         return rsp.ToSurreal();
@@ -90,14 +90,14 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
 
     /// <inheritdoc />
     public async Task<RpcResponse> Invalidate(CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "invalidate", }, ct).ToSurreal();
+        return await _client.Send(new() { method = "invalidate", }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<RpcResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "authenticate", Params = new() { token, }, }, ct).ToSurreal();
+        return await _client.Send(new() { method = "authenticate", parameters = new() { token, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -105,7 +105,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         string key,
         object? value,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "let", Params = new() { key, value, }, }, ct).ToSurreal();
+        return await _client.Send(new() { method = "let", parameters = new() { key, value, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -113,8 +113,8 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         string sql,
         IReadOnlyDictionary<string, object?>? vars,
         CancellationToken ct = default) {
-        WsRequest req = new() { Method = "query", Params = new() { sql, vars, }, };
-        WsResponse rsp = await _client.Send(req, ct);
+        WsClient.Request req = new() { method = "query", parameters = new() { sql, vars, }, };
+        WsClient.Response rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }
 
@@ -122,8 +122,8 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     public async Task<RpcResponse> Select(
         Thing thing,
         CancellationToken ct = default) {
-        WsRequest req = new() { Method = "select", Params = new() { thing, }, };
-        WsResponse rsp = await _client.Send(req, ct);
+        WsClient.Request req = new() { method = "select", parameters = new() { thing, }, };
+        WsClient.Response rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }
 
@@ -132,8 +132,8 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         Thing thing,
         object data,
         CancellationToken ct = default) {
-        WsRequest req = new() { Method = "create", Async = true, Params = new() { thing, data, }, };
-        WsResponse rsp = await _client.Send(req, ct);
+        WsClient.Request req = new() { method = "create", async = true, parameters = new() { thing, data, }, };
+        WsClient.Response rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
     }
 
@@ -142,7 +142,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         Thing thing,
         object data,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "update", Params = new() { thing, data, }, }, ct).ToSurreal();
+        return await _client.Send(new() { method = "update", parameters = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -150,7 +150,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         Thing thing,
         object data,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "change", Params = new() { thing, data, }, }, ct).ToSurreal();
+        return await _client.Send(new() { method = "change", parameters = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
@@ -158,14 +158,14 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         Thing thing,
         object data,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "modify", Params = new() { thing, data, }, }, ct).ToSurreal();
+        return await _client.Send(new() { method = "modify", parameters = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<RpcResponse> Delete(
         Thing thing,
         CancellationToken ct = default) {
-        return await _client.Send(new() { Method = "delete", Params = new() { thing, }, }, ct).ToSurreal();
+        return await _client.Send(new() { method = "delete", parameters = new() { thing, }, }, ct).ToSurreal();
     }
 
     private async Task SetUse(

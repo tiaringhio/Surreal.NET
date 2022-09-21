@@ -2,7 +2,7 @@ using System.Text.Json.Serialization;
 
 namespace SurrealDB.Models;
 
-public sealed class Authentication {
+public record struct Authentication {
     [JsonPropertyName("ns")]
     public string? Namespace { get; set; }
     [JsonPropertyName("db")]
