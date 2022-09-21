@@ -506,8 +506,8 @@ public abstract class GeneralQueryTests<T, U>
     }
 
     private record GroupedCountries {
-        string country;
-        string total;
+        string? country;
+        string? total;
     }
 
     private class MathRequestDocument {
