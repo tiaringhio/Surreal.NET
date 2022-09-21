@@ -36,6 +36,7 @@ jobs:
         with:
           name: unittest-results
           path: test-results.trx
+          reporter: dotnet-trx
       - name: Test Coverage
         if: success() || failure()
         uses: codecov/codecov-action@v3
