@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.Net;
 using System.Text.Json;
 
-using SurrealDB.Driver.Rpc;
+using SurrealDB.Common;
 using SurrealDB.Json;
 using SurrealDB.Models;
 
@@ -122,7 +122,7 @@ public readonly struct RestResponse : IResponse {
         if (success == default) {
             return new(success.time, success.status, null, null, default);
         }
-        JsonElement e = RpcResponse.IntoSingle(success.result);
+        JsonElement e = success.result.IntoSingle();
         return new(success.time, success.status, null, null, e);
     }
 
