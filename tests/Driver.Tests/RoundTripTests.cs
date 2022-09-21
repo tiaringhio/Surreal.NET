@@ -6,11 +6,12 @@ public class RpcRoundTripTests : RoundTripTests<DatabaseRpc, RpcResponse> {
 public class RestRoundTripTests : RoundTripTests<DatabaseRest, RestResponse> {
 }
 
+[Collection("SurrealDBRequired")]
 public abstract class RoundTripTests<T, U>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
-    protected RoundTripTests() {
+    public RoundTripTests() {
         TestHelper.EnsureDB();
         Database = new();
         Database.Open(TestHelper.Default).Wait();

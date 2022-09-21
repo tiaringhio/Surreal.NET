@@ -1,3 +1,5 @@
+using System.Text;
+
 namespace SurrealDB.Driver.Tests;
 public static class TestHelper {
     
@@ -39,12 +41,14 @@ public static class TestHelper {
     public static void EnsureDB() {
         string? path = GetFullPath("surreal");
         // Assume we have surreal as a command in PATH
-        Process.Start(new ProcessStartInfo("killall", "surreal")).WaitForExit();
+        Debug.Assert(path is not null);
+        // Kill running surrealdb instances
+        Process.Start(new ProcessStartInfo("killall", "surreal"))!.WaitForExit();
+        // Start new instances
         Process.Start(new ProcessStartInfo(path!, $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug"));
+        Thread.Sleep(250); // wait for surrealdb to start
     }
-    
-    
-    
+
     public static string? GetFullPath(string file)
     {
         if (File.Exists(file)) {

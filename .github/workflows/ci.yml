@@ -26,5 +26,4 @@ jobs:
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
 
-          dotnet test --no-build --verbosity normal
-          docker-compose -f "tests/db/docker-compose.yml" down
+          dotnet test --no-build --verbosity quite

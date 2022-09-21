@@ -1,19 +1,21 @@
 ﻿namespace SurrealDB.Driver.Tests.Database;
 
 public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc, RpcResponse> {
-    
+
 }
 
 public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest, RestResponse> {
-    
+
 }
 
+
+[Collection("SurrealDBRequired")]
 public abstract class DatabaseTestDriver<T, U>
     : DriverBase<T>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
-    protected DatabaseTestDriver() {
+    public DatabaseTestDriver() {
         TestHelper.EnsureDB();
     }
 
@@ -36,7 +38,10 @@ public abstract class DatabaseTestDriver<T, U>
         IResponse res1 = await Database.Create(
             "person",
             new {
-                Title = "Founder & CEO", Name = new { First = "Tobie", Last = "Morgan Hitchcock", }, Marketing = true, Identifier = Random.Shared.Next(),
+                Title = "Founder & CEO",
+                Name = new { First = "Tobie", Last = "Morgan Hitchcock", },
+                Marketing = true,
+                Identifier = Random.Shared.Next(),
             }
         );
 
@@ -45,7 +50,10 @@ public abstract class DatabaseTestDriver<T, U>
         IResponse res2 = await Database.Create(
             "person",
             new {
-                Title = "Contributor", Name = new { First = "Prophet", Last = "Lamb", }, Marketing = false, Identifier = Random.Shared.Next(),
+                Title = "Contributor",
+                Name = new { First = "Prophet", Last = "Lamb", },
+                Marketing = false,
+                Identifier = Random.Shared.Next(),
             }
         );
 
@@ -63,7 +71,10 @@ public abstract class DatabaseTestDriver<T, U>
             await Database.Change(
                 thing1,
                 new {
-                    Title = "Founder & CEO", Name = new { First = "Tobie", Last = "Hitchcock Morgan", }, Marketing = false, Identifier = Random.Shared.Next(),
+                    Title = "Founder & CEO",
+                    Name = new { First = "Tobie", Last = "Hitchcock Morgan", },
+                    Marketing = false,
+                    Identifier = Random.Shared.Next(),
                 }
             )
         );

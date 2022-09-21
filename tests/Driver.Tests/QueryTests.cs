@@ -22,10 +22,6 @@ public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
-    protected StringQueryTests() {
-        TestHelper.EnsureDB();
-    }
-
     protected override string RandomKey() {
         return RandomString();
     }
@@ -250,12 +246,14 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
     }
 }
 
+[Collection("SurrealDBRequired")]
 public abstract class QueryTests<T, U, TKey, TValue>
     where T : IDatabase<U>, new()
     where U : IResponse {
     protected T Database;
 
-    protected QueryTests() {
+    public QueryTests() {
+        TestHelper.EnsureDB();
         Database = new();
         Database.Open(TestHelper.Default).Wait();
     }
