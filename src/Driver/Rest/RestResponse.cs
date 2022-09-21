@@ -18,12 +18,7 @@ public readonly struct RestResponse : IResponse {
     private readonly string? _description;
     private readonly JsonElement _result;
 
-#if SURREAL_NET_INTERNAL
-    public
-#else
-    internal
-#endif
-        RestResponse(
+    public RestResponse(
             string? time,
             string? status,
             string? description,
@@ -68,7 +63,6 @@ public readonly struct RestResponse : IResponse {
         if (IsError) {
             result = default;
             error = new(1, _detail);
-            ;
             return false;
         }
 
@@ -85,7 +79,7 @@ public readonly struct RestResponse : IResponse {
         CancellationToken ct = default) {
         Stream stream = await msg.Content.ReadAsStreamAsync(ct);
         if (msg.StatusCode != HttpStatusCode.OK) {
-            HttpError? err = await JsonSerializer.DeserializeAsync<HttpError>(stream, Constants.JsonOptions, ct);
+            Error? err = await JsonSerializer.DeserializeAsync<Error>(stream, Constants.JsonOptions, ct);
             return From(err);
         }
         
@@ -94,9 +88,8 @@ public readonly struct RestResponse : IResponse {
             return EmptyOk;
         }
         
-        var docs = await JsonSerializer.DeserializeAsync<List<HttpSuccess>>(stream, Constants.JsonOptions, ct);
-        var doc = docs?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null);
-
+        List<Success>? docs = await JsonSerializer.DeserializeAsync<List<Success>>(stream, Constants.JsonOptions, ct);
+        Success doc = (docs?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null)).GetValueOrDefault(default);
 
         return From(doc);
     }
@@ -121,25 +114,25 @@ public readonly struct RestResponse : IResponse {
 
     public static RestResponse EmptyOk => new(null, "ok", null, null, default);
 
-    private static RestResponse From(HttpError? error) {
+    private static RestResponse From(Error? error) {
         return new(null, "HTTP_ERR", error?.description, error?.details, default);
     }
 
-    private static RestResponse From(HttpSuccess? success) {
-        if (success is null) {
-            return new(success?.time, success?.status, null, null, default);
+    private static RestResponse From(Success success) {
+        if (success == default) {
+            return new(success.time, success.status, null, null, default);
         }
         JsonElement e = RpcResponse.IntoSingle(success.result);
-        return new(success?.time, success?.status, null, null, e);
+        return new(success.time, success.status, null, null, e);
     }
 
-    private record HttpError(
+    private readonly record struct Error(
         int code,
         string details,
         string description,
         string information);
 
-    private record HttpSuccess(
+    private readonly record struct Success(
         string time,
         string status,
         JsonElement result);

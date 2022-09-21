@@ -12,9 +12,13 @@
 	</PropertyGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
-	  <ProjectReference Include="..\..\Configuration\Configuration.csproj" />
-	  <ProjectReference Include="..\Rpc\Rpc.csproj" />
+		<None Include="../../../README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<ProjectReference Include="..\..\Abstractions\Abstractions.csproj" />
+		<ProjectReference Include="..\..\Configuration\Configuration.csproj" />
+		<ProjectReference Include="..\Rpc\Rpc.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,4 +1,4 @@
-<Project>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
 	<PropertyGroup Label="Package Info">
 		<Authors>ProphetLamb</Authors>
 		<Owners>ProphetLamb</Owners>
@@ -11,4 +11,5 @@
 		<RepositoryType>git</RepositoryType>
 		<RepositoryUrl>https://github.com/ProphetLamb/Surreal.Net.git</RepositoryUrl>
 	</PropertyGroup>
+
 </Project>
