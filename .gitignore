@@ -39,3 +39,6 @@ TestResults/
 coverage/
 test-results.trx
 coverage*.xml
+
+# NuGet packages
+*.nupkg
