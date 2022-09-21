@@ -27,6 +27,9 @@ EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Json", "src\Json\Json.csproj", "{65A8DAE8-E8E7-4E8A-B53A-D46A14C0972B}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Driver", "Driver", "{BAE87EE5-20E4-4DDA-A52D-CC82A8E648D6}"
+	ProjectSection(SolutionItems) = preProject
+		src\Driver\Directory.Build.props = src\Driver\Directory.Build.props
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rest", "src\Driver\Rest\Rest.csproj", "{2EFFD814-3D94-480E-B906-DBC48E4312C0}"
 EndProject
