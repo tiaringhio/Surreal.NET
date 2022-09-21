@@ -1,10 +1,16 @@
 namespace SurrealDB.Driver.Tests.Queries;
 
+public class RestGeneralQueryTests : GeneralQueryTests<DatabaseRest, RestResponse> { }
+public class RpcGeneralgQueryTests : GeneralQueryTests<DatabaseRpc, RpcResponse> { }
+
 public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> { }
 public class RpcStringQueryTests : StringQueryTests<DatabaseRpc, RpcResponse> { }
 
 public class RpcGuidQueryTests : GuidQueryTests<DatabaseRpc, RpcResponse> { }
 public class RestGuidQueryTests : GuidQueryTests<DatabaseRest, RestResponse> { }
+
+public class RpcDateTimeQueryTests : DateTimeQueryTests<DatabaseRpc, RpcResponse> { }
+public class RestDateTimeQueryTests : DateTimeQueryTests<DatabaseRest, RestResponse> { }
 
 public class RpcIntQueryTests : IntQueryTests<DatabaseRpc, RpcResponse> { }
 public class RestIntQueryTests : IntQueryTests<DatabaseRest, RestResponse> { }
@@ -18,7 +24,7 @@ public class RestFloatQueryTests : FloatQueryTests<DatabaseRest, RestResponse> {
 public class RpcDoubleQueryTests : DoubleQueryTests<DatabaseRpc, RpcResponse> { }
 public class RestDoubleQueryTests : DoubleQueryTests<DatabaseRest, RestResponse> { }
 
-public abstract class StringQueryTests <T, U> : QueryTests<T, U, string, string>
+public abstract class StringQueryTests <T, U> : EqualityQueryTests<T, U, string, string>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
@@ -137,7 +143,7 @@ public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, dou
     }
 }
 
-public abstract class GuidQueryTests<T, U> : QueryTests<T, U, Guid, Guid>
+public abstract class GuidQueryTests<T, U> : EqualityQueryTests<T, U, Guid, Guid>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
@@ -154,7 +160,32 @@ public abstract class GuidQueryTests<T, U> : QueryTests<T, U, Guid, Guid>
     }
 }
 
-public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey, TValue>
+public abstract class DateTimeQueryTests<T, U> : InequalityQueryTests<T, U, int, DateTime>
+    where T : IDatabase<U>, new()
+    where U : IResponse {
+
+    protected override int RandomKey() {
+        return RandomInt();
+    }
+
+    protected override DateTime RandomValue() {
+        return RandomDateTime();
+    }
+
+    private static int RandomInt() {
+        return Random.Shared.Next();
+    }
+
+    private static DateTime RandomDateTime() {
+        var minDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var maxDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+        var diff = (maxDate - minDate).TotalMicroseconds();
+        var randomeDateTime = minDate.AddMicroseconds((long)(Random.Shared.NextDouble() * diff));
+        return randomeDateTime;
+    }
+}
+
+public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<T, U, TKey, TValue>
     where T : IDatabase<U>, new()
     where U : IResponse {
     
@@ -246,6 +277,144 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey
     }
 }
 
+
+
+public abstract class InequalityQueryTests<T, U, TKey, TValue> : EqualityQueryTests<T, U, TKey, TValue>
+    where T : IDatabase<U>, new()
+    where U : IResponse {
+
+    [Fact]
+    public async Task LessThanQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! < (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+
+        string sql = $"SELECT * FROM ($val1 < $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        var resultValue = result.GetObject<bool>();
+        Assert.Equal(resultValue, expectedResult);
+    }
+
+    [Fact]
+    public async Task LessThanOrEqualToQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! <= (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+
+        string sql = $"SELECT * FROM ($val1 <= $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        var resultValue = result.GetObject<bool>();
+        Assert.Equal(resultValue, expectedResult);
+    }
+
+    [Fact]
+    public async Task GreaterThanQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! > (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+
+        string sql = $"SELECT * FROM ($val1 > $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        var resultValue = result.GetObject<bool>();
+        Assert.Equal(resultValue, expectedResult);
+    }
+
+    [Fact]
+    public async Task GreaterThanOrEqualToQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! > (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+
+        string sql = $"SELECT * FROM ($val1 >= $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        var resultValue = result.GetObject<bool>();
+        Assert.Equal(resultValue, expectedResult);
+    }
+}
+
+public abstract class EqualityQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey, TValue>
+    where T : IDatabase<U>, new()
+    where U : IResponse {
+    
+    [Fact]
+    public async Task EqualsQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! == (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+
+        string sql = $"SELECT * FROM ($val1 = $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        var resultValue = result.GetObject<bool>();
+        Assert.Equal(resultValue, expectedResult);
+    }
+
+    [Fact]
+    public async Task NotEqualsQueryTest() {
+        var val1 = RandomValue();
+        var val2 = RandomValue();
+        var expectedResult =  (dynamic)val1! != (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+
+        string sql = $"SELECT * FROM ($val1 != $val2)";
+        Dictionary<string, object?> param = new() {
+            ["val1"] = val1,
+            ["val2"] = val2,
+        };
+
+        U response = await Database.Query(sql, param);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        var resultValue = result.GetObject<bool>();
+        Assert.Equal(resultValue, expectedResult);
+    }
+}
+
 [Collection("SurrealDBRequired")]
 public abstract class QueryTests<T, U, TKey, TValue>
     where T : IDatabase<U>, new()
@@ -321,6 +490,73 @@ public abstract class QueryTests<T, U, TKey, TValue>
         Assert.True(response.TryGetResult(out Result result));
         TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
         doc.Should().BeEquivalentTo(expectedObject);
+    }
+}
+
+[Collection("SurrealDBRequired")]
+public abstract class GeneralQueryTests<T, U>
+    where T : IDatabase<U>, new()
+    where U : IResponse {
+    protected T Database;
+
+    public GeneralQueryTests() {
+        TestHelper.EnsureDB();
+        Database = new();
+        Database.Open(TestHelper.Default).Wait();
+    }
+
+    [Fact]
+    public async Task SimpleFuturesQueryTest() {
+        string sql = "select * from <future> { time::now() };";
+
+        U response = await Database.Query(sql, null);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        DateTime? doc = result.GetObject<DateTime>();
+        doc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(10));
+    }
+
+        [Fact]
+    public async Task CountAndGroupQueryTest() {
+        string sql = @"SELECT
+	country,
+	count(age > 30) AS total
+FROM [
+	{ age: 33, country: 'GBR' },
+	{ age: 45, country: 'GBR' },
+	{ age: 39, country: 'USA' },
+	{ age: 29, country: 'GBR' },
+	{ age: 43, country: 'USA' }
+]
+GROUP BY country;";
+
+        U response = await Database.Query(sql, null);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        List<GroupedCountries>? doc = result.GetObject<List<GroupedCountries>>();
+        doc.Should().HaveCount(2);
+    }
+
+    [Fact]
+    public async Task CryptoFunctionQueryTest() {
+        string sql = "SELECT * FROM crypto::md5(\"tobie\");";
+
+        U response = await Database.Query(sql, null);
+
+        Assert.NotNull(response);
+        TestHelper.AssertOk(response);
+        Assert.True(response.TryGetResult(out Result result));
+        string? doc = result.GetObject<string>();
+        doc.Should().BeEquivalentTo("4768b3fc7ac751e03a614e2349abf3bf");
+    }
+
+    private record GroupedCountries {
+        string country;
+        string total;
     }
 }
 
