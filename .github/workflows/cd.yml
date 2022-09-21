@@ -19,4 +19,4 @@ jobs:
       - name: Pack
         run: dotnet pack -c:Release -o:$(pwd)/publish
       - name: Publish
-        run: dotnet nuget push $(pwd)/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
+        run: dotnet nuget push $(pwd)/publish/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
