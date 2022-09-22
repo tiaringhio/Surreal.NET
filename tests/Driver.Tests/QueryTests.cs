@@ -419,10 +419,11 @@ public abstract class EqualityQueryTests<T, U, TKey, TValue> : QueryTests<T, U, 
 public abstract class QueryTests<T, U, TKey, TValue>
     where T : IDatabase<U>, new()
     where U : IResponse {
+
+    TestDatabaseFixture? fixture;
     protected T Database;
 
     public QueryTests() {
-        TestHelper.EnsureDB();
         Database = new();
         Database.Open(TestHelper.Default).Wait();
     }
@@ -497,10 +498,11 @@ public abstract class QueryTests<T, U, TKey, TValue>
 public abstract class GeneralQueryTests<T, U>
     where T : IDatabase<U>, new()
     where U : IResponse {
+
+    TestDatabaseFixture? fixture;
     protected T Database;
 
     public GeneralQueryTests() {
-        TestHelper.EnsureDB();
         Database = new();
         Database.Open(TestHelper.Default).Wait();
     }

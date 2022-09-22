@@ -37,43 +37,4 @@ public static class TestHelper {
         Exception ex = new($"Expected Ok, got error code {err.Code} ({err.Message}) in {caller}");
         throw ex;
     }
-
-    public static void EnsureDB() {
-        string? path = GetFullPath("surreal");
-        // Assume we have surreal as a command in PATH
-        Debug.Assert(path is not null);
-        // Find process blocking Port
-        ProcessPort pp = PortHelper.ByPort(Port).Result;
-        if (!pp.IsDefault) {
-            // Kill process blocking Port by PID
-            if (Environment.OSVersion.Platform == PlatformID.Unix) {
-                Process.Start("kill", $"{pp.ProcessId}");
-            } else {
-                // Windows
-                Process.Start("taskkill", $"/PID {pp.ProcessId}");
-            }
-        }
-        // Start new instances
-        Process.Start(path!, $"start -b 0.0.0.0:{Port} -u {User} -p {Pass} --log debug");
-        Thread.Sleep(150); // wait for surrealdb to start
-    }
-
-    public static string? GetFullPath(string file)
-    {
-        if (File.Exists(file)) {
-            return Path.GetFullPath(file);
-        }
-
-        var values = Environment.GetEnvironmentVariable("PATH");
-        if (values is null) {
-            return null;
-        }
-        foreach (var path in values.Split(Path.PathSeparator))
-        {
-            var fullPath = Path.Combine(path, file);
-            if (File.Exists(fullPath))
-                return fullPath;
-        }
-        return null;
-    }
 }

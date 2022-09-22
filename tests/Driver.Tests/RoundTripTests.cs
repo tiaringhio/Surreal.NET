@@ -11,8 +11,9 @@ public abstract class RoundTripTests<T, U>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
+    TestDatabaseFixture? fixture;
+
     public RoundTripTests() {
-        TestHelper.EnsureDB();
         Database = new();
         Database.Open(TestHelper.Default).Wait();
     }
