@@ -1,11 +1,8 @@
-using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Rustic;
-
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Time;
 
 public sealed class DateTimeConv : JsonConverter<DateTime> {
     public override DateTime Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {

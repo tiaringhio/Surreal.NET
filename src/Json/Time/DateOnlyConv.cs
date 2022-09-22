@@ -1,14 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-using Rustic;
 
 using Superpower;
 using Superpower.Model;
 
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Time;
 
 public sealed class DateOnlyConv : JsonConverter<DateOnly> {
     public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {

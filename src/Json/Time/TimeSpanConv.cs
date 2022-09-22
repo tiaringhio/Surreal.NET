@@ -1,5 +1,4 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
@@ -7,7 +6,7 @@ using System.Text.RegularExpressions;
 using Superpower;
 using Superpower.Model;
 
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Time;
 
 public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
     

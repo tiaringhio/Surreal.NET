@@ -2,7 +2,7 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Numbers;
 
 public sealed class DecimalConv : JsonConverter<decimal> {
     public override decimal Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {

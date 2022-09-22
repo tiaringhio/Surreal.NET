@@ -1,4 +1,4 @@
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Numbers;
 
 internal static class SpecialNumbers {
     public const string NUM_NAN = "nan";

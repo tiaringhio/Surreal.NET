@@ -1,4 +1,4 @@
-namespace SurrealDB.Json; 
+namespace SurrealDB.Json.Time; 
 
 public static class TimeExtensions {
     /// <summary>

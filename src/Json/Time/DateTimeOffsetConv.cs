@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using Superpower;
 using Superpower.Model;
 
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Time;
 
 public sealed class DateTimeOffsetConv : JsonConverter<DateTimeOffset> {
     public override DateTimeOffset Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
