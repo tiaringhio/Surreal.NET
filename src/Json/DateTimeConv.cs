@@ -32,12 +32,12 @@ public sealed class DateTimeConv : JsonConverter<DateTime> {
     }
 
     public static DateTime Parse(string? s) {
-        return DateTimeOffsetConv.Parse(s).LocalDateTime;
+        return DateTimeOffsetConv.Parse(s).DateTime;
     }
 
     public static bool TryParse(string? s, out DateTime value) {
         if (DateTimeOffsetConv.TryParse(s, out var v)) {
-            value = v.LocalDateTime;
+            value = v.DateTime;
             return true;
         }
 

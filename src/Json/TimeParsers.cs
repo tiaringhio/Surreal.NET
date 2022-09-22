@@ -1,15 +1,87 @@
+using System.Diagnostics;
 using System.Globalization;
 
 using Superpower;
+using Superpower.Model;
 using Superpower.Parsers;
 
-namespace SurrealDB.Json; 
+namespace SurrealDB.Json;
 
 public static class TimeParsers {
-    private static TextParser<char> Dot { get; } = Character.EqualTo('.');
-    private static TextParser<char> Dash { get; } = Character.EqualTo('-');
-    private static TextParser<char> Colon { get; } = Character.EqualTo(':');
-    private static TextParser<char> TimeSeparator { get; } = Character.In('t', 'T', ' ');
+
+    private class GreedyResultComparer<T> : IComparer<Result<T>> {
+        public int Compare(Result<T> x, Result<T> y) {
+            // 1 Success is best
+            int state = x.HasValue.CompareTo(y.HasValue);
+            if (state != 0) {
+                return state;
+            }
+
+            // 2 Shortest remainder is best
+            int rem = -x.Remainder.Length.CompareTo(y.Remainder.Length);
+            if (rem != 0) {
+                return rem;
+            }
+
+            // 3 Longest result is best
+            return x.Location.Length.CompareTo(y.Location.Length);
+        }
+
+        private static readonly Lazy<GreedyResultComparer<T>> s_instance = new(static () => new());
+        public static GreedyResultComparer<T> Instance => s_instance.Value;
+    }
+
+    /// <summary>
+    /// Applies all parsers on the same input, greedily returns the best result.
+    /// </summary>
+    public static TextParser<T> Alt<T>(params TextParser<T>[] parsers) => input => {
+        Result<T> best = Result.Empty<T>(input, "no parser in Alt branch matched the input");
+        GreedyResultComparer<T> cmp = GreedyResultComparer<T>.Instance;
+        foreach (TextParser<T> p in parsers) {
+            Result<T> res = p(input);
+            if (cmp.Compare(best, res) >= 0) {
+                continue;
+            }
+
+            best = res;
+            if (best.Remainder.IsAtEnd) {
+                break; // no more greedy then taking it all
+            }
+        }
+
+        return best;
+    };
+
+    public static TextParser<(T1, T2)> Combine<T1, T2>(this TextParser<T1> parser1, TextParser<T2> parser2) => input => {
+        var res1 = parser1(input);
+        if (!res1.HasValue) {
+            return Result.CastEmpty<T1, (T1, T2)>(res1);
+        }
+        var res2 = parser2(res1.Remainder);
+        if (!res2.HasValue) {
+            return Result.CastEmpty<T1, (T1, T2)>(Result.CombineEmpty(res1, Result.CastEmpty<T2, T1>(res2)));
+        }
+
+        return Result.Value((res1.Value, res2.Value), res1.Location.Combine(res2.Location), res2.Remainder);
+    };
+    public static TextParser<(T1, T2, T3)> Combine<T1, T2, T3>(this TextParser<T1> parser1, TextParser<T2> parser2, TextParser<T3> parser3) => 
+        parser1.Combine(parser2).Combine(parser3).Select(static t => t.Flatten());
+
+    public static TextSpan Combine(in this TextSpan lhs, in TextSpan rhs) {
+        Debug.Assert(lhs.Source == rhs.Source);
+        Debug.Assert(lhs.Position.Absolute <= rhs.Position.Absolute);
+        int endLhs = lhs.Position.Absolute + lhs.Length;
+        int endRhs = rhs.Position.Absolute + rhs.Length;
+        return new(lhs.Source!, lhs.Position, (endLhs < endRhs ? endRhs : endLhs) - lhs.Position.Absolute);
+    }
+
+    public static (T1, T2, T3) Flatten<T1, T2, T3>(in this ((T1, T2), T3) v) => (v.Item1.Item1, v.Item1.Item2, v.Item2);
+
+    private static TextParser<char> Sign { get; } = Character.In('+', '-');
+    private static TextParser<char> FracSep { get; } = Character.EqualTo('.');
+    private static TextParser<char> DateSep { get; } = Character.In('-', '/');
+    private static TextParser<char> TimeSep { get; } = Character.EqualTo(':');
+    private static TextParser<char> TimeSegSep { get; } = Character.In('t', 'T', ' ');
     private static TextParser<int> IntDigits { get; } =
         Character.Digit.AtLeastOnce().Select(static c => Int32.Parse(c));
 
@@ -33,8 +105,8 @@ public static class TimeParsers {
     /// </summary>
     public static TextParser<DateOnly> IsoDate { get; } =
         from year in IntDigits
-        from month in Dash.IgnoreThen(IntDigits)
-        from day in Dash.IgnoreThen(IntDigits)
+        from month in DateSep.IgnoreThen(IntDigits)
+        from day in DateSep.IgnoreThen(IntDigits)
         select new DateOnly(year, month, day);
 
     /// <summary>
@@ -43,18 +115,18 @@ public static class TimeParsers {
     /// The fraction is multiplied by 7 then divided by the number of digits.
     /// </summary>
     public static TextParser<long> IsoTimeFraction { get; } =
-        Character.Digit.AtLeastOnce().Select(static c => (long)(Double.Parse(c, NumberStyles.None) * 7d / c.Length));
+        Character.Digit.AtLeastOnce().Select(static c => (long)(Double.Parse(c, NumberStyles.None) * Math.Pow(10, 7 - c.Length)));
     
     /// <summary>
     /// Parses any ISO8601 like <see cref="TimeOnly"/> `{hour}:{minute}:{second}.{fraction}`
     /// </summary>
     public static TextParser<TimeOnly> IsoTime { get; } =
         from hour in IntDigits
-        from minute in Colon.IgnoreThen(IntDigits)
-        from second in Colon
+        from minute in TimeSep.IgnoreThen(IntDigits)
+        from second in TimeSep
            .IgnoreThen(IntDigits)
            .OptionalOrDefault()
-        from fraction in Dot.IgnoreThen(IsoTimeFraction)
+        from fraction in FracSep.IgnoreThen(IsoTimeFraction).OptionalOrDefault()
         select new TimeOnly(new TimeOnly(hour, minute, second).Ticks + fraction);
 
     /// <summary>
@@ -67,16 +139,14 @@ public static class TimeParsers {
     /// Parses any ISO8601 offset `[+-]\d+(:\d+)?`
     /// </summary>
     private static TextParser<TimeSpan> IsoTimezone { get; } =
-        from sign in Character.In('+', '-').Optional()
+        from sign in Sign.OptionalOrDefault()
         from hours in IntDigits
-        from minutes in Colon.IgnoreThen(IntDigits).OptionalOrDefault()
-        select new TimeSpan(hours, minutes, 0) * (sign.GetValueOrDefault('+') == '+' ? 1 : -1);
+        from minutes in TimeSep.OptionalOrDefault().IgnoreThen(IntDigits).OptionalOrDefault()
+        select new TimeSpan(hours, minutes, 0) * (sign == '-' ? -1 : 1);
 
     private static TextParser<DateTime> IsoDateTimeUtc { get; } =
         from date in IsoDate
-        from time in TimeSeparator.OptionalOrDefault()
-           .IgnoreThen(IsoTime)
-           .OptionalOrDefault()
+        from time in TimeSegSep.IgnoreThen(IsoTime).OptionalOrDefault()
         select date.ToDateTime(time, DateTimeKind.Unspecified);
 
     /// <summary>
@@ -88,17 +158,21 @@ public static class TimeParsers {
         from tz in IsoTimezoneUtc.Or(IsoTimezone)
         select dt.WithOffset(tz);
 
+    private static TextParser<double> TimeUnitParser { get; } =
+        Alt(
+            Span.EqualToIgnoreCase("ns").Value(10d / 1000d),
+            Span.EqualToIgnoreCase("us").Value(10d),
+            Span.EqualToIgnoreCase("µs").Value(10d),
+            Span.EqualToIgnoreCase("ms").Value((double)TimeSpan.TicksPerMillisecond),
+            Span.EqualToIgnoreCase("s").Value((double)TimeSpan.TicksPerSecond),
+            Span.EqualToIgnoreCase("m").Value((double)TimeSpan.TicksPerMinute),
+            Span.EqualToIgnoreCase("h").Value((double)TimeSpan.TicksPerHour),
+            Span.EqualToIgnoreCase("d").Value((double)TimeSpan.TicksPerDay)
+            );
+
     private static TextParser<TimeSpan> SpecificTimeSegment { get; } =
         from value in Float
-        from unit in Character.EqualToIgnoreCase('d').Value((double)TimeSpan.TicksPerDay)
-           .Or(Span.EqualToIgnoreCase('d').Value((double)TimeSpan.TicksPerDay))
-           .Or(Span.EqualToIgnoreCase("h").Value((double)TimeSpan.TicksPerHour))
-           .Or(Span.EqualToIgnoreCase("m").Value((double)TimeSpan.TicksPerMinute))
-           .Or(Span.EqualToIgnoreCase("s").Value((double)TimeSpan.TicksPerSecond))
-           .Or(Span.EqualToIgnoreCase("ms").Value((double)TimeSpan.TicksPerMillisecond))
-           .Or(Span.EqualToIgnoreCase("us").Or(Span.EqualToIgnoreCase("µs")).Value(10d)) // yea we 10 us ftw
-           .Or(Span.EqualToIgnoreCase("ns").Value(10d / 1000d))
-           .Or(Span.EqualToIgnoreCase("ticks").OptionalOrDefault().Value(1d))
+        from unit in TimeUnitParser
         select new TimeSpan(unchecked((long)(value * unit)));
 
     /// <summary>
@@ -110,4 +184,20 @@ public static class TimeParsers {
     public static TextParser<TimeSpan> SpecificTimeSpan { get; } =
         from unit in SpecificTimeSegment.AtLeastOnce()
         select unit.Aggregate(static (lhs, rhs) => lhs + rhs);
+
+
+    /// <summary>
+    /// Parses any ISO8601 like <see cref="TimeSpan"/> `{sign}{hour}:{minute}:{second}.{fraction}`
+    /// Where `{sign}` is `[+-]?`. 
+    /// </summary>
+    public static TextParser<TimeSpan> IsoTimeSpan { get; } =
+        from sign in Sign.OptionalOrDefault()
+        from time in Alt(
+            Combine(IntDigits, FracSep, IsoTime).Select(t => t.Item3.ToTimeSpan() + TimeSpan.FromDays(t.Item1)),
+            IsoTime.Select(t => t.ToTimeSpan())
+            )
+        select time * (sign == '-' ? -1 : 1);
+
+    public static TextParser<TimeSpan> AnyTimeSpan { get; } =
+        Alt(IsoTimeSpan, SpecificTimeSpan);
 }

@@ -46,14 +46,10 @@ public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
             value = default;
             return false;
         }
-        Result<TimeSpan> res1 = TimeParsers.SpecificTimeSpan(new TextSpan(s));
-        if (res1.HasValue) {
-            value = res1.Value;
-            return true;
-        }
-        Result<TimeOnly> res2 = TimeParsers.IsoTime(new TextSpan(s));
-        if (res2.HasValue) {
-            value = res2.Value.ToTimeSpan();
+
+        Result<TimeSpan> res = TimeParsers.AnyTimeSpan(new TextSpan(s));
+        if (res.HasValue) {
+            value = res.Value;
             return true;
         }
         value = default;
@@ -61,7 +57,7 @@ public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
     }
 
     public static string ToString(in TimeSpan value) {
-        return value.ToString($"{value.Days}d{value.Hours}h{value.Minutes}m{value.Seconds}s{value.Milliseconds}ms");
+        return $"{value.Days}d{value.Hours}h{value.Minutes}m{value.Seconds}s{value.Milliseconds}ms";
     }
 
     [DoesNotReturn]
