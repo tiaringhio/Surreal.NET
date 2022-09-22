@@ -1,34 +1,41 @@
+using System.Globalization;
+
 namespace SurrealDB.Json.Numbers;
 
 internal static class SpecialNumbers {
-    public const string NUM_NAN = "nan";
-    public const string NUM_POSINF = "inf";
-    public const string NUM_NEGINF = "-inf";
-    public const string NUM_POSINF_ALT = "∞";
-    public const string NUM_NEGINF_ALT = "-∞";
+    public static string NaN { get; } = NumberFormatInfo.InvariantInfo.NaNSymbol;
+    public static string PosinfAlt { get; } = NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol;
+    public static string NeginfAlt { get; } = NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol;
+    public static string Posinf => "∞"; // &infin;
+    public static string Neginf => "−∞"; // &minus;&infin;
 
     public static float ToSingle(string special) {
-        return special switch {
-            NUM_NAN => Single.NaN,
-            NUM_POSINF => Single.PositiveInfinity,
-            NUM_NEGINF => Single.NegativeInfinity,
-            NUM_POSINF_ALT => Single.PositiveInfinity,
-            NUM_NEGINF_ALT => Single.NegativeInfinity,
-            _ => default,
-        };
+        if (special.Equals(NaN, StringComparison.OrdinalIgnoreCase)) {
+            return Single.NaN;
+        }
+
+        if (special.Equals(Posinf, StringComparison.OrdinalIgnoreCase) || special.Equals(PosinfAlt, StringComparison.OrdinalIgnoreCase)) {
+            return Single.PositiveInfinity;
+        }
+
+        if (special.Equals(Neginf, StringComparison.OrdinalIgnoreCase) || special.Equals(NeginfAlt, StringComparison.OrdinalIgnoreCase)) {
+            return Single.NegativeInfinity;
+        }
+
+        return default;
     }
 
     public static string? ToSpecial(in float value) {
         if (Single.IsNaN(value)) {
-            return NUM_NAN;
+            return NaN;
         }
 
         if (Single.IsPositiveInfinity(value)) {
-            return NUM_POSINF;
+            return Posinf;
         }
 
         if (Single.IsNegativeInfinity(value)) {
-            return NUM_NEGINF;
+            return Neginf;
         }
 
         return null;
@@ -36,27 +43,32 @@ internal static class SpecialNumbers {
 
 
     public static double ToDouble(string special) {
-        return special switch {
-            NUM_NAN => Double.NaN,
-            NUM_POSINF => Double.PositiveInfinity,
-            NUM_NEGINF => Double.NegativeInfinity,
-            NUM_POSINF_ALT => Double.PositiveInfinity,
-            NUM_NEGINF_ALT => Double.NegativeInfinity,
-            _ => default,
-        };
+        if (special.Equals(NaN, StringComparison.OrdinalIgnoreCase)) {
+            return Double.NaN;
+        }
+
+        if (special.Equals(Posinf, StringComparison.OrdinalIgnoreCase) || special.Equals(PosinfAlt, StringComparison.OrdinalIgnoreCase)) {
+            return Double.PositiveInfinity;
+        }
+
+        if (special.Equals(Neginf, StringComparison.OrdinalIgnoreCase) || special.Equals(NeginfAlt, StringComparison.OrdinalIgnoreCase)) {
+            return Double.NegativeInfinity;
+        }
+
+        return default;
     }
 
     public static string? ToSpecial(in double value) {
         if (Double.IsNaN(value)) {
-            return NUM_NAN;
+            return NaN;
         }
 
         if (Double.IsPositiveInfinity(value)) {
-            return NUM_POSINF;
+            return Posinf;
         }
 
         if (Double.IsNegativeInfinity(value)) {
-            return NUM_NEGINF;
+            return Neginf;
         }
 
         return null;
