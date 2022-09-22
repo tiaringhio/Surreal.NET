@@ -35,8 +35,8 @@ public sealed class DateTimeConv : JsonConverter<DateTime> {
         // Date portion
         DateOnly d = DateOnlyConv.Parse(in str);
         // Time portion
-        TimeOnly t = TimeOnlyConv.Parse(str.Slice(10));
-        return d.ToDateTime(t);
+        TimeOnly t = TimeOnlyConv.Parse(str.Slice(11));
+        return d.ToDateTime(t, DateTimeKind.Utc);
     }
     
     public static string ToString(in DateTime dt) {

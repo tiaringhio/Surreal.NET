@@ -4,12 +4,16 @@ internal static class SpecialNumbers {
     public const string NUM_NAN = "nan";
     public const string NUM_POSINF = "inf";
     public const string NUM_NEGINF = "-inf";
+    public const string NUM_POSINF_ALT = "∞";
+    public const string NUM_NEGINF_ALT = "-∞";
 
     public static float ToSingle(string special) {
         return special switch {
             NUM_NAN => Single.NaN,
             NUM_POSINF => Single.PositiveInfinity,
             NUM_NEGINF => Single.NegativeInfinity,
+            NUM_POSINF_ALT => Single.PositiveInfinity,
+            NUM_NEGINF_ALT => Single.NegativeInfinity,
             _ => default,
         };
     }
@@ -36,6 +40,8 @@ internal static class SpecialNumbers {
             NUM_NAN => Double.NaN,
             NUM_POSINF => Double.PositiveInfinity,
             NUM_NEGINF => Double.NegativeInfinity,
+            NUM_POSINF_ALT => Double.PositiveInfinity,
+            NUM_NEGINF_ALT => Double.NegativeInfinity,
             _ => default,
         };
     }

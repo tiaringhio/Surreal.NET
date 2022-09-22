@@ -32,17 +32,28 @@ public sealed class TimeOnlyConv : JsonConverter<TimeOnly> {
     public static TimeOnly Parse(in ReadOnlySpan<char> str) {
         ReadOnlySpan<char> slc, rem = str;
         long t = 0;
+        slc = rem.Slice(0, 2);
+        rem = rem.Slice(2);
+        t += TimeSpan.TicksPerHour * int.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
         slc = rem.Slice(1, 2);
         rem = rem.Slice(3);
-        t += TimeSpan.TicksPerHour * Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
+        t += TimeSpan.TicksPerMinute * int.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
         slc = rem.Slice(1, 2);
         rem = rem.Slice(3);
-        t += TimeSpan.TicksPerMinute * Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-        slc = rem.Slice(1, 2);
-        rem = rem.Slice(3);
-        t += TimeSpan.TicksPerSecond * Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-        slc = rem.Slice(1, 9);
-        t += Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
+        t += TimeSpan.TicksPerSecond * int.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
+        var i = 1;
+        for (; i < rem.Length; i++) {
+            if (i >= 8 || i >= rem.Length || !char.IsDigit(rem[i])) {
+                break;
+            }
+        }
+        i -= 1;
+        if (i > 0)
+        {
+            slc = rem.Slice(1, i);
+            var parsedFraction = int.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
+            t += parsedFraction * (int)Math.Pow(10, 9 - i - 2);
+        }
         Debug.Assert(t <= 863999999999L);
         return new(t);
     }
@@ -66,7 +77,7 @@ public sealed class TimeOnlyConv : JsonConverter<TimeOnly> {
     }
 
     private static int ExtractNanos(in TimeOnly dt) {
-        return (int)(dt.Ticks % TimeSpan.TicksPerSecond);
+        return (int)(dt.Ticks % TimeSpan.TicksPerSecond) * 100;
     }
     
     [DoesNotReturn]
