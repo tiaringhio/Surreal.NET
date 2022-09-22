@@ -27,10 +27,10 @@ public class ConversionTests {
                 yield return new object[] { floatToTest.ToString(), floatToTest };
 
                 if (floatToTest == float.PositiveInfinity) {
-                    yield return new object[] { "inf", floatToTest }; // The normal ToString() is ∞
+                    yield return new object[] { NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, floatToTest }; // The normal ToString() is ∞
                 }
                 else if (floatToTest == float.NegativeInfinity) {
-                    yield return new object[] { "-inf", floatToTest }; // The normal ToString() is -∞
+                    yield return new object[] { NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, floatToTest }; // The normal ToString() is -∞
                 }
             }
 
@@ -64,10 +64,10 @@ public class ConversionTests {
                 yield return new object[] { doubleToTest.ToString(), doubleToTest };
 
                 if (doubleToTest == float.PositiveInfinity) {
-                    yield return new object[] { "inf", doubleToTest }; // The normal ToString() is ∞
+                    yield return new object[] { NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol, doubleToTest }; // The normal ToString() is ∞
                 }
                 else if (doubleToTest == float.NegativeInfinity) {
-                    yield return new object[] { "-inf", doubleToTest }; // The normal ToString() is -∞
+                    yield return new object[] { NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol, doubleToTest }; // The normal ToString() is -∞
                 }
             }
 

@@ -4,21 +4,31 @@ namespace SurrealDB.Json.Numbers;
 
 internal static class SpecialNumbers {
     public static string NaN { get; } = NumberFormatInfo.InvariantInfo.NaNSymbol;
-    public static string PosinfAlt { get; } = NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol;
-    public static string NeginfAlt { get; } = NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol;
+    public static string PosinfInv { get; } = NumberFormatInfo.InvariantInfo.PositiveInfinitySymbol;
+    public static string NeginfInv { get; } = NumberFormatInfo.InvariantInfo.NegativeInfinitySymbol;
+    public static string PosinfCur { get; } = NumberFormatInfo.CurrentInfo.PositiveInfinitySymbol;
+    public static string NeginfCur { get; } = NumberFormatInfo.CurrentInfo.NegativeInfinitySymbol;
     public static string Posinf => "∞"; // &infin;
     public static string Neginf => "−∞"; // &minus;&infin;
+
+    private static bool IsNegInf(string special) {
+        return special.Equals(Neginf, StringComparison.OrdinalIgnoreCase) || special.Equals(NeginfCur, StringComparison.OrdinalIgnoreCase) || special.Equals(NeginfInv, StringComparison.OrdinalIgnoreCase);
+    }
+
+    private static bool IsPosInf(string special) {
+        return special.Equals(Posinf, StringComparison.OrdinalIgnoreCase) || special.Equals(PosinfCur, StringComparison.OrdinalIgnoreCase) || special.Equals(PosinfInv, StringComparison.OrdinalIgnoreCase);
+    }
 
     public static float ToSingle(string special) {
         if (special.Equals(NaN, StringComparison.OrdinalIgnoreCase)) {
             return Single.NaN;
         }
 
-        if (special.Equals(Posinf, StringComparison.OrdinalIgnoreCase) || special.Equals(PosinfAlt, StringComparison.OrdinalIgnoreCase)) {
+        if (IsPosInf(special)) {
             return Single.PositiveInfinity;
         }
 
-        if (special.Equals(Neginf, StringComparison.OrdinalIgnoreCase) || special.Equals(NeginfAlt, StringComparison.OrdinalIgnoreCase)) {
+        if (IsNegInf(special)) {
             return Single.NegativeInfinity;
         }
 
@@ -47,17 +57,17 @@ internal static class SpecialNumbers {
             return Double.NaN;
         }
 
-        if (special.Equals(Posinf, StringComparison.OrdinalIgnoreCase) || special.Equals(PosinfAlt, StringComparison.OrdinalIgnoreCase)) {
+        if (IsPosInf(special)) {
             return Double.PositiveInfinity;
         }
 
-        if (special.Equals(Neginf, StringComparison.OrdinalIgnoreCase) || special.Equals(NeginfAlt, StringComparison.OrdinalIgnoreCase)) {
+        if (IsNegInf(special)) {
             return Double.NegativeInfinity;
         }
 
         return default;
     }
-
+    
     public static string? ToSpecial(in double value) {
         if (Double.IsNaN(value)) {
             return NaN;
