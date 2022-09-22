@@ -13,9 +13,10 @@
   <p align="center">
     Database driver for SurrealDB available for REST and RPC sessions.
   </p>
-	<p align="center">
-		(unofficial)
-	</p>
+
+<p align="center">
+  (unofficial)
+</p>
 
 ## Table of contents
 
