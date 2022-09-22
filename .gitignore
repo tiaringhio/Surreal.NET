@@ -34,11 +34,11 @@ msbuild.wrn
 # Idea Folder
 .idea/
 
-# Test resultws
+# Test results
 TestResults/
 coverage/
-test-results.trx
 coverage*.xml
+*.trx
 
 # NuGet packages
 *.nupkg
