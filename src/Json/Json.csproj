@@ -16,7 +16,12 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="Superpower" Version="3.0.0" />
 		<PackageReference Include="Rustic.Common" Version="0.5.80" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
 
 </Project>

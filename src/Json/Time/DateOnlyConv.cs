@@ -1,11 +1,11 @@
 using System.Diagnostics.CodeAnalysis;
-using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-using Rustic;
+using Superpower;
+using Superpower.Model;
 
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Time;
 
 public sealed class DateOnlyConv : JsonConverter<DateOnly> {
     public override DateOnly Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
@@ -28,34 +28,27 @@ public sealed class DateOnlyConv : JsonConverter<DateOnly> {
         writer.WritePropertyName(ToString(in value));
     }
 
-    public static DateOnly Parse(in ReadOnlySpan<char> str) {
-        ReadOnlySpan<char> slc, rem = str;
-        slc = rem.Slice(0, 4);
-        rem = rem.Slice(4);
-        int y = Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-        slc = rem.Slice(1, 2);
-        rem = rem.Slice(3);
-        int m = Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-        slc = rem.Slice(1, 2);
-        int d = Int32.Parse(slc, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-        return new(y, m , d);
+    public static DateOnly Parse(string? s) {
+        return TryParse(s, out DateOnly value) ? value : ThrowParseInvalid(s);
+    }
+    public static bool TryParse(string? s, out DateOnly value) {
+        if (String.IsNullOrEmpty(s)) {
+            return false;
+        }
+        Result<DateOnly> res = TimeParsers.IsoDate(new TextSpan(s));
+        value = res.HasValue ? res.Value : default;
+        return res.HasValue;
     }
 
-    // Needs 10 chars
-    public static void ToString(ref StrBuilder builder, in DateOnly dt) {
-        dt.Year.TryFormat(builder.AppendSpan(4), out _, "0000", NumberFormatInfo.InvariantInfo);
-        builder.Append('-');
-        dt.Month.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
-        builder.Append('-');
-        dt.Day.TryFormat(builder.AppendSpan(2), out _, "00", NumberFormatInfo.InvariantInfo);
-    }
-
-    public static string ToString(in DateOnly dt) {
-        StrBuilder builder = new(stackalloc char[11]);
-        ToString(ref builder, dt);
-        return builder.ToString();
+    public static string ToString(in DateOnly value) {
+        return $"{value.Year.ToString("D4")}-{value.Month.ToString("D2")}-{value.Day.ToString("D2")}";
     }
     
+    [DoesNotReturn]
+    private static DateOnly ThrowParseInvalid(string? s) {
+        throw new ParseException($"Unable to parse DateOnly from `{s}`");
+    }
+
     [DoesNotReturn]
     private DateOnly ThrowJsonTokenTypeInvalid() {
         throw new JsonException("Cannot deserialize a non string token as a DateOnly.");
