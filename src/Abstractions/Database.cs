@@ -11,7 +11,7 @@ namespace SurrealDB.Abstractions;
 public interface IDatabase<TResponse>
     : IDatabase
     where TResponse : IResponse {
-    
+
     /// <summary>
     ///     Retrieves the current session information.
     /// </summary>
@@ -154,7 +154,7 @@ public interface IDatabase {
     ///     Configures the client with all applicable settings.
     /// </summary>
     public Task Open(Config config, CancellationToken ct = default);
-    
+
     /// <summary>
     ///     Opens the connection to a Surreal database instance using the preconfigured configuration.
     ///     Configures the client with all applicable settings.

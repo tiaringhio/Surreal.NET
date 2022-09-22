@@ -4,6 +4,9 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
+using Superpower;
+using Superpower.Model;
+
 namespace SurrealDB.Json;
 
 public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
@@ -34,79 +37,39 @@ public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
         writer.WritePropertyName(ToString(in value));
     }
 
-    public static string ToString(in TimeSpan ts) {
-        return TimeOnlyConv.ToString( TimeOnly.FromTimeSpan(ts));
-    }
-    
-    public static TimeSpan Parse(string? str) {
-        if (String.IsNullOrEmpty(str)) {
-            return default;
-        }
-
-        if (ParseUnitTime(str, out TimeSpan ts)) {
-            return ts;
-        }
-
-        return TimeOnlyConv.Parse(str).ToTimeSpan();
+    public static TimeSpan Parse(string? s) {
+        return TryParse(s, out TimeSpan value) ? value : ThrowParseInvalid(s);
     }
 
-    private static bool ParseUnitTime(string str, out TimeSpan ts) {
-        Match match = UnitTimeRegex.Match(str);
-        if (!match.Success) {
-            ts = default;
+    public static bool TryParse(string? s, out TimeSpan value) {
+        if (String.IsNullOrEmpty(s)) {
+            value = default;
             return false;
         }
-
-        ReadOnlySpan<char> val = match.Groups[1].ValueSpan;
-        ReadOnlySpan<char> unt = match.Groups[2].ValueSpan;
-        if (unt.IsEmpty || unt.Equals("ns", StringComparison.OrdinalIgnoreCase)) {
-            long lng = Int64.Parse(val, NumberStyles.Integer, NumberFormatInfo.InvariantInfo);
-            ts = TimeSpan.FromTicks(lng);
+        Result<TimeSpan> res1 = TimeParsers.SpecificTimeSpan(new TextSpan(s));
+        if (res1.HasValue) {
+            value = res1.Value;
             return true;
         }
-
-        double dbl = Double.Parse(val, NumberStyles.Float, NumberFormatInfo.InvariantInfo);
-        if (unt.Equals("µs", StringComparison.OrdinalIgnoreCase)
-         || unt.Equals("us", StringComparison.OrdinalIgnoreCase)) {
-            ts = TimeSpan.FromMilliseconds(dbl * 1000.0);
+        Result<TimeOnly> res2 = TimeParsers.IsoTime(new TextSpan(s));
+        if (res2.HasValue) {
+            value = res2.Value.ToTimeSpan();
             return true;
         }
-
-        if (unt.Equals("ms", StringComparison.OrdinalIgnoreCase)) {
-            ts = TimeSpan.FromMilliseconds(dbl);
-            return true;
-        }
-
-        if (unt.Equals("s", StringComparison.OrdinalIgnoreCase)) {
-            ts = TimeSpan.FromSeconds(dbl);
-            return true;
-        }
-
-        if (unt.Equals("m", StringComparison.OrdinalIgnoreCase)) {
-            ts = TimeSpan.FromMinutes(dbl);
-            return true;
-        }
-
-        if (unt.Equals("h", StringComparison.OrdinalIgnoreCase)) {
-            ts = TimeSpan.FromHours(dbl);
-            return true;
-        }
-
-        if (unt.Equals("d", StringComparison.OrdinalIgnoreCase)) {
-            ts = TimeSpan.FromDays(dbl);
-            return true;
-        }
-
-        ThrowFormatUnitUnknown(unt);
-        ts = default;
+        value = default;
         return false;
     }
 
-    [DoesNotReturn]
-    private static void ThrowFormatUnitUnknown(ReadOnlySpan<char> unt) {
-        throw new FormatException($"Invalid TimeSpan unit `{unt}`");
+    public static string ToString(in TimeSpan value) {
+        return value.ToString($"{value.Days}d{value.Hours}h{value.Minutes}m{value.Seconds}s{value.Milliseconds}ms");
     }
-    
+
+    [DoesNotReturn]
+    private static TimeSpan ThrowParseInvalid(string? s) {
+        throw new ParseException($"Unable to parse TimeSpan from `{s}`");
+    }
+
+
     [DoesNotReturn]
     private static TimeSpan ThrowJsonTokenTypeInvalid() {
         throw new JsonException("Cannot deserialize a non numeric non string token as a TimeSpan.");

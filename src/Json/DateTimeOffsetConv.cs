@@ -2,6 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Superpower;
+using Superpower.Model;
+
 namespace SurrealDB.Json;
 
 public sealed class DateTimeOffsetConv : JsonConverter<DateTimeOffset> {
@@ -28,14 +31,29 @@ public sealed class DateTimeOffsetConv : JsonConverter<DateTimeOffset> {
         writer.WritePropertyName(ToString(in value));
     }
 
-    public static string ToString(in DateTimeOffset dt) {
-        return DateTimeConv.ToStringUtc(dt.UtcDateTime);
+    public static DateTimeOffset Parse(string? s) {
+        return TryParse(s, out DateTimeOffset value) ? value : ThrowParseInvalid(s);
     }
-    
-    public static DateTimeOffset Parse(in ReadOnlySpan<char> str) {
-        return DateTimeConv.Parse(in str);
+
+    public static bool TryParse(string? s, out DateTimeOffset value) {
+        if (String.IsNullOrEmpty(s)) {
+            value = default;
+            return false;
+        }
+        Result<DateTimeOffset> res = TimeParsers.IsoDateTimeOffset(new TextSpan(s));
+        value = res.HasValue ? res.Value : default;
+        return res.HasValue;
     }
-    
+
+    public static string ToString(in DateTimeOffset value) {
+        return value.ToString("O");
+    }
+
+    [DoesNotReturn]
+    private static DateTimeOffset ThrowParseInvalid(string? s) {
+        throw new ParseException($"Unable to parse DateTimeOffset from `{s}`");
+    }
+
     [DoesNotReturn]
     private static DateTimeOffset ThrowJsonTokenInvalid() {
         throw new JsonException("Cannot deserialize a non numeric non string token as a DateTime.");

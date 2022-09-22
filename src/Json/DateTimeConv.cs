@@ -24,35 +24,32 @@ public sealed class DateTimeConv : JsonConverter<DateTime> {
     }
 
     public override void Write(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options) {
-        writer.WriteStringValue(ToString(in value));
+        writer.WriteStringValue(ToString(value));
     }
 
     public override void WriteAsPropertyName(Utf8JsonWriter writer, DateTime value, JsonSerializerOptions options) {
-        writer.WritePropertyName(ToString(in value));
-    }
-    
-    public static DateTime Parse(in ReadOnlySpan<char> str) {
-        // Date portion
-        DateOnly d = DateOnlyConv.Parse(in str);
-        // Time portion
-        TimeOnly t = TimeOnlyConv.Parse(str.Slice(11));
-        return d.ToDateTime(t, DateTimeKind.Utc);
-    }
-    
-    public static string ToString(in DateTime dt) {
-        return ToStringUtc(TimeZoneInfo.ConvertTimeToUtc(dt));
-    }
-    
-    public static string ToStringUtc(in DateTime dt) {
-        Debug.Assert(dt.Kind == DateTimeKind.Utc);
-        StrBuilder builder = new(stackalloc char[31]);
-        DateOnlyConv.ToString(ref builder, DateOnly.FromDateTime(dt));
-        builder.Append('T');
-        TimeOnlyConv.ToString(ref builder, TimeOnly.FromDateTime(dt));
-        builder.Append('Z');
-        return builder.ToString();
+        writer.WritePropertyName(ToString(value));
     }
 
+    public static DateTime Parse(string? s) {
+        return DateTimeOffsetConv.Parse(s).LocalDateTime;
+    }
+
+    public static bool TryParse(string? s, out DateTime value) {
+        if (DateTimeOffsetConv.TryParse(s, out var v)) {
+            value = v.LocalDateTime;
+            return true;
+        }
+
+        value = default;
+        return false;
+    }
+
+    public static string ToString(in DateTimeOffset value) {
+        return value.ToString("O");
+    }
+
+    
     [DoesNotReturn]
     private static DateTime ThrowJsonTokenTypeInvalid() {
         throw new JsonException("Cannot deserialize a non numeric non string token as a DateTime.");
