@@ -5,8 +5,10 @@ namespace SurrealDB.Driver.Tests;
 [Collection("SurrealDBRequired")]
 public class WsClientTests
 {
+
+    TestDatabaseFixture? fixture;
+
     public WsClientTests() {
-        TestHelper.EnsureDB();
     }
     
     public readonly WsClient Client = new();

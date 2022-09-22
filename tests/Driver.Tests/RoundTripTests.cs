@@ -11,8 +11,9 @@ public abstract class RoundTripTests<T, U>
     where T : IDatabase<U>, new()
     where U : IResponse {
 
+    TestDatabaseFixture? fixture;
+
     public RoundTripTests() {
-        TestHelper.EnsureDB();
         Database = new();
         Database.Open(TestHelper.Default).Wait();
     }
@@ -143,7 +144,7 @@ public class RoundTripObject {
     public decimal MaxDecimal { get; set; } = decimal.MaxValue;
     public decimal MinDecimal { get; set; } = decimal.MinValue;
 
-    public DateTime MaxUtcDateTime { get; set; } = DateTime.MaxValue.AsUtc(); // This fails to roundtrip, the fractions part of the date gets 00 prepended to it
+    public DateTime MaxUtcDateTime { get; set; } = DateTime.MaxValue.AsUtc();
     public DateTime MinUtcDateTime { get; set; } = DateTime.MinValue.AsUtc();
     public DateTime NowUtcDateTime { get; set; } = DateTime.Now.AsUtc();
 

@@ -1,4 +1,4 @@
-﻿namespace SurrealDB.Driver.Tests.Database;
+namespace SurrealDB.Driver.Tests.Database;
 
 public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc, RpcResponse> {
 
@@ -8,15 +8,10 @@ public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest, RestResp
 
 }
 
-[Collection("SurrealDBRequired")]
 public abstract class DatabaseTestDriver<T, U>
     : DriverBase<T>
     where T : IDatabase<U>, new()
     where U : IResponse {
-
-    public DatabaseTestDriver() {
-        TestHelper.EnsureDB();
-    }
 
     [Fact]
     protected override async Task TestSuite() {
@@ -98,8 +93,12 @@ public abstract class DatabaseTestDriver<T, U>
 /// <summary>
 ///     The test driver executes the testsuite on the client.
 /// </summary>
+[Collection("SurrealDBRequired")]
 public abstract class DriverBase<T>
     where T : new() {
+
+    TestDatabaseFixture? fixture;
+
     public DriverBase() {
         Database = new();
     }

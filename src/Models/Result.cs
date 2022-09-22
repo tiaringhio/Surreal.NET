@@ -59,6 +59,12 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
         return isString;
     }
 
+    public bool TryGetValue(out int value) {
+        var isInt = TryGetValue(out long valueLong);
+        value = (int)valueLong;
+        return isInt;
+    }
+
     public bool TryGetValue(out long value) {
         bool isInt = GetKind() == ResultKind.SignedInteger;
         value = isInt ? _int64ValueField : 0;
@@ -72,6 +78,12 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
         return isInt;
     }
 
+    public bool TryGetValue(out float value) {
+        var isFloat = TryGetValue(out double valueDouble);
+        value = (float)valueDouble;
+        return isFloat;
+    }
+
     public bool TryGetValue(out double value) {
         bool isFloat = GetKind() == ResultKind.Float;
         long data = _int64ValueField;
@@ -82,7 +94,7 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
     public bool TryGetValue(out bool value) {
         bool isBoolean = GetKind() == ResultKind.Boolean;
         value = isBoolean && _int64ValueField != FALSE_VALUE;
-        return value;
+        return isBoolean;
     }
 
     // Below is the logic determining the type of the boxed value in the result.

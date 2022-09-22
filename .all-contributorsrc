@@ -30,16 +30,20 @@
       "avatar_url": "https://avatars.githubusercontent.com/u/50240570?v=4",
       "profile": "https://antoniosbarotsis.github.io/",
       "contributions": [
-        "code"
+        "code",
+        "doc"
       ]
     },
     {
-    "login": "Du-z",
+      "login": "Du-z",
       "name": "Brian Duhs",
       "avatar_url": "https://avatars.githubusercontent.com/u/16366766?v=4",
       "profile": "https://github.com/Du-z",
       "contributions": [
-        "test", "code"
+        "test",
+        "code",
+        "bug",
+        "ideas"
       ]
     }
   ],
