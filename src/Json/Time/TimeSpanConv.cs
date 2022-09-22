@@ -9,10 +9,8 @@ using Superpower.Model;
 namespace SurrealDB.Json.Time;
 
 public sealed class TimeSpanConv : JsonConverter<TimeSpan> {
-    
     public static readonly Regex UnitTimeRegex = new(@"^([+-]?(?:\d*\.)\d+(?:[eE][+-]?\d+))(\w*)$", RegexOptions.Compiled | RegexOptions.IgnorePatternWhitespace | RegexOptions.CultureInvariant);
-    
-    
+
     public override TimeSpan Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         TimeSpan ts = reader.TokenType switch {
             JsonTokenType.None or JsonTokenType.Null => default,

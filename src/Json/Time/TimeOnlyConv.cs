@@ -50,7 +50,6 @@ public sealed class TimeOnlyConv : JsonConverter<TimeOnly> {
         throw new ParseException($"Unable to parse TimeOnly from `{s}`");
     }
 
-
     [DoesNotReturn]
     private TimeOnly ThrowJsonTokenTypeInvalid() {
         throw new JsonException("Cannot deserialize a non string token as a TimeOnly.");

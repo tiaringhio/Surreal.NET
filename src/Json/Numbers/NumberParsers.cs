@@ -51,7 +51,6 @@ internal static class SpecialNumbers {
         return null;
     }
 
-
     public static double ToDouble(string special) {
         if (special.Equals(NaN, StringComparison.OrdinalIgnoreCase)) {
             return Double.NaN;
@@ -85,12 +84,9 @@ internal static class SpecialNumbers {
     }
 
     public static decimal ToDecimal(string str) {
-
         return default;
     }
     public static string? ToSpecial(in decimal value) {
-
         return null;
     }
-
 }
