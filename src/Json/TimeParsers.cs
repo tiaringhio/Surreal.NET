@@ -114,8 +114,8 @@ public static class TimeParsers {
     /// A tick is 10us, that is a 7 digit fraction.
     /// The fraction is multiplied by 7 then divided by the number of digits.
     /// </summary>
-    public static TextParser<long> IsoTimeFraction { get; } =
-        Character.Digit.AtLeastOnce().Select(static c => (long)(Double.Parse(c, NumberStyles.None) * Math.Pow(10, 7 - c.Length)));
+    public static TextParser<long> IsoTimeFraction { get; } = // TODO: Remove the 9 digit hack once surrealdb/surrealdb#250 is in release 
+        Character.Digit.AtLeastOnce().Select(static c => (long)(Double.Parse(c, NumberStyles.None) * Math.Pow(10, Math.Max(0, 7 - c.Length))));
     
     /// <summary>
     /// Parses any ISO8601 like <see cref="TimeOnly"/> `{hour}:{minute}:{second}.{fraction}`
