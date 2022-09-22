@@ -2,7 +2,8 @@
 	<Import Project="..\Directory.Build.props" />
 
 	<PropertyGroup>
-		<TargetFramework>net60</TargetFramework>
+		<LangVersion>10</LangVersion>
+		<TargetFrameworks>netcoreapp31;net60</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 

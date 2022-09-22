@@ -28,7 +28,7 @@ public static class TestHelper {
 
     public static void AssertOk(
         in IResponse rpcResponse,
-        [CallerArgumentExpression("rpcResponse")]
+        // [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
         if (!rpcResponse.TryGetError(out SurrealError err)) {
             return;

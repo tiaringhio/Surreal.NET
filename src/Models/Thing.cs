@@ -77,7 +77,7 @@ public readonly record struct Thing {
     /// <returns></returns>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Thing Escape() {
-        return IsKeyEscaped ? this : new(_split, $"{TableAndSeparator}{CHAR_PRE}{Key}{CHAR_SUF}");
+        return IsKeyEscaped ? this : new(_split, $"{TableAndSeparator.ToString()}{CHAR_PRE}{Key.ToString()}{CHAR_SUF}");
     }
 
     /// <summary>
@@ -86,7 +86,7 @@ public readonly record struct Thing {
     /// <returns></returns>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Thing Unescape() {
-        return TryUnescapeKey(out ReadOnlySpan<char> key) ? new(_split, $"{TableAndSeparator}{key}") : this;
+        return TryUnescapeKey(out ReadOnlySpan<char> key) ? new(_split, $"{TableAndSeparator.ToString()}{key.ToString()}") : this;
     }
 
     [Pure]
@@ -107,7 +107,7 @@ public readonly record struct Thing {
     public static Thing From(
         in ReadOnlySpan<char> table,
         in ReadOnlySpan<char> key) {
-        return From($"{table}:{key}");
+        return From($"{table.ToString()}:{key.ToString()}");
     }
 
     public Thing WithTable(in ReadOnlySpan<char> table) {

@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.IO;
 
+using SurrealDB.Common;
 using SurrealDB.Json;
 
 namespace SurrealDB.Ws;
@@ -31,7 +32,7 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
     /// </summary>
     public static string GetRandomId(int length) {
         Span<byte> buf = stackalloc byte[length];
-        Random.Shared.NextBytes(buf);
+        RngHelper.Shared.NextBytes(buf);
         return Convert.ToBase64String(buf);
     }
 

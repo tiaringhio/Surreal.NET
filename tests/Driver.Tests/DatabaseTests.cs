@@ -1,3 +1,5 @@
+using SurrealDB.Common;
+
 namespace SurrealDB.Driver.Tests.Database;
 
 public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc, RpcResponse> {
@@ -36,7 +38,7 @@ public abstract class DatabaseTestDriver<T, U>
                 Title = "Founder & CEO",
                 Name = new { First = "Tobie", Last = "Morgan Hitchcock", },
                 Marketing = true,
-                Identifier = Random.Shared.Next(),
+                Identifier = RngHelper.Shared.Next(),
             }
         );
 
@@ -48,7 +50,7 @@ public abstract class DatabaseTestDriver<T, U>
                 Title = "Contributor",
                 Name = new { First = "Prophet", Last = "Lamb", },
                 Marketing = false,
-                Identifier = Random.Shared.Next(),
+                Identifier = RngHelper.Shared.Next(),
             }
         );
 
@@ -69,7 +71,7 @@ public abstract class DatabaseTestDriver<T, U>
                     Title = "Founder & CEO",
                     Name = new { First = "Tobie", Last = "Hitchcock Morgan", },
                     Marketing = false,
-                    Identifier = Random.Shared.Next(),
+                    Identifier = RngHelper.Shared.Next(),
                 }
             )
         );
@@ -115,7 +117,7 @@ public abstract class DriverBase<T>
     [DebuggerStepThrough]
     protected void AssertOk(
         in IResponse rpcResponse,
-        [CallerArgumentExpression("rpcResponse")]
+        // [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
         if (!rpcResponse.TryGetError(out SurrealError err)) {
             return;

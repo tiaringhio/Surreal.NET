@@ -19,6 +19,10 @@
 		<PackageReference Include="Superpower" Version="3.0.0" />
 		<PackageReference Include="Rustic.Common" Version="0.5.80" />
 	</ItemGroup>
+	
+	<ItemGroup Condition="!$(DefineConstants.Contains('NET6_0_OR_GREATER'))">
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0"/>
+	</ItemGroup>
 
 	<ItemGroup>
 	  <ProjectReference Include="..\Common\Common.csproj" />
