@@ -42,7 +42,7 @@ public abstract class GeneralQueryTests<T, U>
         doc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(10));
     }
 
-    [Fact]
+    [Fact(Skip = "Blocked by https://github.com/ProphetLamb/Surreal.Net/issues/20")]
     public async Task CountAndGroupQueryTest() {
         string sql = @"SELECT
 	country,

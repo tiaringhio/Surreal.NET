@@ -2,10 +2,10 @@ using System.Globalization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace SurrealDB.Json;
+namespace SurrealDB.Json.Numbers;
 
-public sealed class SingleConv : JsonConverter<float> {
-    public override float Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+public sealed class DoubleConv : JsonConverter<double> {
+    public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         if (reader.TokenType is JsonTokenType.Null or JsonTokenType.None) {
             return default;
         }
@@ -16,26 +16,26 @@ public sealed class SingleConv : JsonConverter<float> {
                 return default;
             }
 
-            float v = SpecialNumbers.ToSingle(str);
+            double v = SpecialNumbers.ToDouble(str);
             if (v != default) {
                 return v;
             }
 
-            return Single.Parse(str, NumberStyles.Float, NumberFormatInfo.InvariantInfo);
+            return Double.Parse(str, NumberStyles.Float, NumberFormatInfo.InvariantInfo);
         }
 
         if (reader.TokenType == JsonTokenType.Number) {
-            return reader.GetSingle();
+            return reader.GetDouble();
         }
 
         throw new JsonException("Could not parse the number.");
     }
 
-    public override float ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
+    public override double ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
         return Read(ref reader, typeToConvert, options);
     }
 
-    public override void Write(Utf8JsonWriter writer, float value, JsonSerializerOptions options) {
+    public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options) {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WriteStringValue(str.AsSpan());
@@ -45,7 +45,7 @@ public sealed class SingleConv : JsonConverter<float> {
         writer.WriteNumberValue(value);
     }
 
-    public override void WriteAsPropertyName(Utf8JsonWriter writer, float value, JsonSerializerOptions options) {
+    public override void WriteAsPropertyName(Utf8JsonWriter writer, double value, JsonSerializerOptions options) {
         string? str = SpecialNumbers.ToSpecial(in value);
         if (str is not null) {
             writer.WritePropertyName(str.AsSpan());

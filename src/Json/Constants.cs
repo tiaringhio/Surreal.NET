@@ -2,6 +2,9 @@ using System.Text.Encodings.Web;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using SurrealDB.Json.Numbers;
+using SurrealDB.Json.Time;
+
 namespace SurrealDB.Json; 
 
 /// <summary>
