@@ -1,5 +1,3 @@
-using System.Text.Json;
-
 namespace SurrealDB.Driver.Tests;
 
 [Collection("SurrealDBRequired")]

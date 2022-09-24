@@ -1,4 +1,4 @@
-﻿namespace SurrealDB.Driver.Tests;
+﻿namespace SurrealDB.Core.Tests;
 
 public class ConfigTests {
     [Fact]

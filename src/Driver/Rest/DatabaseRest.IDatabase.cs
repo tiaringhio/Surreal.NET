@@ -34,7 +34,7 @@ public sealed partial class DatabaseRest : IDatabase {
         return await Let(key, value, ct);
     }
 
-    async Task<IResponse> IDatabase.Query(string sql, ReadOnlyDictionary<string,object?>? vars, CancellationToken ct) {
+    async Task<IResponse> IDatabase.Query(string sql, IReadOnlyDictionary<string,object?>? vars, CancellationToken ct) {
         return await Query(sql, vars, ct);
     }
 
