@@ -28,7 +28,7 @@ jobs:
           dotnet-version: 6.0.x
 
       - name: Install MkDocs
-        run: pip install mkdocs-material
+        run: pip install mkdocs-material mkdocs-section-index
 
       - name: Install tools
         run: |
