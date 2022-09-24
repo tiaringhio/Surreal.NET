@@ -39,9 +39,6 @@ jobs:
       - name: Build
         run: dotnet build -f:net60 -c:Release -o:publish
 
-      - name: Copy README file
-        run: cat ./README.md > ./docs/index.md
-
       - name: Generate markdown book
         run: ./.github/generate_docs.sh
 

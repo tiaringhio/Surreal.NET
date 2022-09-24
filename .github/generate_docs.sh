@@ -14,6 +14,8 @@ declare -a projs=(
   "Ws"
 )
 
+cp ./README.md ./docs/index.md
+
 # To keep things clean we will work in tmp
 mkdir 'tmp'
 pushd 'tmp' || exit 1
@@ -24,7 +26,7 @@ for val in "${projs[@]}"; do
 
   extract "../publish/$last.pdb" meta.json src/
   mapper meta.json src/ symbols.json
-  XmlDocMdSymbols "../publish/$val.dll" ../docs/ --source https://github.com/ProphetLamb/Surreal.Net/tree/master/ --symbols symbols.json
+  XmlDocMdSymbols "../publish/$last.dll" ../docs/ --source https://github.com/ProphetLamb/Surreal.Net/tree/master/ --symbols symbols.json
 done
 
 popd || exit 1
