@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 using SurrealDB.Abstractions;
 using SurrealDB.Models;
 

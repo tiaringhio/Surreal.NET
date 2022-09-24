@@ -1,12 +1,10 @@
-﻿using System.Collections.ObjectModel;
-
-using SurrealDB.Configuration;
+﻿using SurrealDB.Configuration;
 using SurrealDB.Models;
 
 namespace SurrealDB.Abstractions;
 
 /// <summary>
-///     Common interface for interacting with a Surreal database instance
+///     Shared interface for interacting with a Surreal database instance
 /// </summary>
 public interface IDatabase<TResponse>
     : IDatabase
@@ -141,7 +139,7 @@ public interface IDatabase<TResponse>
 }
 
 /// <summary>
-///     Common interface for interacting with a Surreal database instance
+///     Shared interface for interacting with a Surreal database instance
 /// </summary>
 public interface IDatabase {
     /// <summary>
