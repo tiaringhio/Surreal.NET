@@ -54,6 +54,10 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable 
         // Use database
         SetUse(_config.Database, _config.Namespace);
 
+        // The warp package Surreal uses for HTTP will return a 405
+        // on OSX if the `Accept` header is not set.
+        _client.DefaultRequestHeaders.Add("Accept", new[] { "application/json" });
+
         return Task.CompletedTask;
     }
 
