@@ -23,6 +23,7 @@
 - [Table of contents](#table-of-contents)
 - [About](#about)
 	- [Primary NuGet Packages](#primary-nuget-packages)
+	- [Documentation]{#documentation}
 - [Quick-start](#quick-start)
 - [Contributing](#contributing)
 - [Coverage](#coverage)
@@ -40,6 +41,9 @@ Surreal .NET is a database driver for [SurrealDB](https://surrealdb.com). The co
 | `SurrealDB.Driver.Rest`        | REST based database driver for SurrealDB.                                                                                  | [![NuGet Badge](https://buildstats.info/nuget/SurrealDB.Driver.Rpc)](https://www.nuget.org/packages/SurrealDB.Driver.Rest/)                |
 | `SurrealDB.Extensions.Service` | Service integration into the [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-6.0) ecosystem. | [![NuGet Badge](https://buildstats.info/nuget/SurrealDB.Extensions.Service)](https://www.nuget.org/packages/SurrealDB.Extensions.Service/) |
 
+### Documentation
+
+The API Documentation is available [**here**](https://prophetlamb.github.io/Surreal.Net/)
 
 ## Quick-start
 
