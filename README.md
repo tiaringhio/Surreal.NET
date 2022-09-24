@@ -1,7 +1,8 @@
+![Build Status](https://github.com/github/docs/actions/workflows/ci.yml/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/prophetlamb/surreal.net/badge)](https://www.codefactor.io/repository/github/prophetlamb/surreal.net)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/315508e8f6bf4829ab7d5a0467b0c693)](https://www.codacy.com/gh/ProphetLamb/Surreal.Net/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ProphetLamb/Surreal.Net&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graph/badge.svg?token=fcndEq1d3w)](https://codecov.io/gh/ProphetLamb/Surreal.Net)
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 
 <!-- PROJECT LOGO -->
 
@@ -25,8 +26,8 @@
 	- [Primary NuGet Packages](#primary-nuget-packages)
 	- [Documentation](#documentation)
 - [Quick-start](#quick-start)
-- [Contributing](#contributing)
 - [Coverage](#coverage)
+- [Contributing](#contributing)
 - [Contributors ✨](#contributors-)
 
 ## About
@@ -113,6 +114,10 @@ record struct Person(string name, int age, Address address, string phone, string
 record struct Address(string street, int zip, string city);
 ```
 
+## Coverage
+
+[![codecov](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graphs/sunburst.svg?token=fcndEq1d3w)](https://codecov.io/gh/ProphetLamb/Surreal.Net)
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -122,10 +127,6 @@ Contributions are what make the open source community such an amazing place to b
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-## Coverage
-
-[![codecov](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graphs/sunburst.svg?token=fcndEq1d3w)](https://codecov.io/gh/ProphetLamb/Surreal.Net)
 
 ## Contributors ✨
 
