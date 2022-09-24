@@ -1,6 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# 
+#
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{75FF3A83-918D-49F9-94BD-4B871E0619F4}"
 	ProjectSection(SolutionItems) = preProject
 		src\Directory.Build.props = src\Directory.Build.props
@@ -45,7 +45,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Service", "src\Extensions\S
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "tests\Core.Tests\Core.Tests.csproj", "{35971EE6-23B2-425A-BDBD-F748AE1D5C86}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Common", "tests\Common\Common.csproj", "{463655E2-1116-47D3-B001-6F9EFD5D9237}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shared", "tests\Shared\Shared.csproj", "{463655E2-1116-47D3-B001-6F9EFD5D9237}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -5,8 +5,9 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<ProjectReference Include="..\..\src\Common\Common.csproj" />
 	  <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
-	  <ProjectReference Include="..\Common\Common.csproj" />
+	  <ProjectReference Include="..\Shared\Shared.csproj" />
 	</ItemGroup>
 
 </Project>

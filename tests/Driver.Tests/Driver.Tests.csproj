@@ -6,10 +6,11 @@
 	
 	<ItemGroup>
 		<ProjectReference Include="..\..\src\Abstractions\Abstractions.csproj" />
+		<ProjectReference Include="..\..\src\Common\Common.csproj" />
 		<ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
 		<ProjectReference Include="..\..\src\Driver\Rest\Rest.csproj" />
 		<ProjectReference Include="..\..\src\Driver\Rpc\Rpc.csproj" />
-		<ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Shared\Shared.csproj" />
 	</ItemGroup>
 
 </Project>
