@@ -16,5 +16,9 @@ declare -a StringArray=(
 for val in ${StringArray[@]}; do
   stuff=($(echo $val | tr "/" "\n"))
   last=${stuff[${#stuff[@]}-1]}
-  xmldocmd ./src/$val/bin/Release/net60/publish/$last.dll ./docs/src --source https://github.com/ProphetLamb/Surreal.Net/tree/master/src/$val
+  path=./src/$val/bin/Release/net60/publish
+
+  extract $path/$last.pdb $last-meta.json src/
+  mapper $last-meta.json src/ $last-symbols.json
+  xmldocmd $path/$last.dll ./docs/src --source src/ --symbols $last-symbols.json
 done

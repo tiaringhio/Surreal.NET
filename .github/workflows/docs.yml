@@ -34,6 +34,12 @@ jobs:
       - name: Copy README file
         run: cat ./README.md > ./docs/index.md
       
+      - name: Install required packages
+        run: |
+          dotnet tool install --global SourceLinkExtract
+          dotnet tool install --global SourceSymbolMapper
+          dotnet tool install --global XmlDocMdSymbols --version 2.9.0
+      
       - name: Generate MD files
         run: ./generate_docs.sh
       
