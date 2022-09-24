@@ -23,7 +23,7 @@ jobs:
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
 
-      - name: Initialize Dotnet SDK
+      - name: Initialize .NET SDK
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
@@ -52,7 +52,7 @@ jobs:
           dotnet test --no-build --verbosity normal --logger "trx;LogFileName=$(pwd)/test-results.trx" --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura\" /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
 
       - name: Test Report
-        if: success() || failure()
+        if: contains('ref/heads/master','github.ref') && (success() || failure())
         uses: phoenix-actions/test-reporting@v8
         with:
           name: unittest-results
@@ -61,7 +61,7 @@ jobs:
           fail-on-error: false
 
       - name: Test Coverage
-        if: success() || failure()
+        if: contains('ref/heads/master','github.ref') && (success() || failure())
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

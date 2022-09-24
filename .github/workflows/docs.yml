@@ -12,40 +12,40 @@ defaults:
 
 jobs:
   deploy:
-    name: Deploy to Github Pages
+    name: Github Pages
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
 
-      - name: Set up Python
+      - name: Initialize Python
         uses: actions/setup-python@v2
         with:
           python-version: 3.x
 
-      - name: Setup .NET
+      - name: Initialize .NET
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
 
-      - name: Install MkDocs
+      - name: Initialize MkDocs
         run: pip install mkdocs-material mkdocs-section-index
 
-      - name: Install tools
+      - name: Initialize .NET tools
         run: |
           dotnet tool install --global SourceLinkExtract
           dotnet tool install --global SourceSymbolMapper
           dotnet tool install --global XmlDocMdSymbols
 
-      - name: Build
+      - name: Build Release
         run: dotnet build -f:net60 -c:Release -o:publish
 
-      - name: Generate markdown book
+      - name: Generate Documentation Source
         run: ./.github/generate_docs.sh
 
-      - name: Generate mkdocs nav entry
+      - name: Generate MKDocs 'nav' Entry
         run: |
           chmod +x ./.github/generate_docs_nav.py
           ./.github/generate_docs_nav.py >> mkdocs.yml
 
-      - name: Deploy book
+      - name: Deploy Documentation
         run: mkdocs gh-deploy --force
