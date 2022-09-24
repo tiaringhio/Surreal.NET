@@ -1,4 +1,5 @@
-name: Publish
+name: Continues Delivery
+
 on:
   workflow_dispatch:
   release:

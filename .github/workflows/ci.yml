@@ -1,4 +1,4 @@
-name: Build & Test
+name: Continues Integration
 
 on:
   workflow_dispatch:
@@ -16,24 +16,41 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Install SurrealDB
+      - name: Initialize SurrealDB
         run: |
           mkdir -p ~/.local/bin
           export INSTALL_DIR=~/.local/bin
           curl -sSf https://install.surrealdb.com | sh
           export PATH="$HOME/.local/bin/:$PATH"
-      - uses: actions/checkout@v3
-      - name: Setup .NET
+
+      - name: Initialize Dotnet SDK
         uses: actions/setup-dotnet@v2
         with:
           dotnet-version: 6.0.x
-      - name: Restore dependencies
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+          languages: csharp
+
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Restore Dependencies
         run: dotnet restore
-      - name: Build
+
+      - name: Build Solution
         run: dotnet build --no-restore
-      - name: Run Tests
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:csharp"
+
+      - name: Execute Unit-Tests
         run: |
           dotnet test --no-build --verbosity normal --logger "trx;LogFileName=$(pwd)/test-results.trx" --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura\" /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
+
       - name: Test Report
         if: success() || failure()
         uses: phoenix-actions/test-reporting@v8
@@ -42,6 +59,7 @@ jobs:
           path: test-results.trx
           reporter: dotnet-trx
           fail-on-error: false
+
       - name: Test Coverage
         if: success() || failure()
         uses: codecov/codecov-action@v3
