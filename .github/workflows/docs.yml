@@ -43,7 +43,9 @@ jobs:
         run: ./.github/generate_docs.sh
 
       - name: Generate mkdocs nav entry
-        run: ./.github/generate_docs_nav.py >> mkdocs.yml
+        run: |
+          chmod +x ./.github/generate_docs_nav.py
+          ./.github/generate_docs_nav.py >> mkdocs.yml
 
       - name: Deploy book
         run: mkdocs gh-deploy --force
