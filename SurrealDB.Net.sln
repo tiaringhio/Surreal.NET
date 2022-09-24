@@ -6,7 +6,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "src", "src", "{75FF3A83-918
 		src\Directory.Build.props = src\Directory.Build.props
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Core.Tests", "tests\Driver.Tests\Driver.Tests.csproj", "{CBB7A8CF-B04B-4801-9D5A-FEE013880463}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Driver.Tests", "tests\Driver.Tests\Driver.Tests.csproj", "{CBB7A8CF-B04B-4801-9D5A-FEE013880463}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tests", "tests", "{84F225EC-1895-45C0-A2EE-C61DC3DC5D0F}"
 	ProjectSection(SolutionItems) = preProject
