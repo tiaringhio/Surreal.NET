@@ -1,30 +1,29 @@
-namespace SurrealDB.Driver.Tests.Database;
+namespace SurrealDB.Driver.Tests;
 
-public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc, RpcResponse> {
+public sealed class RpcDatabaseTest : DatabaseTestDriver<DatabaseRpc> {
 
 }
 
-public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest, RestResponse> {
+public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest> {
 
 }
 
 [Collection("SurrealDBRequired")]
-public abstract class DatabaseTestDriver<T, U>
+public abstract class DatabaseTestDriver<T>
     : DriverBase<T>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+    where T : IDatabase, new() {
 
     [Fact]
     protected override async Task TestSuite() {
         await Database.Open(TestHelper.Default);
         Database.GetConfig().Should().BeEquivalentTo(TestHelper.Default);
 
-        U useResp = await Database.Use(TestHelper.Database, TestHelper.Namespace);
+        IResponse useResp = await Database.Use(TestHelper.Database, TestHelper.Namespace);
         AssertOk(useResp);
-        U infoResp = await Database.Info();
+        IResponse infoResp = await Database.Info();
         AssertOk(infoResp);
 
-        U signInStatus = await Database.Signin(new() { Username = TestHelper.User, Password = TestHelper.Pass, });
+        IResponse signInStatus = await Database.Signin(new() { Username = TestHelper.User, Password = TestHelper.Pass, });
 
         AssertOk(signInStatus);
         //AssertOk(await Database.Invalidate());
@@ -75,12 +74,12 @@ public abstract class DatabaseTestDriver<T, U>
         );
 
         string newTitle = "Founder & CEO & Ruler of the known free World";
-        U modifyResp = await Database.Modify(thing1, new object[] { new { op = "replace", path = "/Title", value = newTitle, }, });
+        IResponse modifyResp = await Database.Modify(thing1, new object[] { new { op = "replace", path = "/Title", value = newTitle, }, });
         AssertOk(modifyResp);
 
         AssertOk(await Database.Let("tbl", "person"));
 
-        U queryResp = await Database.Query(
+        IResponse queryResp = await Database.Query(
             "SELECT $props FROM $tbl WHERE title = $title",
             new Dictionary<string, object?> { ["props"] = "title, identifier", ["tbl"] = "person", ["title"] = newTitle, }
         );

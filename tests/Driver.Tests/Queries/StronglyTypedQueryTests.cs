@@ -1,7 +1,3 @@
-using Newtonsoft.Json.Linq;
-
-using System.Globalization;
-
 namespace SurrealDB.Driver.Tests.Queries;
 
 public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> { }

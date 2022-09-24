@@ -1,8 +1,5 @@
-using FluentAssertions;
-
-using SurrealDB.Models;
-
 namespace SurrealDB.Driver.Tests;
+
 public class RestResultTests : ResultTests<DatabaseRest, RestResponse> { }
 public class RpcResultTests : ResultTests<DatabaseRpc, RpcResponse> { }
 

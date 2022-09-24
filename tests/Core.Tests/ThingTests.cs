@@ -1,4 +1,4 @@
-namespace SurrealDB.Driver.Tests;
+namespace SurrealDB.Core.Tests;
 
 public class ThingTests {
     private static readonly List<string> Keys = new() { "{0}ThingKey", "Thing{0}Key", "ThingKey{0}", "{0}" };

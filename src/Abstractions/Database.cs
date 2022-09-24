@@ -224,7 +224,7 @@ public interface IDatabase {
     /// <param name="sql"> Specifies the SurrealQL statements. </param>
     /// <param name="vars"> Assigns variables which can be used in the query. </param>
     /// <param name="ct"> </param>
-    public Task<IResponse> Query(string sql, ReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default);
+    public Task<IResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default);
 
     /// <summary>
     ///     Selects all records in a table, or a specific record, from the database.

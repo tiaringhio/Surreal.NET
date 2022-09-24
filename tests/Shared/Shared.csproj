@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<RootNamespace>SurrealDB.Common</RootNamespace>
+	</PropertyGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
+	  <ProjectReference Include="..\..\src\Models\Models.csproj" />
+	</ItemGroup>
+
+</Project>
