@@ -45,6 +45,15 @@
         "bug",
         "ideas"
       ]
+    },
+    {
+      "login": "Siphalor",
+      "name": "Siphalor",
+      "avatar_url": "https://avatars.githubusercontent.com/u/24505659?v=4",
+      "profile": "http://siphalor.de/",
+      "contributions": [
+        "doc"
+      ]
     }
   ],
   "contributorsPerLine": 7,
