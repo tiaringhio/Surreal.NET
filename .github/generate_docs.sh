@@ -1,6 +1,9 @@
 #!/bin/env bash
 # Generates documentation files to docs/ from published compilations in publish/
 
+# Exits on error
+set -e
+
 # list of all projects
 declare -a projs=(
   "Abstractions"
