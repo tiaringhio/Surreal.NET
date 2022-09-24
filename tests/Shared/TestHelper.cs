@@ -1,6 +1,5 @@
-using System.Text;
+namespace SurrealDB.Common;
 
-namespace SurrealDB.Driver.Tests;
 public static class TestHelper {
     
     public const string Loopback = "127.0.0.1";

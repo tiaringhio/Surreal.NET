@@ -1,12 +1,10 @@
-﻿using System.Collections.ObjectModel;
-
-using SurrealDB.Configuration;
+﻿using SurrealDB.Configuration;
 using SurrealDB.Models;
 
 namespace SurrealDB.Abstractions;
 
 /// <summary>
-///     Common interface for interacting with a Surreal database instance
+///     Shared interface for interacting with a Surreal database instance
 /// </summary>
 public interface IDatabase<TResponse>
     : IDatabase
@@ -141,7 +139,7 @@ public interface IDatabase<TResponse>
 }
 
 /// <summary>
-///     Common interface for interacting with a Surreal database instance
+///     Shared interface for interacting with a Surreal database instance
 /// </summary>
 public interface IDatabase {
     /// <summary>
@@ -224,7 +222,7 @@ public interface IDatabase {
     /// <param name="sql"> Specifies the SurrealQL statements. </param>
     /// <param name="vars"> Assigns variables which can be used in the query. </param>
     /// <param name="ct"> </param>
-    public Task<IResponse> Query(string sql, ReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default);
+    public Task<IResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default);
 
     /// <summary>
     ///     Selects all records in a table, or a specific record, from the database.

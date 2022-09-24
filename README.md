@@ -1,7 +1,8 @@
+![Build Status](https://github.com/ProphetLamb/Surreal.Net/actions/workflows/ci.yml/badge.svg)
 [![CodeFactor](https://www.codefactor.io/repository/github/prophetlamb/surreal.net/badge)](https://www.codefactor.io/repository/github/prophetlamb/surreal.net)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/315508e8f6bf4829ab7d5a0467b0c693)](https://www.codacy.com/gh/ProphetLamb/Surreal.Net/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=ProphetLamb/Surreal.Net&amp;utm_campaign=Badge_Grade)
 [![codecov](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graph/badge.svg?token=fcndEq1d3w)](https://codecov.io/gh/ProphetLamb/Surreal.Net)
-[![All Contributors](https://img.shields.io/badge/all_contributors-4-orange.svg?style=flat-square)](#contributors-)
+[![All Contributors](https://img.shields.io/badge/all_contributors-5-orange.svg?style=flat-square)](#contributors-)
 
 <!-- PROJECT LOGO -->
 
@@ -13,18 +14,20 @@
   <p align="center">
     Database driver for SurrealDB available for REST and RPC sessions.
   </p>
-	<p align="center">
-		(unofficial)
-	</p>
+
+<p align="center">
+  (unofficial)
+</p>
 
 ## Table of contents
 
 - [Table of contents](#table-of-contents)
 - [About](#about)
 	- [Primary NuGet Packages](#primary-nuget-packages)
+	- [Documentation](#documentation)
 - [Quick-start](#quick-start)
-- [Contributing](#contributing)
 - [Coverage](#coverage)
+- [Contributing](#contributing)
 - [Contributors ✨](#contributors-)
 
 ## About
@@ -39,6 +42,9 @@ Surreal .NET is a database driver for [SurrealDB](https://surrealdb.com). The co
 | `SurrealDB.Driver.Rest`        | REST based database driver for SurrealDB.                                                                                  | [![NuGet Badge](https://buildstats.info/nuget/SurrealDB.Driver.Rpc)](https://www.nuget.org/packages/SurrealDB.Driver.Rest/)                |
 | `SurrealDB.Extensions.Service` | Service integration into the [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-6.0) ecosystem. | [![NuGet Badge](https://buildstats.info/nuget/SurrealDB.Extensions.Service)](https://www.nuget.org/packages/SurrealDB.Extensions.Service/) |
 
+### Documentation
+
+The API Documentation is available [**here**](https://prophetlamb.github.io/Surreal.Net/)
 
 ## Quick-start
 
@@ -54,12 +60,12 @@ choco install surreal --pre
 iwr https://windows.surrealdb.com -useb | iex
 ```
 
-While Surreal .NET can be registered as a [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-6.0) service for usage in a [web API](./examples/MinimalApi/Controllers/WeatherForecastController.cs), the library can also be included in a [console app](./examples/ConsoleRpc/Program.cs).
+While Surreal .NET can be registered as a [ASP.NET Core](https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-6.0) service for usage in a [web API](https://github.com/ProphetLamb/Surreal.Net/blob/master/examples/MinimalApi/Controllers/WeatherForecastController.cs), the library can also be included in a [console app](https://github.com/ProphetLamb/Surreal.Net/blob/master/examples/ConsoleRpc/Program.cs).
 
-I highly recommend taking a looksie at the [examples](./examples/), but for now let's review a basic console app with the RPC library.
+I highly recommend taking a looksie at the [examples](https://github.com/ProphetLamb/Surreal.Net/tree/master/examples), but for now let's review a basic console app with the RPC library.
 
 ```xml
-<PackageReference Include="SurrealDB.Driver.Rest" Version="1.0.2" />
+<PackageReference Include="SurrealDB.Driver.Rest" Version="1.0.3" />
 ```
 
 ```csharp
@@ -108,6 +114,10 @@ record struct Person(string name, int age, Address address, string phone, string
 record struct Address(string street, int zip, string city);
 ```
 
+## Coverage
+
+[![codecov](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graphs/sunburst.svg?token=fcndEq1d3w)](https://codecov.io/gh/ProphetLamb/Surreal.Net)
+
 ## Contributing
 
 Contributions are what make the open source community such an amazing place to be learn, inspire, and create. Any contributions you make are **greatly appreciated**.
@@ -117,10 +127,6 @@ Contributions are what make the open source community such an amazing place to b
 3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the Branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
-
-## Coverage
-
-[![codecov](https://codecov.io/gh/ProphetLamb/Surreal.Net/branch/master/graphs/sunburst.svg?token=fcndEq1d3w)](https://codecov.io/gh/ProphetLamb/Surreal.Net)
 
 ## Contributors ✨
 
@@ -136,6 +142,7 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
       <td align="center"><a href="https://github.com/StephenGilboy"><img src="https://avatars.githubusercontent.com/u/827735?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Stephen Gilboy</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=StephenGilboy" title="Code">💻</a></td>
       <td align="center"><a href="https://antoniosbarotsis.github.io/"><img src="https://avatars.githubusercontent.com/u/50240570?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Tony</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=AntoniosBarotsis" title="Code">💻</a> <a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=AntoniosBarotsis" title="Documentation">📖</a></td>
       <td align="center"><a href="https://github.com/Du-z"><img src="https://avatars.githubusercontent.com/u/16366766?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Brian Duhs</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=Du-z" title="Tests">⚠️</a> <a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=Du-z" title="Code">💻</a> <a href="https://github.com/ProphetLamb/Surreal.Net/issues?q=author%3ADu-z" title="Bug reports">🐛</a> <a href="#ideas-Du-z" title="Ideas, Planning, & Feedback">🤔</a></td>
+      <td align="center"><a href="http://siphalor.de/"><img src="https://avatars.githubusercontent.com/u/24505659?v=4?s=100" width="100px;" alt=""/><br /><sub><b>Siphalor</b></sub></a><br /><a href="https://github.com/ProphetLamb/Surreal.Net/commits?author=Siphalor" title="Documentation">📖</a></td>
     </tr>
   </tbody>
 </table>

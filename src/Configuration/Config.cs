@@ -1,5 +1,4 @@
-﻿using System.Diagnostics.Contracts;
-using System.Net;
+﻿using System.Net;
 
 namespace SurrealDB.Configuration;
 

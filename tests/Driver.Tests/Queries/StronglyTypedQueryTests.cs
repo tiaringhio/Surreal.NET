@@ -1,7 +1,3 @@
-using System.Globalization;
-
-using SurrealDB.Common;
-
 namespace SurrealDB.Driver.Tests.Queries;
 
 public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> { }
@@ -40,7 +36,7 @@ public abstract class StringQueryTests <T, U> : EqualityQueryTests<T, U, string,
     private static string RandomString(int length = 10) {
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         return new string(Enumerable.Repeat(chars, length)
-           .Select(s => s[RngHelper.Shared.Next(s.Length)]).ToArray());
+           .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
     }
 }
 
@@ -53,7 +49,7 @@ public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
     }
 
     protected override int RandomValue() {
-        return RngHelper.Shared.Next(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
+        return Random.Shared.Next(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -61,7 +57,7 @@ public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
     }
 
     private static int RandomInt() {
-        return RngHelper.Shared.Next();
+        return Random.Shared.Next();
     }
 
     protected override void AssertEquivalency(int a, int b) {
@@ -78,7 +74,7 @@ public abstract class LongQueryTests <T, U> : MathQueryTests<T, U, long, long>
     }
 
     protected override long RandomValue() {
-        return RngHelper.Shared.NextInt64(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
+        return Random.Shared.NextInt64(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -86,7 +82,7 @@ public abstract class LongQueryTests <T, U> : MathQueryTests<T, U, long, long>
     }
 
     private static long RandomLong() {
-        return RngHelper.Shared.NextInt64();
+        return Random.Shared.NextInt64();
     }
 
     protected override void AssertEquivalency(long a, long b) {
@@ -111,7 +107,7 @@ public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float
     }
 
     private static float RandomFloat() {
-        return RngHelper.Shared.NextSingle();
+        return Random.Shared.NextSingle();
     }
 
     protected override void AssertEquivalency(float a, float b) {
@@ -136,7 +132,7 @@ public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, dou
     }
 
     private static double RandomDouble() {
-        return RngHelper.Shared.NextDouble();
+        return Random.Shared.NextDouble();
     }
 
     protected override void AssertEquivalency(double a, double b) {
@@ -174,14 +170,14 @@ public abstract class DateTimeQueryTests<T, U> : InequalityQueryTests<T, U, int,
     }
 
     private static int RandomInt() {
-        return RngHelper.Shared.Next();
+        return Random.Shared.Next();
     }
 
     private static DateTime RandomDateTime() {
         var minDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var maxDate = new DateTime(2020, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var diff = (maxDate - minDate).TotalMicroseconds();
-        var randomeDateTime = minDate.AddMicroseconds((long)(RngHelper.Shared.NextDouble() * diff));
+        var randomeDateTime = minDate.AddMicroseconds((long)(Random.Shared.NextDouble() * diff));
         return randomeDateTime;
     }
 }

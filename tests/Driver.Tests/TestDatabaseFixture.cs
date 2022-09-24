@@ -1,9 +1,4 @@
-using System.Reflection;
-
-using Xunit.Abstractions;
-using Xunit.Sdk;
-
-namespace SurrealDB.Driver.Tests;
+namespace SurrealDB.Common;
 
 [CollectionDefinition("SurrealDBRequired")]
 public class DatabaseCollection : ICollectionFixture<TestDatabaseFixture>

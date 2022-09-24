@@ -42,3 +42,6 @@ coverage*.xml
 
 # NuGet packages
 *.nupkg
+
+docs/src
+docs/index.md

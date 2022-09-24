@@ -1,7 +1,3 @@
-using System.Text.Json;
-
-using SurrealDB.Common;
-
 namespace SurrealDB.Driver.Tests;
 
 [Collection("SurrealDBRequired")]
@@ -70,7 +66,7 @@ public class WsClientTests
                 Last = "Morgan Hitchcock",
             },
             Marketing = true,
-            Identifier = RngHelper.Shared.Next(),
+            Identifier = Random.Shared.Next(),
         };
 
         var rsp = await Client.Send(new()

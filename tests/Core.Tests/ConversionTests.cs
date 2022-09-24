@@ -1,11 +1,4 @@
-using FluentAssertions.Extensions;
-
-using SurrealDB.Json;
-
-using System.Globalization;
-using System.Text.Json;
-
-namespace SurrealDB.Driver.Tests;
+namespace SurrealDB.Core.Tests;
 
 public class ConversionTests {
 

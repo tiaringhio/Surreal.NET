@@ -1,5 +1,3 @@
-using System.Collections.ObjectModel;
-
 using SurrealDB.Abstractions;
 using SurrealDB.Models;
 
@@ -34,7 +32,7 @@ public sealed partial class DatabaseRpc : IDatabase {
         return await Let(key, value, ct);
     }
 
-    async Task<IResponse> IDatabase.Query(string sql, ReadOnlyDictionary<string,object?>? vars, CancellationToken ct) {
+    async Task<IResponse> IDatabase.Query(string sql, IReadOnlyDictionary<string,object?>? vars, CancellationToken ct) {
         return await Query(sql, vars, ct);
     }
 
