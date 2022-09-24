@@ -23,7 +23,7 @@
 - [Table of contents](#table-of-contents)
 - [About](#about)
 	- [Primary NuGet Packages](#primary-nuget-packages)
-	- [Documentation]{#documentation}
+	- [Documentation](#documentation)
 - [Quick-start](#quick-start)
 - [Contributing](#contributing)
 - [Coverage](#coverage)
