@@ -71,7 +71,7 @@ public abstract class InequalityQueryTests<T, U, TKey, TValue> : EqualityQueryTe
     public async Task GreaterThanOrEqualToQueryTest() {
         var val1 = RandomValue();
         var val2 = RandomValue();
-        var expectedResult = (dynamic)val1! > (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
+        var expectedResult = (dynamic)val1! >= (dynamic)val2!; // Can't do operator overloads on generic types, so force it by casting to a dynamic
 
         string sql = $"SELECT * FROM ($val1 >= $val2)";
         Dictionary<string, object?> param = new() {
