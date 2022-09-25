@@ -1,9 +1,8 @@
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-using Rustic;
 
 namespace SurrealDB.Models;
 
@@ -18,7 +17,7 @@ public readonly record struct Thing {
     public const char CHAR_SEP = ':';
     public const char CHAR_PRE = '⟨';
     public const char CHAR_SUF = '⟩';
-    
+
     private readonly int _split;
 
     public Thing(
@@ -27,7 +26,7 @@ public readonly record struct Thing {
         _split = split;
         Inner = inner;
     }
-    
+
     /// <summary>
     /// Returns the underlying string.
     /// </summary>
@@ -145,7 +144,7 @@ public readonly record struct Thing {
         }
 
         var len = Length;
-        using StrBuilder result = len > 512 ? new(len) : new(stackalloc char[len]);
+        using ValueStringBuilder result = len > 512 ? new(len) : new(stackalloc char[len]);
         if (!Table.IsEmpty) {
             result.Append(Uri.EscapeDataString(Table.ToString()));
         }
@@ -179,7 +178,7 @@ public readonly record struct Thing {
             return reader.GetString();
         }
 
-        public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options) { 
+        public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options) {
             writer.WriteStringValue((string)EscapeComplexCharactersIfRequired(in value));
         }
 

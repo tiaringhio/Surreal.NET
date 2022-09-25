@@ -19,8 +19,4 @@
 		<ProjectReference Include="..\Json\Json.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-		<PackageReference Include="Rustic.Common" Version="0.5.80" />
-	</ItemGroup>
-	
 </Project>
