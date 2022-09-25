@@ -47,7 +47,7 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Restore Dependencies
-        run: dotnet restore -f:${{ matrix.dotnet.ver }}
+        run: dotnet restore
 
       - name: Build Solution
         run: dotnet build --no-restore -f:${{ matrix.dotnet.ver }}
