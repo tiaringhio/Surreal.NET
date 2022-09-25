@@ -1,91 +1,85 @@
 using SurrealDB.Json;
 
-using Xunit.Abstractions;
-
 namespace SurrealDB.Driver.Tests.Queries;
 
 [Collection("SurrealDBRequired")]
-public abstract class QueryTests<T, U, TKey, TValue>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class QueryTests<T, TKey, TValue>
+    where T : IDatabase, IDisposable, new() {
 
     TestDatabaseFixture? fixture;
-    protected T Database;
     protected readonly ITestOutputHelper Logger;
 
     public QueryTests(ITestOutputHelper logger) {
         Logger = logger;
-        Database = new();
-        Database.Open(TestHelper.Default).Wait();
     }
 
     protected abstract TKey RandomKey();
     protected abstract TValue RandomValue();
 
     [Fact]
-    public async Task SimpleSelectQueryTest() {
-        TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
+    public async Task SimpleSelectQueryTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
 
-        Thing thing = Thing.From("object", expectedObject.Key!.ToString());
-        await Database.Create(thing, expectedObject);
-        string sql = "SELECT * FROM $thing";
-        Dictionary<string, object?> param = new() {
-            ["thing"] = thing,
-        };
+            Thing thing = Thing.From("object", expectedObject.Key!.ToString());
+            await db.Create(thing, expectedObject);
+            string sql = "SELECT * FROM $thing";
+            Dictionary<string, object?> param = new() { ["thing"] = thing, };
 
-        U response = await Database.Query(sql, param);
+            var response = await db.Query(sql, param);
 
-        Assert.NotNull(response);
-        TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out Result result));
-        TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
-        doc.Should().BeEquivalentTo(expectedObject);
-    }
-
-    [Fact]
-    public async Task SimpleSelectFromWhereQueryTest() {
-        TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
-
-        Thing thing = Thing.From("object", expectedObject.Key!.ToString());
-        await Database.Create(thing, expectedObject);
-
-        string sql = "SELECT * FROM object WHERE id = $thing";
-        Dictionary<string, object?> param = new() {
-            ["thing"] = thing
-        };
-
-        U response = await Database.Query(sql, param);
-
-        Assert.NotNull(response);
-        TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out Result result));
-        TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
-        doc.Should().BeEquivalentTo(expectedObject);
-    }
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
+            doc.Should().BeEquivalentTo(expectedObject);
+        }
+    );
 
     [Fact]
-    public async Task SimpleSelectFromWhereValueQueryTest() {
-        TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
-        Logger.WriteLine("exp: {0}", Serialize(expectedObject));
+    public async Task SimpleSelectFromWhereQueryTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
 
-        Thing thing = Thing.From("stuff", expectedObject.Key!.ToString());
-        await Database.Create(thing, expectedObject);
+            Thing thing = Thing.From("object", expectedObject.Key!.ToString());
+            await db.Create(thing, expectedObject);
 
-        string sql = "SELECT * FROM stuff WHERE Value = $value";
-        Dictionary<string, object?> param = new() {
-            ["value"] = expectedObject.Value
-        };
+            string sql = "SELECT * FROM object WHERE id = $thing";
+            Dictionary<string, object?> param = new() { ["thing"] = thing };
 
-        U response = await Database.Query(sql, param);
-        Logger.WriteLine("rsp: {0}", response);
+            var response = await db.Query(sql, param);
 
-        Assert.NotNull(response);
-        TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out Result result));
-        TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
-        Logger.WriteLine("out: {0}", Serialize(doc));
-        doc.Should().BeEquivalentTo(expectedObject);
-    }
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
+            doc.Should().BeEquivalentTo(expectedObject);
+        }
+    );
+
+    [Fact]
+    public async Task SimpleSelectFromWhereValueQueryTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
+            Logger.WriteLine("exp: {0}", Serialize(expectedObject));
+
+            Thing thing = Thing.From("stuff", expectedObject.Key!.ToString());
+            await db.Create(thing, expectedObject);
+
+            string sql = "SELECT * FROM stuff WHERE Value = $value";
+            Dictionary<string, object?> param = new() { ["value"] = expectedObject.Value };
+
+            var response = await db.Query(sql, param);
+            Logger.WriteLine("rsp: {0}", response);
+
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
+            Logger.WriteLine("out: {0}", Serialize(doc));
+            doc.Should().BeEquivalentTo(expectedObject);
+        }
+    );
 
     [DebuggerStepThrough]
     protected static string Serialize<V>(in V value) {

@@ -1,19 +1,16 @@
-using Xunit.Abstractions;
+namespace SurrealDB.Driver.Tests.Queries.Typed;
 
-namespace SurrealDB.Driver.Tests.Queries;
-
-public class RpcIntQueryTests : IntQueryTests<DatabaseRpc, RpcResponse> {
+public class RpcIntQueryTests : IntQueryTests<DatabaseRpc> {
     public RpcIntQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestIntQueryTests : IntQueryTests<DatabaseRest, RestResponse> {
+public class RestIntQueryTests : IntQueryTests<DatabaseRest> {
     public RestIntQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class IntQueryTests <T, U> : MathQueryTests<T, U, int, int>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class IntQueryTests <T> : MathQueryTests<T, int, int>
+    where T : IDatabase, IDisposable, new() {
 
     protected override int RandomKey() {
         return RandomInt();

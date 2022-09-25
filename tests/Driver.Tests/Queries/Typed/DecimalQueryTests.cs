@@ -1,19 +1,16 @@
-using Xunit.Abstractions;
+namespace SurrealDB.Driver.Tests.Queries.Typed;
 
-namespace SurrealDB.Driver.Tests.Queries;
-
-public class RpcDecimalQueryTests : DecimalQueryTests<DatabaseRpc, RpcResponse> {
+public class RpcDecimalQueryTests : DecimalQueryTests<DatabaseRpc> {
     public RpcDecimalQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestDecimalQueryTests : DecimalQueryTests<DatabaseRest, RestResponse> {
+public class RestDecimalQueryTests : DecimalQueryTests<DatabaseRest> {
     public RestDecimalQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class DecimalQueryTests <T, U> : MathQueryTests<T, U, decimal, decimal>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class DecimalQueryTests <T> : MathQueryTests<T, decimal, decimal>
+    where T : IDatabase, IDisposable, new() {
 
     protected override decimal RandomKey() {
         return RandomDouble();

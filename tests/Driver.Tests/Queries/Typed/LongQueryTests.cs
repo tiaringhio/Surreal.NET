@@ -1,19 +1,16 @@
-using Xunit.Abstractions;
+namespace SurrealDB.Driver.Tests.Queries.Typed;
 
-namespace SurrealDB.Driver.Tests.Queries;
-
-public class RpcLongQueryTests : LongQueryTests<DatabaseRpc, RpcResponse> {
+public class RpcLongQueryTests : LongQueryTests<DatabaseRpc> {
     public RpcLongQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestLongQueryTests : LongQueryTests<DatabaseRest, RestResponse> {
+public class RestLongQueryTests : LongQueryTests<DatabaseRest> {
     public RestLongQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class LongQueryTests <T, U> : MathQueryTests<T, U, long, long>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class LongQueryTests <T> : MathQueryTests<T, long, long>
+    where T : IDatabase, IDisposable, new() {
 
     protected override long RandomKey() {
         return RandomLong();

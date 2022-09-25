@@ -1,19 +1,16 @@
-using Xunit.Abstractions;
+namespace SurrealDB.Driver.Tests.Queries.Typed;
 
-namespace SurrealDB.Driver.Tests.Queries;
-
-public class RpcFloatQueryTests : FloatQueryTests<DatabaseRpc, RpcResponse> {
+public class RpcFloatQueryTests : FloatQueryTests<DatabaseRpc> {
     public RpcFloatQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestFloatQueryTests : FloatQueryTests<DatabaseRest, RestResponse> {
+public class RestFloatQueryTests : FloatQueryTests<DatabaseRest> {
     public RestFloatQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class FloatQueryTests <T, U> : MathQueryTests<T, U, float, float>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class FloatQueryTests <T> : MathQueryTests<T, float, float>
+    where T : IDatabase, IDisposable, new() {
 
     protected override float RandomKey() {
         return RandomFloat();

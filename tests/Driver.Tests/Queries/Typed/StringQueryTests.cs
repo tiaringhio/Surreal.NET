@@ -1,19 +1,16 @@
-using Xunit.Abstractions;
+namespace SurrealDB.Driver.Tests.Queries.Typed;
 
-namespace SurrealDB.Driver.Tests.Queries;
-
-public class RestStringQueryTests : StringQueryTests<DatabaseRest, RestResponse> {
+public class RestStringQueryTests : StringQueryTests<DatabaseRest> {
     public RestStringQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RpcStringQueryTests : StringQueryTests<DatabaseRpc, RpcResponse> {
+public class RpcStringQueryTests : StringQueryTests<DatabaseRpc> {
     public RpcStringQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class StringQueryTests<T, U> : EqualityQueryTests<T, U, string, string>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class StringQueryTests<T> : EqualityQueryTests<T, string, string>
+    where T : IDatabase, IDisposable, new() {
 
     protected override string RandomKey() {
         return RandomString();

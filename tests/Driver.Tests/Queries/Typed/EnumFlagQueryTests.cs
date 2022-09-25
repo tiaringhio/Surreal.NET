@@ -1,19 +1,16 @@
-using Xunit.Abstractions;
+namespace SurrealDB.Driver.Tests.Queries.Typed;
 
-namespace SurrealDB.Driver.Tests.Queries;
-
-public class RpcEnumFlagQueryTests : EnumFlagQueryTests<DatabaseRpc, RpcResponse> {
+public class RpcEnumFlagQueryTests : EnumFlagQueryTests<DatabaseRpc> {
     public RpcEnumFlagQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestEnumFlagQueryTests : EnumFlagQueryTests<DatabaseRest, RestResponse> {
+public class RestEnumFlagQueryTests : EnumFlagQueryTests<DatabaseRest> {
     public RestEnumFlagQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class EnumFlagQueryTests<T, U> : EqualityQueryTests<T, U, int, FlagsEnum>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class EnumFlagQueryTests<T> : EqualityQueryTests<T, int, FlagsEnum>
+    where T : IDatabase, IDisposable, new() {
 
     protected override int RandomKey() {
         return RandomInt();

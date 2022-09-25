@@ -5,8 +5,10 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <ProjectReference Include="..\..\src\Abstractions\Abstractions.csproj" />
 	  <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
 	  <ProjectReference Include="..\..\src\Models\Models.csproj" />
+	  <ProjectReference Include="..\..\src\Ws\Ws.csproj" />
 	</ItemGroup>
 
 </Project>

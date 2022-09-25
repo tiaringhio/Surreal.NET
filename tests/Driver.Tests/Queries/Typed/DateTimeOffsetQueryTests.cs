@@ -1,18 +1,15 @@
-using Xunit.Abstractions;
-
-namespace SurrealDB.Driver.Tests.Queries;
-public class RpcDateTimeOffsetQueryTests : DateTimeOffsetQueryTests<DatabaseRpc, RpcResponse> {
+namespace SurrealDB.Driver.Tests.Queries.Typed;
+public class RpcDateTimeOffsetQueryTests : DateTimeOffsetQueryTests<DatabaseRpc> {
     public RpcDateTimeOffsetQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestDateTimeOffsetQueryTests : DateTimeOffsetQueryTests<DatabaseRest, RestResponse> {
+public class RestDateTimeOffsetQueryTests : DateTimeOffsetQueryTests<DatabaseRest> {
     public RestDateTimeOffsetQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class DateTimeOffsetQueryTests<T, U> : InequalityQueryTests<T, U, int, DateTimeOffset>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class DateTimeOffsetQueryTests<T> : InequalityQueryTests<T, int, DateTimeOffset>
+    where T : IDatabase, IDisposable, new() {
 
     protected override int RandomKey() {
         return RandomInt();

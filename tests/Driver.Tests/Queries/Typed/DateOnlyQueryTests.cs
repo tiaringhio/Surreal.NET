@@ -1,18 +1,15 @@
-using Xunit.Abstractions;
-
-namespace SurrealDB.Driver.Tests.Queries;
-public class RpcDateOnlyQueryTests : DateOnlyQueryTests<DatabaseRpc, RpcResponse> {
+namespace SurrealDB.Driver.Tests.Queries.Typed;
+public class RpcDateOnlyQueryTests : DateOnlyQueryTests<DatabaseRpc> {
     public RpcDateOnlyQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestDateOnlyQueryTests : DateOnlyQueryTests<DatabaseRest, RestResponse> {
+public class RestDateOnlyQueryTests : DateOnlyQueryTests<DatabaseRest> {
     public RestDateOnlyQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class DateOnlyQueryTests<T, U> : InequalityQueryTests<T, U, int, DateOnly>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class DateOnlyQueryTests<T> : InequalityQueryTests<T, int, DateOnly>
+    where T : IDatabase, IDisposable, new() {
 
     protected override int RandomKey() {
         return RandomInt();

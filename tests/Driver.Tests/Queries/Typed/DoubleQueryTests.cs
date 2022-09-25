@@ -1,19 +1,16 @@
-using Xunit.Abstractions;
+namespace SurrealDB.Driver.Tests.Queries.Typed;
 
-namespace SurrealDB.Driver.Tests.Queries;
-
-public class RpcDoubleQueryTests : DoubleQueryTests<DatabaseRpc, RpcResponse> {
+public class RpcDoubleQueryTests : DoubleQueryTests<DatabaseRpc> {
     public RpcDoubleQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
-public class RestDoubleQueryTests : DoubleQueryTests<DatabaseRest, RestResponse> {
+public class RestDoubleQueryTests : DoubleQueryTests<DatabaseRest> {
     public RestDoubleQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
 
-public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, double>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class DoubleQueryTests <T> : MathQueryTests<T, double, double>
+    where T : IDatabase, IDisposable, new() {
 
     protected override double RandomKey() {
         return RandomDouble();

@@ -5,11 +5,11 @@ using SurrealDB.Ws;
 
 namespace SurrealDB.Driver.Rpc;
 
-public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
+public sealed partial class DatabaseRpc : IDatabase<RpcResponse>, IDisposable {
     private readonly WsClient _client = new();
     private Config _config;
     private bool _configured;
-    
+
     public DatabaseRpc() {}
 
     public DatabaseRpc(in Config config) {
@@ -185,5 +185,9 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         _config.Username = user;
         _config.Password = pass;
         await Signin(new() { Username = user, Password = pass, }, ct);
+    }
+
+    public void Dispose() {
+        _client.Dispose();
     }
 }

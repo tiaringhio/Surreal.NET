@@ -1,83 +1,80 @@
-namespace SurrealDB.Driver.Tests.RoundTrip;
+namespace SurrealDB.Driver.Tests.Roundtrip;
 
-public class RpcRoundTripTests : RoundTripTests<DatabaseRpc, RpcResponse> {
+public class RpcRoundTripTests : RoundTripTests<DatabaseRpc> {
 }
 
-public class RestRoundTripTests : RoundTripTests<DatabaseRest, RestResponse> {
+public class RestRoundTripTests : RoundTripTests<DatabaseRest> {
 }
 
 [Collection("SurrealDBRequired")]
-public abstract class RoundTripTests<T, U>
-    where T : IDatabase<U>, new()
-    where U : IResponse {
+public abstract class RoundTripTests<T>
+    where T : IDatabase, IDisposable, new() {
 
     TestDatabaseFixture? fixture;
 
-    public RoundTripTests() {
-        Database = new();
-        Database.Open(TestHelper.Default).Wait();
-    }
-
-    protected T Database;
     protected RoundTripObject Expected = new();
 
     [Fact]
-    public async Task CreateRoundTripTest() {
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
-        U response = await Database.Create(thing, Expected);
+    public async Task CreateRoundTripTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            var response = await db.Create(thing, Expected);
 
-        Assert.NotNull(response);
-        TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out Result result));
-        var returnedDocument = result.GetObject<RoundTripObject>();
-        RoundTripObject.AssertAreEqual(Expected, returnedDocument);
-    }
-
-    [Fact]
-    public async Task CreateAndSelectRoundTripTest() {
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
-        await Database.Create(thing, Expected);
-        U response = await Database.Select(thing);
-
-        Assert.NotNull(response);
-        TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out Result result));
-        var returnedDocument = result.GetObject<RoundTripObject>();
-        RoundTripObject.AssertAreEqual(Expected, returnedDocument);
-    }
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            var returnedDocument = result.GetObject<RoundTripObject>();
+            RoundTripObject.AssertAreEqual(Expected, returnedDocument);
+        }
+    );
 
     [Fact]
-    public async Task CreateAndQueryRoundTripTest() {
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
-        await Database.Create(thing, Expected);
-        string sql = $"SELECT * FROM \"{thing}\"";
-        U response = await Database.Query(sql, null);
+    public async Task CreateAndSelectRoundTripTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            await db.Create(thing, Expected);
+            var response = await db.Select(thing);
 
-        response.Should().NotBeNull();
-        TestHelper.AssertOk(response);
-        response.TryGetResult(out Result result).Should().BeTrue();
-        var returnedDocument = result.GetObject<RoundTripObject>();
-        RoundTripObject.AssertAreEqual(Expected, returnedDocument);
-    }
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            var returnedDocument = result.GetObject<RoundTripObject>();
+            RoundTripObject.AssertAreEqual(Expected, returnedDocument);
+        }
+    );
 
     [Fact]
-    public async Task CreateAndParameterizedQueryRoundTripTest() {
+    public async Task CreateAndQueryRoundTripTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            await db.Create(thing, Expected);
+            string sql = $"SELECT * FROM \"{thing}\"";
+            var response = await db.Query(sql, null);
+
+            response.Should().NotBeNull();
+            TestHelper.AssertOk(response);
+            response.TryGetResult(out Result result).Should().BeTrue();
+            var returnedDocument = result.GetObject<RoundTripObject>();
+            RoundTripObject.AssertAreEqual(Expected, returnedDocument);
+        }
+    );
+
+    [Fact]
+    public async Task CreateAndParameterizedQueryRoundTripTest() => await DbHandle<T>.WithDatabase(async db => {
         Thing thing = Thing.From("object", Random.Shared.Next().ToString());
-        U rsp = await Database.Create(thing, Expected);
+        var rsp = await db.Create(thing, Expected);
         rsp.IsOk.Should().BeTrue();
         string sql = "SELECT * FROM $thing";
-        Dictionary<string, object?> param = new() {
-            ["thing"] = thing,
-        };
+        Dictionary<string, object?> param = new() { ["thing"] = thing, };
 
-        U response = await Database.Query(sql, param);
+        var response = await db.Query(sql, param);
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
         var returnedDocument = result.GetObject<RoundTripObject>();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
-    }
+    });
 }
 
 public class RoundTripObject {
