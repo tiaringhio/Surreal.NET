@@ -1,3 +1,5 @@
+using System.Runtime.CompilerServices;
+
 namespace SurrealDB.Common;
 
 internal static class ThreadRng {
@@ -5,9 +7,12 @@ internal static class ThreadRng {
     public static Random Shared => Random.Shared;
 #else
     [ThreadStatic]
-    private static Random? s_shared;
+    private static Random? t_shared;
 
-    public static Random Shared => s_shared ?? new();
+    [MethodImpl(MethodImplOptions.NoInlining)]
+    private static Random Create() => t_shared = new();
+
+    public static Random Shared => t_shared ?? Create();
 
     public static long NextInt64(this Random rng, long min, long max) {
         return rng.NextInt64() % (max - min) + min;
