@@ -80,7 +80,7 @@ GROUP BY country;";
 
     [Fact]
     public async Task SimpleAdditionQueryTest() {
-        MathRequestDocument expectedObject = new MathRequestDocument {
+        MathRequestDocument expectedObject = new() {
             f1 = 1,
             f2 = 1,
         };
@@ -104,7 +104,7 @@ GROUP BY country;";
 
     [Fact]
     public async Task EpsilonAdditionQueryTest() {
-        MathRequestDocument expectedObject = new MathRequestDocument {
+        MathRequestDocument expectedObject = new() {
             f1 = float.Epsilon,
             f2 = float.Epsilon,
         };
@@ -129,7 +129,7 @@ GROUP BY country;";
 
     [Fact]
     public async Task MinValueAdditionQueryTest() {
-        MathRequestDocument expectedObject = new MathRequestDocument {
+        MathRequestDocument expectedObject = new() {
             f1 = float.MinValue,
             f2 = float.MaxValue,
         };
@@ -154,7 +154,7 @@ GROUP BY country;";
 
     [Fact]
     public async Task MaxValueSubtractionQueryTest() {
-        MathRequestDocument expectedObject = new MathRequestDocument {
+        MathRequestDocument expectedObject = new() {
             f1 = float.MaxValue,
             f2 = float.MinValue,
         };

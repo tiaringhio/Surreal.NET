@@ -18,8 +18,8 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
     [Fact]
     public async Task SimpleSelectQueryTest() {
-        TestObject<TKey, TValue>? expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
-        
+        TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
+
         Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
         string sql = "SELECT * FROM $thing";
@@ -38,7 +38,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
     [Fact]
     public async Task SimpleSelectFromWhereQueryTest() {
-        TestObject<TKey, TValue>? expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
+        TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
 
         Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
@@ -59,7 +59,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
     [Fact]
     public async Task SimpleSelectFromWhereValueQueryTest() {
-        TestObject<TKey, TValue>? expectedObject = new TestObject<TKey, TValue>(RandomKey(), RandomValue());
+        TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
 
         Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
