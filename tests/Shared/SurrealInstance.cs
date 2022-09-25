@@ -6,7 +6,7 @@ public static class SurrealInstance {
         TcpHelper.SpinUntilClosed($"0.0.0.0:{TestHelper.Port}");
         // We have a race condition between when the SurrealDB socket opens (or closes), and when it accepts connections.
         // 50ms should be enough to run the tests on most devices.
-        Thread.Sleep(50);
+        // Thread.Sleep(50);
         // Assume we have surreal as a command in PATH
         string? path = GetFullPath("surreal");
         Debug.Assert(path is not null);
@@ -15,7 +15,7 @@ public static class SurrealInstance {
         var p = Instantiate(path!);
         Debug.Assert(p is not null);
         TcpHelper.SpinUntilListening($"0.0.0.0:{TestHelper.Port}");
-        Thread.Sleep(50);
+        // Thread.Sleep(50);
         Debug.Assert(!p.HasExited);
         return p;
     }
