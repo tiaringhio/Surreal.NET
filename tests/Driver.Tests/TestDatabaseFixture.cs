@@ -15,22 +15,28 @@ public class DatabaseCollection : ICollectionFixture<TestDatabaseFixture>
 /// - Add `[Collection("SurrealDBRequired")]` to the test class
 /// - Add `TestDatabaseFixture? fixture;` field to the test class
 /// </summary>
-public class TestDatabaseFixture : IDisposable
-{
-    private static readonly object _lock = new();
+public class TestDatabaseFixture : IDisposable {
+    private readonly Mutex _lock = new(false, "SurrealDB.Driver.TEsts.TestDatabaseFixture");
+    private object? _disposed;
     private static Process? _databaseProcess = null;
     private static bool _databaseInitialized = false;
 
     public TestDatabaseFixture() {
-        lock (_lock)
-        {
-            if (!_databaseInitialized)
-            {
+        object d = new();
+        lock (d) {
+            _disposed = d;
+            _lock.WaitOne();
+            if (!_databaseInitialized) {
                 EnsureDB();
                 _databaseInitialized = true;
             }
         }
     }
+
+    ~TestDatabaseFixture() {
+        Dispose();
+    }
+
 
     public static void EnsureDB() {
         // Assume we have surreal as a command in PATH
@@ -52,7 +58,15 @@ public class TestDatabaseFixture : IDisposable
     }
 
     public void Dispose() {
-        KillDB();
+        var d = _disposed;
+        if (d is null) {
+            return;
+        }
+        lock (d) {
+            _disposed = null;
+            KillDB();
+            _lock.Dispose();
+        }
     }
 
     public static string? GetFullPath(string file)

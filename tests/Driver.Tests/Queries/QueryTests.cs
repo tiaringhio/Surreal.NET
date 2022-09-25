@@ -68,10 +68,10 @@ public abstract class QueryTests<T, U, TKey, TValue>
         TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
         Logger.WriteLine("exp: {0}", Serialize(expectedObject));
 
-        Thing thing = Thing.From("object", expectedObject.Key!.ToString());
+        Thing thing = Thing.From("stuff", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
 
-        string sql = "SELECT * FROM object WHERE Value = $value";
+        string sql = "SELECT * FROM stuff WHERE Value = $value";
         Dictionary<string, object?> param = new() {
             ["value"] = expectedObject.Value
         };
