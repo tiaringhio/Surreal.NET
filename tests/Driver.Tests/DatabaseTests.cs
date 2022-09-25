@@ -116,7 +116,7 @@ public abstract class DriverBase<T>
         in IResponse rpcResponse,
         [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
-        if (!rpcResponse.TryGetError(out SurrealError err)) {
+        if (!rpcResponse.TryGetError(out Error err)) {
             return;
         }
 

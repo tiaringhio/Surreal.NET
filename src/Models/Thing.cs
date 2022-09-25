@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
@@ -14,11 +15,12 @@ namespace SurrealDB.Models;
 ///     `table_name:record_id`
 /// </remarks>
 [JsonConverter(typeof(Converter))]
+[DebuggerDisplay("{Inner},nq")]
 public readonly record struct Thing {
     public const char CHAR_SEP = ':';
     public const char CHAR_PRE = '⟨';
     public const char CHAR_SUF = '⟩';
-    
+
     private readonly int _split;
 
     public Thing(
@@ -27,7 +29,7 @@ public readonly record struct Thing {
         _split = split;
         Inner = inner;
     }
-    
+
     /// <summary>
     /// Returns the underlying string.
     /// </summary>
@@ -179,7 +181,7 @@ public readonly record struct Thing {
             return reader.GetString();
         }
 
-        public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options) { 
+        public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options) {
             writer.WriteStringValue((string)EscapeComplexCharactersIfRequired(in value));
         }
 

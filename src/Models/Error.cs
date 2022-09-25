@@ -1,10 +1,13 @@
+using System.Diagnostics;
+
 namespace SurrealDB.Models;
 
 /// <summary>
 ///     The result of a failed query to the Surreal database.
 /// </summary>
-public readonly struct SurrealError {
-    public SurrealError(
+[DebuggerDisplay("{Code},nq: {Message},nq")]
+public readonly struct Error {
+    public Error(
             int code,
             string? message) {
         Code = code;

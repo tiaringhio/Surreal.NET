@@ -11,11 +11,11 @@ namespace SurrealDB.Driver.Rpc;
 ///     The response from a query to the Surreal database via rpc.
 /// </summary>
 public readonly struct RpcResponse : IResponse {
-    private readonly SurrealError _error;
+    private readonly Error _error;
 
 public RpcResponse(
             string id,
-            SurrealError error,
+            Error error,
             Result result) {
         Id = id;
         _error = error;
@@ -28,9 +28,9 @@ public RpcResponse(
     public bool IsError => _error.Code != 0;
 
     public Result UncheckedResult { get; }
-    public SurrealError UncheckedError => _error;
+    public Error UncheckedError => _error;
 
-    public bool TryGetError(out SurrealError error) {
+    public bool TryGetError(out Error error) {
         error = _error;
         return IsError;
     }
@@ -42,7 +42,7 @@ public RpcResponse(
 
     public bool TryGetResult(
         out Result result,
-        out SurrealError error) {
+        out Error error) {
         result = UncheckedResult;
         error = _error;
         return IsOk;
@@ -50,7 +50,7 @@ public RpcResponse(
 
     public void Deconstruct(
         out Result result,
-        out SurrealError error) {
+        out Error error) {
         (result, error) = (UncheckedResult, _error);
     }
 

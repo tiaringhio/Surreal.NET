@@ -37,7 +37,7 @@ public readonly struct RestResponse : IResponse {
 
     public bool IsError => !IsOk;
 
-    public bool TryGetError(out SurrealError error) {
+    public bool TryGetError(out Models.Error error) {
         if (IsOk) {
             error = default;
             return false;
@@ -59,7 +59,7 @@ public readonly struct RestResponse : IResponse {
 
     public bool TryGetResult(
         out Result result,
-        out SurrealError error) {
+        out Models.Error error) {
         if (IsError) {
             result = default;
             error = new(1, _detail);
