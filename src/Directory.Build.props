@@ -16,7 +16,7 @@
 
 	<PropertyGroup>
 		<LangVersion>10</LangVersion>
-		<TargetFrameworks>netstandard21;net60</TargetFrameworks>
+		<TargetFrameworks>netstandard21;netcoreapp31;net60</TargetFrameworks>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
 	</PropertyGroup>
