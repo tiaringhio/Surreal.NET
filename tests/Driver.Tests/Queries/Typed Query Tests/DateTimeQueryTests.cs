@@ -1,6 +1,14 @@
+using Xunit.Abstractions;
+
 namespace SurrealDB.Driver.Tests.Queries;
-public class RpcDateTimeQueryTests : DateTimeQueryTests<DatabaseRpc, RpcResponse> { }
-public class RestDateTimeQueryTests : DateTimeQueryTests<DatabaseRest, RestResponse> { }
+public class RpcDateTimeQueryTests : DateTimeQueryTests<DatabaseRpc, RpcResponse> {
+    public RpcDateTimeQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
+public class RestDateTimeQueryTests : DateTimeQueryTests<DatabaseRest, RestResponse> {
+    public RestDateTimeQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
 
 public abstract class DateTimeQueryTests<T, U> : InequalityQueryTests<T, U, int, DateTime>
     where T : IDatabase<U>, new()
@@ -24,5 +32,8 @@ public abstract class DateTimeQueryTests<T, U> : InequalityQueryTests<T, U, int,
         var diff = (maxDate - minDate).TotalMicroseconds();
         var randomeDateTime = minDate.AddMicroseconds((long)(Random.Shared.NextDouble() * diff));
         return randomeDateTime;
+    }
+
+    protected DateTimeQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }

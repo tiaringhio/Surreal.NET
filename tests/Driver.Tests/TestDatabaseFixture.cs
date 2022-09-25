@@ -10,7 +10,7 @@ public class DatabaseCollection : ICollectionFixture<TestDatabaseFixture>
 
 /// <summary>
 /// Sets up the Database proccess for all tests that are in the 'SurrealDBRequired' collection
-/// 
+///
 /// To use:
 /// - Add `[Collection("SurrealDBRequired")]` to the test class
 /// - Add `TestDatabaseFixture? fixture;` field to the test class
@@ -21,8 +21,7 @@ public class TestDatabaseFixture : IDisposable
     private static Process? _databaseProcess = null;
     private static bool _databaseInitialized = false;
 
-    public TestDatabaseFixture()
-    {
+    public TestDatabaseFixture() {
         lock (_lock)
         {
             if (!_databaseInitialized)

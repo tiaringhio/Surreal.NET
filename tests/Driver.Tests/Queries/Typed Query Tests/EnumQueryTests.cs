@@ -1,7 +1,15 @@
+using Xunit.Abstractions;
+
 namespace SurrealDB.Driver.Tests.Queries;
 
-public class RpcEnumQueryTests : EnumQueryTests<DatabaseRpc, RpcResponse> { }
-public class RestEnumQueryTests : EnumQueryTests<DatabaseRest, RestResponse> { }
+public class RpcEnumQueryTests : EnumQueryTests<DatabaseRpc, RpcResponse> {
+    public RpcEnumQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
+public class RestEnumQueryTests : EnumQueryTests<DatabaseRest, RestResponse> {
+    public RestEnumQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
 
 public abstract class EnumQueryTests<T, U> : EqualityQueryTests<T, U, int, StandardEnum>
     where T : IDatabase<U>, new()
@@ -23,5 +31,8 @@ public abstract class EnumQueryTests<T, U> : EqualityQueryTests<T, U, int, Stand
         var enumValues = Enum.GetValues<StandardEnum>();
         var index = Random.Shared.Next(0, enumValues.Length);
         return enumValues[index];
+    }
+
+    public EnumQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }

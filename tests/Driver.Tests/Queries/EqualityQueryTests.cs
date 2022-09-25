@@ -1,9 +1,11 @@
-﻿namespace SurrealDB.Driver.Tests.Queries;
+﻿using Xunit.Abstractions;
+
+namespace SurrealDB.Driver.Tests.Queries;
 
 public abstract class EqualityQueryTests<T, U, TKey, TValue> : QueryTests<T, U, TKey, TValue>
     where T : IDatabase<U>, new()
     where U : IResponse {
-    
+
     [Fact]
     public async Task EqualsQueryTest() {
         var val1 = RandomValue();
@@ -44,5 +46,8 @@ public abstract class EqualityQueryTests<T, U, TKey, TValue> : QueryTests<T, U, 
         Assert.True(response.TryGetResult(out Result result));
         var resultValue = result.GetObject<bool>();
         Assert.Equal(resultValue, expectedResult);
+    }
+
+    public EqualityQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }

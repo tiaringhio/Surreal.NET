@@ -1,7 +1,15 @@
+using Xunit.Abstractions;
+
 namespace SurrealDB.Driver.Tests.Queries;
 
-public class RpcDoubleQueryTests : DoubleQueryTests<DatabaseRpc, RpcResponse> { }
-public class RestDoubleQueryTests : DoubleQueryTests<DatabaseRest, RestResponse> { }
+public class RpcDoubleQueryTests : DoubleQueryTests<DatabaseRpc, RpcResponse> {
+    public RpcDoubleQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
+public class RestDoubleQueryTests : DoubleQueryTests<DatabaseRest, RestResponse> {
+    public RestDoubleQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
 
 public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, double>
     where T : IDatabase<U>, new()
@@ -25,5 +33,8 @@ public abstract class DoubleQueryTests <T, U> : MathQueryTests<T, U, double, dou
 
     protected override void AssertEquivalency(double a, double b) {
         b.Should().BeApproximately(a, 0.1d);
+    }
+
+    protected DoubleQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }

@@ -1,3 +1,5 @@
+using Xunit.Abstractions;
+
 namespace SurrealDB.Driver.Tests.Queries;
 
 [Collection("SurrealDBRequired")]
@@ -7,8 +9,10 @@ public abstract class QueryTests<T, U, TKey, TValue>
 
     TestDatabaseFixture? fixture;
     protected T Database;
+    protected readonly ITestOutputHelper Logger;
 
-    public QueryTests() {
+    public QueryTests(ITestOutputHelper logger) {
+        Logger = logger;
         Database = new();
         Database.Open(TestHelper.Default).Wait();
     }

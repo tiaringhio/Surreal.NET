@@ -1,6 +1,14 @@
+using Xunit.Abstractions;
+
 namespace SurrealDB.Driver.Tests.Queries;
-public class RpcTimeOnlyQueryTests : TimeOnlyQueryTests<DatabaseRpc, RpcResponse> { }
-public class RestTimeOnlyQueryTests : TimeOnlyQueryTests<DatabaseRest, RestResponse> { }
+public class RpcTimeOnlyQueryTests : TimeOnlyQueryTests<DatabaseRpc, RpcResponse> {
+    public RpcTimeOnlyQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
+public class RestTimeOnlyQueryTests : TimeOnlyQueryTests<DatabaseRest, RestResponse> {
+    public RestTimeOnlyQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
 
 public abstract class TimeOnlyQueryTests<T, U> : InequalityQueryTests<T, U, int, TimeOnly>
     where T : IDatabase<U>, new()
@@ -24,5 +32,8 @@ public abstract class TimeOnlyQueryTests<T, U> : InequalityQueryTests<T, U, int,
         var diff = (maxDate - minDate).TotalMicroseconds();
         var randomeDateTime = minDate.AddMicroseconds((long)(Random.Shared.NextDouble() * diff));
         return TimeOnly.FromDateTime(randomeDateTime);
+    }
+
+    public TimeOnlyQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }

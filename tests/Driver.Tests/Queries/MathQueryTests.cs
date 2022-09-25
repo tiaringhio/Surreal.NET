@@ -1,9 +1,11 @@
-﻿namespace SurrealDB.Driver.Tests.Queries;
+﻿using Xunit.Abstractions;
+
+namespace SurrealDB.Driver.Tests.Queries;
 
 public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<T, U, TKey, TValue>
     where T : IDatabase<U>, new()
     where U : IResponse {
-    
+
     protected abstract string ValueCast();
     protected abstract void AssertEquivalency(TValue a, TValue b);
 
@@ -89,5 +91,8 @@ public abstract class MathQueryTests<T, U, TKey, TValue> : InequalityQueryTests<
         Assert.True(response.TryGetResult(out Result result));
         var value = result.GetObject<TValue>();
         AssertEquivalency(value, expectedResult);
+    }
+
+    protected MathQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }

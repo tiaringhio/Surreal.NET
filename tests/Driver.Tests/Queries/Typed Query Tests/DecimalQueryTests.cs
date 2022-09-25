@@ -1,7 +1,15 @@
+using Xunit.Abstractions;
+
 namespace SurrealDB.Driver.Tests.Queries;
 
-public class RpcDecimalQueryTests : DecimalQueryTests<DatabaseRpc, RpcResponse> { }
-public class RestDecimalQueryTests : DecimalQueryTests<DatabaseRest, RestResponse> { }
+public class RpcDecimalQueryTests : DecimalQueryTests<DatabaseRpc, RpcResponse> {
+    public RpcDecimalQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
+public class RestDecimalQueryTests : DecimalQueryTests<DatabaseRest, RestResponse> {
+    public RestDecimalQueryTests(ITestOutputHelper logger) : base(logger) {
+    }
+}
 
 public abstract class DecimalQueryTests <T, U> : MathQueryTests<T, U, decimal, decimal>
     where T : IDatabase<U>, new()
@@ -25,5 +33,8 @@ public abstract class DecimalQueryTests <T, U> : MathQueryTests<T, U, decimal, d
 
     protected override void AssertEquivalency(decimal a, decimal b) {
         b.Should().BeApproximately(a, 0.1m);
+    }
+
+    protected DecimalQueryTests(ITestOutputHelper logger) : base(logger) {
     }
 }
