@@ -7,9 +7,9 @@
 		<PackageRequireLicenseAcceptance>false</PackageRequireLicenseAcceptance>
 		<Copyright>Copyright (c) ProhetLamb 2022</Copyright>
 
-		<PackageProjectUrl>https://github.com/ProphetLamb/Surreal.Net</PackageProjectUrl>
+		<PackageProjectUrl>https://surreal-net.github.io/Surreal.Net/</PackageProjectUrl>
 		<RepositoryType>git</RepositoryType>
-		<RepositoryUrl>https://github.com/ProphetLamb/Surreal.Net.git</RepositoryUrl>
+		<RepositoryUrl>https://github.com/Surreal-Net/Surreal.Net.git</RepositoryUrl>
 	</PropertyGroup>
 
 </Project>
