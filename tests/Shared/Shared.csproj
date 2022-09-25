@@ -1,7 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
-		<RootNamespace>SurrealDB.Common</RootNamespace>
+		<RootNamespace>SurrealDB.Shared.Tests</RootNamespace>
+		<AssemblyName>SurrealDB.Shared.Tests</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>

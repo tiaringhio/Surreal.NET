@@ -1,3 +1,5 @@
+using SurrealDB.Common;
+
 namespace SurrealDB.Driver.Tests.Roundtrip;
 
 public class RpcRoundTripTests : RoundTripTests<DatabaseRpc> {
@@ -17,7 +19,7 @@ public abstract class RoundTripTests<T>
     [Fact]
     public async Task CreateRoundTripTest() => await DbHandle<T>.WithDatabase(
         async db => {
-            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
             var response = await db.Create(thing, Expected);
 
             Assert.NotNull(response);
@@ -31,7 +33,7 @@ public abstract class RoundTripTests<T>
     [Fact]
     public async Task CreateAndSelectRoundTripTest() => await DbHandle<T>.WithDatabase(
         async db => {
-            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
             await db.Create(thing, Expected);
             var response = await db.Select(thing);
 
@@ -46,7 +48,7 @@ public abstract class RoundTripTests<T>
     [Fact]
     public async Task CreateAndQueryRoundTripTest() => await DbHandle<T>.WithDatabase(
         async db => {
-            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
             await db.Create(thing, Expected);
             string sql = $"SELECT * FROM \"{thing}\"";
             var response = await db.Query(sql, null);
@@ -61,7 +63,7 @@ public abstract class RoundTripTests<T>
 
     [Fact]
     public async Task CreateAndParameterizedQueryRoundTripTest() => await DbHandle<T>.WithDatabase(async db => {
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
         var rsp = await db.Create(thing, Expected);
         rsp.IsOk.Should().BeTrue();
         string sql = "SELECT * FROM $thing";

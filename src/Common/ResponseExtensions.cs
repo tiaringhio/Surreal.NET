@@ -1,12 +1,12 @@
 using System.Text.Json;
 
 namespace SurrealDB.Common;
-public static  class ResponseExtensions {
+internal static  class ResponseExtensions {
     public static JsonElement IntoSingle(this JsonElement root) {
         if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() > 1) {
             return root;
         }
-        
+
         var en = root.EnumerateArray();
         while (en.MoveNext()) {
             JsonElement cur = en.Current;

@@ -1,3 +1,5 @@
+using SurrealDB.Common;
+
 namespace SurrealDB.Driver.Tests.Queries;
 public class RestGeneralQueryTests : GeneralQueryTests<DatabaseRest> { }
 public class RpcGeneralQueryTests : GeneralQueryTests<DatabaseRpc> { }
@@ -82,9 +84,8 @@ GROUP BY country;";
         async db => {
             MathRequestDocument expectedObject = new() { f1 = 1, f2 = 1, };
             var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
-
-            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
-            await db.Create(thing, expectedObject);
+        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        await db.Create(thing, expectedObject);
 
             string sql = "SELECT (f1 + f2) as result FROM $record";
             Dictionary<string, object?> param = new() { ["record"] = thing };
@@ -104,7 +105,7 @@ GROUP BY country;";
             MathRequestDocument expectedObject = new() { f1 = float.Epsilon, f2 = float.Epsilon, };
             var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
 
-            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
             await db.Create(thing, expectedObject);
 
             string sql = "SELECT (f1 + f2) as result FROM $record";
@@ -126,7 +127,7 @@ GROUP BY country;";
             MathRequestDocument expectedObject = new() { f1 = float.MinValue, f2 = float.MaxValue, };
             var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
 
-            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
             await db.Create(thing, expectedObject);
 
             string sql = "SELECT (f1 + f2) as result FROM $record";
@@ -148,7 +149,7 @@ GROUP BY country;";
             MathRequestDocument expectedObject = new() { f1 = float.MaxValue, f2 = float.MinValue, };
             var expectedResult = new MathResultDocument { result = expectedObject.f1 - expectedObject.f2 };
 
-            Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+            Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
             await db.Create(thing, expectedObject);
 
             string sql = "SELECT (f1 - f2) as result FROM $record";

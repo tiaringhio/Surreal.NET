@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>SurrealDB.Core.Tests</RootNamespace>
+		<AssemblyName>SurrealDB.Core.Tests</AssemblyName>
 	</PropertyGroup>
 
 	<ItemGroup>

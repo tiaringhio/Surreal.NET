@@ -78,7 +78,11 @@ public readonly struct RestResponse : IResponse {
     public static async Task<RestResponse> From(
         HttpResponseMessage msg,
         CancellationToken ct = default) {
+        #if NET6_0_OR_GREATER
         Stream stream = await msg.Content.ReadAsStreamAsync(ct);
+        #else
+        Stream stream = await msg.Content.ReadAsStreamAsync();
+        #endif
         if (msg.StatusCode != HttpStatusCode.OK) {
             Error? err = await JsonSerializer.DeserializeAsync<Error>(stream, Constants.JsonOptions, ct);
             return From(err);

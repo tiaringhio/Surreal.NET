@@ -33,7 +33,7 @@ public abstract class DatabaseTestDriver<T>
                 Title = "Founder & CEO",
                 Name = new { First = "Tobie", Last = "Morgan Hitchcock", },
                 Marketing = true,
-                Identifier = Random.Shared.Next(),
+                Identifier = ThreadRng.Shared.Next(),
             }
         );
 
@@ -45,7 +45,7 @@ public abstract class DatabaseTestDriver<T>
                 Title = "Contributor",
                 Name = new { First = "Prophet", Last = "Lamb", },
                 Marketing = false,
-                Identifier = Random.Shared.Next(),
+                Identifier = ThreadRng.Shared.Next(),
             }
         );
 
@@ -66,7 +66,7 @@ public abstract class DatabaseTestDriver<T>
                     Title = "Founder & CEO",
                     Name = new { First = "Tobie", Last = "Hitchcock Morgan", },
                     Marketing = false,
-                    Identifier = Random.Shared.Next(),
+                    Identifier = ThreadRng.Shared.Next(),
                 }
             )
         );

@@ -2,17 +2,22 @@
 
 	<PropertyGroup>
 		<RootNamespace>SurrealDB.Common</RootNamespace>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Common utility for the SurrealDB driver</Description>
 		<PackageVersion>$(SurrealCommonVersion)</PackageVersion>
-		<PackageId>SurrealDB.Common</PackageId>
+		<AssemblyName>SurrealDB.Common</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="../../README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <PackageReference Include="System.Text.Json" Version="6.0.6" />
 	</ItemGroup>
 
 </Project>

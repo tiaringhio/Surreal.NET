@@ -6,7 +6,7 @@
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Service integration into the ASP.NET Core ecosystem.</Description>
 		<PackageVersion>$(SurrealExtensionsServiceVersion)</PackageVersion>
-		<PackageId>SurrealDB.Extensions.Service</PackageId>
+		<AssemblyName>SurrealDB.Extensions.Service</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector websockets</PackageTags>
 	</PropertyGroup>
 
