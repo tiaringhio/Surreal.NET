@@ -15,6 +15,9 @@ defaults:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dotnet: ["3.1.x", "6.0.x"]
 
     steps:
       - name: Initialize Cache
@@ -36,9 +39,7 @@ jobs:
       - name: Initialize .NET SDK
         uses: actions/setup-dotnet@v2
         with:
-          dotnet-version: |
-            3.1.x
-            6.0.x
+          dotnet-version: ${{ matrix.dotnet }}
 
       - name: Checkout
         uses: actions/checkout@v3
