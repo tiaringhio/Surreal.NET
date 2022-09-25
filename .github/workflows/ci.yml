@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet: ["3.1", "6.0"]
+        dotnet: [{ ch: "3.1", ver: "net31" }, { ch: "6.0", ver: "net60" }]
 
     steps:
       - name: Initialize Cache
@@ -40,21 +40,21 @@ jobs:
         run: |
           curl https://dot.net/v1/dotnet-install.sh -o ~/dotnet-install.sh
           chmod +x ~/dotnet-install.sh
-          ~/dotnet-install.sh -c ${{ matrix.dotnet }}
+          ~/dotnet-install.sh -c ${{ matrix.dotnet.ch }}
           dotnet --info
 
       - name: Checkout
         uses: actions/checkout@v3
 
       - name: Restore Dependencies
-        run: dotnet restore
+        run: dotnet restore -f:${{ matrix.dotnet.ver }}
 
       - name: Build Solution
-        run: dotnet build --no-restore
+        run: dotnet build --no-restore -f:${{ matrix.dotnet.ver }}
 
       - name: Execute Unit-Tests
         run: |
-          dotnet test --no-build --verbosity normal --logger "trx;LogFileName=$(pwd)/test-results.trx" --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura\" /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
+          dotnet test --no-build -f:${{ matrix.dotnet.ver }} --verbosity normal --logger "trx;LogFileName=$(pwd)/test-results.trx" --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura\" /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
 
       - name: Test Report
         if: success() || failure()
