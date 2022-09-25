@@ -17,6 +17,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      - name: Initialize Cache
+        uses: actions/cache@v3
+        with:
+          path: ~/.nuget/packages
+          # Look to see if there is a cache hit for the corresponding requirements file
+          key: ${{ runner.os }}-nuget-${{ hashFiles('**/packages.lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-nuget
+
       - name: Initialize SurrealDB
         run: |
           mkdir -p ~/.local/bin
@@ -31,11 +40,6 @@ jobs:
             3.1.x
             6.0.x
 
-      - name: Initialize CodeQL
-        uses: github/codeql-action/init@v2
-        with:
-          languages: csharp
-
       - name: Checkout
         uses: actions/checkout@v3
 
@@ -44,11 +48,6 @@ jobs:
 
       - name: Build Solution
         run: dotnet build --no-restore
-
-      - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@v2
-        with:
-          category: "/language:csharp"
 
       - name: Execute Unit-Tests
         run: |
@@ -64,7 +63,7 @@ jobs:
           fail-on-error: false
 
       - name: Test Coverage
-        if: contains('ref/heads/master', github.ref) && (success() || failure())
+        if: github.ref == 'ref/heads/master'
         uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
