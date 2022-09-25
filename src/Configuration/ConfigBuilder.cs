@@ -1,5 +1,7 @@
 using System.Net;
 
+using SurrealDB.Common;
+
 namespace SurrealDB.Configuration;
 
 /// <summary>
@@ -116,11 +118,11 @@ public static class ConfigBuilder {
             in ReadOnlySpan<char> endpoint,
             Func<IPEndPoint>? fallback = default) {
             if (fallback is null) {
-                Endpoint = IPEndPoint.Parse(endpoint);
+                Endpoint = NetHelper.ParseEndpoint(endpoint);
                 return this;
             }
 
-            if (!IPEndPoint.TryParse(endpoint, out IPEndPoint? ip)) {
+            if (!NetHelper.TryParseEndpoint(endpoint, out IPEndPoint? ip)) {
                 ip = fallback();
             }
 

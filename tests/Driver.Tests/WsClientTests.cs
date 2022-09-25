@@ -8,7 +8,7 @@ public class WsClientTests
 
     public WsClientTests() {
     }
-    
+
     public readonly WsClient Client = new();
 
     [Fact]
@@ -29,7 +29,7 @@ public class WsClientTests
                 new{ user = TestHelper.Default.Username, pass = TestHelper.Default.Password }
             }
         });
-        
+
         (rsp.error == default).Should().BeTrue();
         rsp.result.ValueKind.Should().NotBe(JsonValueKind.Undefined);
     }
@@ -47,7 +47,7 @@ public class WsClientTests
                 TestHelper.Default.Username!
             }
         });
-        
+
         (rsp.error == default).Should().BeTrue();
         rsp.result.ValueKind.Should().NotBe(JsonValueKind.Undefined);
     }
@@ -66,7 +66,7 @@ public class WsClientTests
                 Last = "Morgan Hitchcock",
             },
             Marketing = true,
-            Identifier = Random.Shared.Next(),
+            Identifier = ThreadRng.Shared.Next(),
         };
 
         var rsp = await Client.Send(new()

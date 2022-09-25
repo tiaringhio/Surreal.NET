@@ -7,12 +7,16 @@
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Configuration for the SurrealDB driver</Description>
 		<PackageVersion>$(SurrealConfigVersion)</PackageVersion>
-		<PackageId>SurrealDB.Configuration</PackageId>
+		<AssemblyName>SurrealDB.Configuration</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<None Include="../../README.md" Pack="true" PackagePath="\" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
 
 </Project>

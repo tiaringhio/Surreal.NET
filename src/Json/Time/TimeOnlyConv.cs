@@ -34,6 +34,7 @@ public sealed class TimeOnlyConv : JsonConverter<TimeOnly> {
 
     public static bool TryParse(string? s, out TimeOnly value) {
         if (String.IsNullOrEmpty(s)) {
+            value = default;
             return false;
         }
         Result<TimeOnly> res = TimeParsers.IsoTime(new TextSpan(s));

@@ -2,8 +2,6 @@
 using System.Text;
 using System.Text.Json;
 
-using Rustic;
-
 using SurrealDB.Abstractions;
 using SurrealDB.Json;
 using SurrealDB.Models;
@@ -273,7 +271,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable 
     private string FormatVarsSlow(
         string template,
         IReadOnlyDictionary<string, object?>? vars) {
-        using StrBuilder result = template.Length > 512 ? new(template.Length) : new(stackalloc char[template.Length]);
+        using ValueStringBuilder result = template.Length > 512 ? new(template.Length) : new(stackalloc char[template.Length]);
         int i = 0;
         while (i < template.Length) {
             if (template[i] != '$') {

@@ -1,9 +1,8 @@
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
+using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-
-using Rustic;
 
 namespace SurrealDB.Models;
 
@@ -18,7 +17,7 @@ public readonly record struct Thing {
     public const char CHAR_SEP = ':';
     public const char CHAR_PRE = '⟨';
     public const char CHAR_SUF = '⟩';
-    
+
     private readonly int _split;
 
     public Thing(
@@ -27,7 +26,7 @@ public readonly record struct Thing {
         _split = split;
         Inner = inner;
     }
-    
+
     /// <summary>
     /// Returns the underlying string.
     /// </summary>
@@ -77,7 +76,7 @@ public readonly record struct Thing {
     /// <returns></returns>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Thing Escape() {
-        return IsKeyEscaped ? this : new(_split, $"{TableAndSeparator}{CHAR_PRE}{Key}{CHAR_SUF}");
+        return IsKeyEscaped ? this : new(_split, $"{TableAndSeparator.ToString()}{CHAR_PRE}{Key.ToString()}{CHAR_SUF}");
     }
 
     /// <summary>
@@ -86,7 +85,7 @@ public readonly record struct Thing {
     /// <returns></returns>
     [Pure, MethodImpl(MethodImplOptions.AggressiveInlining)]
     public Thing Unescape() {
-        return TryUnescapeKey(out ReadOnlySpan<char> key) ? new(_split, $"{TableAndSeparator}{key}") : this;
+        return TryUnescapeKey(out ReadOnlySpan<char> key) ? new(_split, $"{TableAndSeparator.ToString()}{key.ToString()}") : this;
     }
 
     [Pure]
@@ -107,7 +106,7 @@ public readonly record struct Thing {
     public static Thing From(
         in ReadOnlySpan<char> table,
         in ReadOnlySpan<char> key) {
-        return From($"{table}:{key}");
+        return From($"{table.ToString()}:{key.ToString()}");
     }
 
     public Thing WithTable(in ReadOnlySpan<char> table) {
@@ -145,7 +144,7 @@ public readonly record struct Thing {
         }
 
         var len = Length;
-        using StrBuilder result = len > 512 ? new(len) : new(stackalloc char[len]);
+        using ValueStringBuilder result = len > 512 ? new(len) : new(stackalloc char[len]);
         if (!Table.IsEmpty) {
             result.Append(Uri.EscapeDataString(Table.ToString()));
         }
@@ -179,7 +178,7 @@ public readonly record struct Thing {
             return reader.GetString();
         }
 
-        public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options) { 
+        public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options) {
             writer.WriteStringValue((string)EscapeComplexCharactersIfRequired(in value));
         }
 

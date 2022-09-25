@@ -1,3 +1,5 @@
+using SurrealDB.Common;
+
 namespace SurrealDB.Driver.Tests.Queries;
 public class RestGeneralQueryTests : GeneralQueryTests<DatabaseRest, RestResponse> { }
 public class RpcGeneralQueryTests : GeneralQueryTests<DatabaseRpc, RpcResponse> { }
@@ -86,7 +88,7 @@ GROUP BY country;";
         };
         var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
 
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
 
         string sql = "SELECT (f1 + f2) as result FROM $record";
@@ -110,7 +112,7 @@ GROUP BY country;";
         };
         var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
 
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
 
         string sql = "SELECT (f1 + f2) as result FROM $record";
@@ -135,7 +137,7 @@ GROUP BY country;";
         };
         var expectedResult = new MathResultDocument { result = expectedObject.f1 + expectedObject.f2 };
 
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
 
         string sql = "SELECT (f1 + f2) as result FROM $record";
@@ -160,7 +162,7 @@ GROUP BY country;";
         };
         var expectedResult = new MathResultDocument { result = expectedObject.f1 - expectedObject.f2 };
 
-        Thing thing = Thing.From("object", Random.Shared.Next().ToString());
+        Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
         await Database.Create(thing, expectedObject);
 
         string sql = "SELECT (f1 - f2) as result FROM $record";

@@ -33,6 +33,7 @@ public sealed class DateOnlyConv : JsonConverter<DateOnly> {
     }
     public static bool TryParse(string? s, out DateOnly value) {
         if (String.IsNullOrEmpty(s)) {
+            value = default;
             return false;
         }
         Result<DateOnly> res = TimeParsers.IsoDate(new TextSpan(s));

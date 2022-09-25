@@ -5,6 +5,7 @@ using System.Text.Json.Serialization;
 
 using Microsoft.IO;
 
+using SurrealDB.Common;
 using SurrealDB.Json;
 
 namespace SurrealDB.Ws;
@@ -31,7 +32,7 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
     /// </summary>
     public static string GetRandomId(int length) {
         Span<byte> buf = stackalloc byte[length];
-        Random.Shared.NextBytes(buf);
+        ThreadRng.Shared.NextBytes(buf);
         return Convert.ToBase64String(buf);
     }
 
@@ -90,9 +91,9 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
         req.parameters ??= EmptyList;
 
         await using RecyclableMemoryStream stream = new(s_manager.Value);
-        
+
         await JsonSerializer.SerializeAsync(stream, req, Constants.JsonOptions, ct);
-        // Now Position = Length = EndOfMessage 
+        // Now Position = Length = EndOfMessage
         // Write the buffer to the websocket
         stream.Position = 0;
         await SendStream(_ws!, stream, ct);
@@ -139,7 +140,7 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
             throw new InvalidOperationException("The connection is already open");
         }
     }
-    
+
     public record struct Request(
         string? id,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
@@ -147,26 +148,26 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
         string? method,
         [property: JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
         List<object?>? parameters);
-    
-    
+
+
     public readonly record struct Response(
         string? id,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
         Error error,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
         JsonElement result);
-    
+
     public readonly record struct Error(
         int code,
         [property: JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
         string? message);
-    
-    
+
+
     public record struct Notify(
         string? id,
         string? method,
         [property: JsonPropertyName("params"), JsonIgnore(Condition = JsonIgnoreCondition.WhenWritingDefault),]
         List<object?>? parameters);
-    
-    
+
+
 }
