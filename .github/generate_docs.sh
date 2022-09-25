@@ -3,15 +3,15 @@
 
 # list of all projects
 declare -a projs=(
-  "Abstractions"
-  "Common"
-  "Configuration"
-  "Driver/Rest"
-  "Driver/Rpc"
-  "Extensions/Service"
-  "Json"
-  "Models"
-  "Ws"
+  "SurrealDB.Abstractions"
+  "SurrealDB.Common"
+  "SurrealDB.Configuration"
+  "SurrealDB.Driver.Rest"
+  "SurrealDB.Driver.Rpc"
+  "SurrealDB.Extensions.Service"
+  "SurrealDB.Json"
+  "SurrealDB.Models"
+  "SurrealDB.Ws"
 )
 
 cp ./README.md ./docs/index.md
@@ -21,12 +21,9 @@ mkdir 'tmp'
 pushd 'tmp' || exit 1
 
 for val in "${projs[@]}"; do
-  stuff=($(echo $val | tr "/" "\n"))
-  last=${stuff[${#stuff[@]} - 1]}
-
-  extract "../publish/$last.pdb" meta.json src/
+  extract "../publish/$val.pdb" meta.json src/
   mapper meta.json src/ symbols.json
-  XmlDocMdSymbols "../publish/$last.dll" ../docs/ --source https://github.com/ProphetLamb/Surreal.Net/tree/master/ --symbols symbols.json
+  XmlDocMdSymbols "../publish/$val.dll" ../docs/ --source https://github.com/ProphetLamb/Surreal.Net/tree/master/ --symbols symbols.json
 done
 
 popd || exit 1
