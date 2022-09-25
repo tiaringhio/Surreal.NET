@@ -12,6 +12,7 @@ namespace SurrealDB.Driver.Rest;
 /// <summary>
 ///     The response from a query to the Surreal database via rest.
 /// </summary>
+[DebuggerDisplay("{ToString},nq")]
 public readonly struct RestResponse : IResponse {
     private readonly string? _status;
     private readonly string? _detail;
@@ -72,7 +73,7 @@ public readonly struct RestResponse : IResponse {
     }
 
     /// <summary>
-    /// Parses a <see cref="HttpResponseMessage"/> containing JSON to a <see cref="RestResponse"/>. 
+    /// Parses a <see cref="HttpResponseMessage"/> containing JSON to a <see cref="RestResponse"/>.
     /// </summary>
     public static async Task<RestResponse> From(
         HttpResponseMessage msg,
@@ -82,12 +83,12 @@ public readonly struct RestResponse : IResponse {
             Error? err = await JsonSerializer.DeserializeAsync<Error>(stream, Constants.JsonOptions, ct);
             return From(err);
         }
-        
+
         if (await PeekIsEmpty(stream, ct)) {
             // Success and empty message -> invalid json
             return EmptyOk;
         }
-        
+
         List<Success>? docs = await JsonSerializer.DeserializeAsync<List<Success>>(stream, Constants.JsonOptions, ct);
         Success doc = (docs?.FirstOrDefault(e => e.result.ValueKind != JsonValueKind.Null)).GetValueOrDefault(default);
 
@@ -95,7 +96,7 @@ public readonly struct RestResponse : IResponse {
     }
 
     /// <summary>
-    /// Attempts to peek the next byte of the stream. 
+    /// Attempts to peek the next byte of the stream.
     /// </summary>
     /// <remarks>
     /// Resets the stream to the original position.
@@ -124,6 +125,11 @@ public readonly struct RestResponse : IResponse {
         }
         JsonElement e = success.result.IntoSingle();
         return new(success.time, success.status, null, null, e);
+    }
+
+    public override string ToString() {
+        string body = TryGetResult(out Result res, out Models.Error err) ? res.ToString() : err.ToString();
+        return $"{_status}: {body}";
     }
 
     private readonly record struct Error(
