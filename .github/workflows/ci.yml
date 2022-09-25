@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        dotnet: ["3.1.x", "6.0.x"]
+        dotnet: ["3.1", "6.0"]
 
     steps:
       - name: Initialize Cache
@@ -37,9 +37,11 @@ jobs:
           export PATH="$HOME/.local/bin/:$PATH"
 
       - name: Initialize .NET SDK
-        uses: actions/setup-dotnet@v2
-        with:
-          dotnet-version: ${{ matrix.dotnet }}
+        run: |
+          curl https://dot.net/v1/dotnet-install.sh -o dotnet-install.sh
+          chmod +x dotnet-install.sh
+          dotnet-install.sh -c ${{ matrix.dotnet }}
+          dotnet --info
 
       - name: Checkout
         uses: actions/checkout@v3
