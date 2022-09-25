@@ -44,7 +44,7 @@ Surreal .NET is a database driver for [SurrealDB](https://surrealdb.com). The co
 
 ### Documentation
 
-The API Documentation is available [**here**](https://prophetlamb.github.io/Surreal.Net/)
+The API Documentation is available [**here**](https://surreal-net.github.io/Surreal.Net/)
 
 ## Quick-start
 
