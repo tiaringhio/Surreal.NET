@@ -7,7 +7,7 @@
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Abstractions for the SurrealDB driver</Description>
 		<PackageVersion>$(SurrealAbstractionsVersion)</PackageVersion>
-		<PackageId>SurrealDB.Abstractions</PackageId>
+		<AssemblyName>SurrealDB.Abstractions</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector abstractions</PackageTags>
 	</PropertyGroup>
 

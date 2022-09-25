@@ -7,7 +7,7 @@
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Models for the SurrealDB driver</Description>
 		<PackageVersion>$(SurrealModelsVersion)</PackageVersion>
-		<PackageId>SurrealDB.Models</PackageId>
+		<AssemblyName>SurrealDB.Models</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
 

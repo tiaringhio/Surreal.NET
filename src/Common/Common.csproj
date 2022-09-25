@@ -8,7 +8,7 @@
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Common utility for the SurrealDB driver</Description>
 		<PackageVersion>$(SurrealCommonVersion)</PackageVersion>
-		<PackageId>SurrealDB.Common</PackageId>
+		<AssemblyName>SurrealDB.Common</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
 

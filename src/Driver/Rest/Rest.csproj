@@ -7,7 +7,7 @@
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>REST based database driver for SurrealDB</Description>
 		<PackageVersion>$(SurrealDriverRestVersion)</PackageVersion>
-		<PackageId>SurrealDB.Driver.Rest</PackageId>
+		<AssemblyName>SurrealDB.Driver.Rest</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector rest</PackageTags>
 	</PropertyGroup>
 

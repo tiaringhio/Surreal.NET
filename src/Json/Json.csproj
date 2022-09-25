@@ -7,7 +7,7 @@
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>JSON utility for the SurrealDB driver</Description>
 		<PackageVersion>$(SurrealJsonVersion)</PackageVersion>
-		<PackageId>SurrealDB.Json</PackageId>
+		<AssemblyName>SurrealDB.Json</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
 
