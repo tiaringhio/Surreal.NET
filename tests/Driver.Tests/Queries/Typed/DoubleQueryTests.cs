@@ -25,7 +25,7 @@ public abstract class DoubleQueryTests <T> : MathQueryTests<T, double, double>
     }
 
     private static double RandomDouble() {
-        return Random.Shared.NextDouble();
+        return ThreadRng.Shared.NextDouble();
     }
 
     protected override void AssertEquivalency(double a, double b) {

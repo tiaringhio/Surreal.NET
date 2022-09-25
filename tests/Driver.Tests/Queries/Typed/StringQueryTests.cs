@@ -23,7 +23,7 @@ public abstract class StringQueryTests<T> : EqualityQueryTests<T, string, string
     private static string RandomString(int length = 10) {
         const string chars = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
         return new string(Enumerable.Repeat(chars, length)
-           .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
+           .Select(s => s[ThreadRng.Shared.Next(s.Length)]).ToArray());
     }
 
     public StringQueryTests(ITestOutputHelper logger) : base(logger) {

@@ -25,7 +25,7 @@ public abstract class FloatQueryTests <T> : MathQueryTests<T, float, float>
     }
 
     private static float RandomFloat() {
-        return Random.Shared.NextSingle();
+        return ThreadRng.Shared.NextSingle();
     }
 
     protected override void AssertEquivalency(float a, float b) {

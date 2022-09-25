@@ -17,7 +17,7 @@ public abstract class IntQueryTests <T> : MathQueryTests<T, int, int>
     }
 
     protected override int RandomValue() {
-        return Random.Shared.Next(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
+        return ThreadRng.Shared.Next(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -25,7 +25,7 @@ public abstract class IntQueryTests <T> : MathQueryTests<T, int, int>
     }
 
     private static int RandomInt() {
-        return Random.Shared.Next();
+        return ThreadRng.Shared.Next();
     }
 
     protected override void AssertEquivalency(int a, int b) {

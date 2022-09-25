@@ -25,7 +25,7 @@ public abstract class DecimalQueryTests <T> : MathQueryTests<T, decimal, decimal
     }
 
     private static decimal RandomDouble() {
-        return (decimal)Random.Shared.NextDouble();
+        return (decimal)ThreadRng.Shared.NextDouble();
     }
 
     protected override void AssertEquivalency(decimal a, decimal b) {

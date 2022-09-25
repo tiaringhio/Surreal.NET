@@ -20,14 +20,14 @@ public abstract class TimeOnlyQueryTests<T> : InequalityQueryTests<T, int, TimeO
     }
 
     private static int RandomInt() {
-        return Random.Shared.Next();
+        return ThreadRng.Shared.Next();
     }
 
     private static TimeOnly RandomTimeOnly() {
         var minDate = new DateTime(2000, 1, 1, 0, 0, 0, DateTimeKind.Utc);
         var maxDate = new DateTime(2000, 1, 2, 0, 0, 0, DateTimeKind.Utc);
         var diff = (maxDate - minDate).TotalMicroseconds();
-        var randomeDateTime = minDate.AddMicroseconds((long)(Random.Shared.NextDouble() * diff));
+        var randomeDateTime = minDate.AddMicroseconds((long)(ThreadRng.Shared.NextDouble() * diff));
         return TimeOnly.FromDateTime(randomeDateTime);
     }
 

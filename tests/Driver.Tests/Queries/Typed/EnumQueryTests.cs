@@ -21,12 +21,12 @@ public abstract class EnumQueryTests<T> : EqualityQueryTests<T, int, StandardEnu
     }
 
     private static int RandomInt() {
-        return Random.Shared.Next();
+        return ThreadRng.Shared.Next();
     }
 
     private static StandardEnum RandomEnum() {
-        var enumValues = Enum.GetValues<StandardEnum>();
-        var index = Random.Shared.Next(0, enumValues.Length);
+        var enumValues = EnumHelper.GetValues<StandardEnum>();
+        var index = ThreadRng.Shared.Next(0, enumValues.Length);
         return enumValues[index];
     }
 

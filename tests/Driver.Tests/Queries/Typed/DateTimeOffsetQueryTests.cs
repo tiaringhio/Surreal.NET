@@ -20,14 +20,14 @@ public abstract class DateTimeOffsetQueryTests<T> : InequalityQueryTests<T, int,
     }
 
     private static int RandomInt() {
-        return Random.Shared.Next();
+        return ThreadRng.Shared.Next();
     }
 
     private static DateTimeOffset RandomDateTimeOffset() {
         var minDate = new DateTimeOffset(2000, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var maxDate = new DateTimeOffset(2020, 1, 1, 0, 0, 0, TimeSpan.Zero);
         var diff = (maxDate - minDate).TotalMicroseconds();
-        var randomeDateTime = minDate.AddMicroseconds((long)(Random.Shared.NextDouble() * diff));
+        var randomeDateTime = minDate.AddMicroseconds((long)(ThreadRng.Shared.NextDouble() * diff));
         return randomeDateTime;
     }
 

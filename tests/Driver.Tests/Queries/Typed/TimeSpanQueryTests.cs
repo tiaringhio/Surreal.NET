@@ -20,7 +20,7 @@ public abstract class TimeSpanQueryTests<T> : InequalityQueryTests<T, int, TimeS
     }
 
     private static int RandomInt() {
-        return Random.Shared.Next();
+        return ThreadRng.Shared.Next();
     }
 
     private static TimeSpan RandomTimeOnly() {

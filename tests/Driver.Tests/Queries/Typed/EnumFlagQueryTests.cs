@@ -21,12 +21,12 @@ public abstract class EnumFlagQueryTests<T> : EqualityQueryTests<T, int, FlagsEn
     }
 
     private static int RandomInt() {
-        return Random.Shared.Next();
+        return ThreadRng.Shared.Next();
     }
 
     private static FlagsEnum RandomEnum() {
-        var enumValues = Enum.GetValues<FlagsEnum>();
-        var index = Random.Shared.Next(0, enumValues.Length);
+        var enumValues = EnumHelper.GetValues<FlagsEnum>();
+        var index = ThreadRng.Shared.Next(0, enumValues.Length);
         return enumValues[index];
     }
 

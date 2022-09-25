@@ -17,7 +17,7 @@ public abstract class LongQueryTests <T> : MathQueryTests<T, long, long>
     }
 
     protected override long RandomValue() {
-        return Random.Shared.NextInt64(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
+        return ThreadRng.Shared.NextInt64(-10000, 10000); // Can't go too high otherwise the maths operations might overflow
     }
 
     protected override string ValueCast() {
@@ -25,7 +25,7 @@ public abstract class LongQueryTests <T> : MathQueryTests<T, long, long>
     }
 
     private static long RandomLong() {
-        return Random.Shared.NextInt64();
+        return ThreadRng.Shared.NextInt64();
     }
 
     protected override void AssertEquivalency(long a, long b) {
