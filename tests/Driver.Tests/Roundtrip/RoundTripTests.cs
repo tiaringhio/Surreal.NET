@@ -173,8 +173,8 @@ public class RoundTripObject {
     public FlagsEnum UndefinedFlagsEnum { get; set; } = (FlagsEnum)(1 << 8);
     public FlagsEnum? NullFlagsEnum { get; set; } = null;
 
-     public TestObject<int, int>? TestObject { get; set; } = new TestObject<int, int>(-100, 1);
-     public TestObject<int, int>? NullTestObject { get; set; } = null;
+    public TestObject<int, int>? TestObject { get; set; } = new TestObject<int, int>(-100, 1);
+    public TestObject<int, int>? NullTestObject { get; set; } = null;
 
     public int[] IntArray { get; set; } = new [] {-100, 1, 0, -1, 100};
     public int[]? NullIntArray { get; set; } = null;

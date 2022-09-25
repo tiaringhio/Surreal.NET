@@ -1,4 +1,6 @@
-﻿namespace SurrealDB.Common;
+using System.Text.Json.Serialization;
+
+namespace SurrealDB.Common;
 
 public class TestObject<TKey, TValue> {
     [JsonConstructor]
