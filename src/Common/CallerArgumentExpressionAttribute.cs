@@ -1,3 +1,4 @@
+// ReSharper disable CheckNamespace
 #if !(NET6_0 || NET_5_0 || NET5_0_OR_GREATER || NETCOREAPP3_0_OR_GREATER)
 
 #pragma warning disable IDE0130
@@ -6,7 +7,7 @@ namespace System.Runtime.CompilerServices;
 
 /// <summary>Indicates that a parameter captures the expression passed for another parameter as a string.</summary>
 [AttributeUsage(AttributeTargets.Parameter, AllowMultiple = false, Inherited = false)]
-public sealed class CallerArgumentExpressionAttribute : Attribute
+internal sealed class CallerArgumentExpressionAttribute : Attribute
 {
     /// <summary>Initializes a new instance of the <see cref="CallerArgumentExpressionAttribute"/> class.</summary>
     /// <param name="parameterName">The name of the parameter whose expression should be captured as a string.</param>

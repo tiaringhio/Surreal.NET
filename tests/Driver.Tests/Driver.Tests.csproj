@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>SurrealDB.Driver.Tests</RootNamespace>
+		<AssemblyName>SurrealDB.Driver.Tests</AssemblyName>
 	</PropertyGroup>
 	
 	<ItemGroup>

@@ -5,6 +5,8 @@ using Superpower;
 using Superpower.Model;
 using Superpower.Parsers;
 
+using SurrealDB.Common;
+
 namespace SurrealDB.Json.Time;
 
 public static class TimeParsers {

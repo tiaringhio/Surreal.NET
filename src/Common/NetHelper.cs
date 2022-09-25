@@ -2,14 +2,14 @@ using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Net;
 
-namespace SurrealDB.Common; 
+namespace SurrealDB.Common;
 
-public class NetHelper {
+internal class NetHelper {
     /// <summary>
     /// Specifies the maximum acceptable value for the <see cref='System.Net.IPEndPoint.Port'/> property.
     /// </summary>
     public const int MaxPort = 0x0000FFFF;
-    
+
     public static bool TryParseEndpoint(ReadOnlySpan<char> s, [NotNullWhen(true)] out IPEndPoint? result)
     {
 #if NET6_0_OR_GREATER
@@ -48,7 +48,7 @@ public class NetHelper {
         return false;
 #endif
     }
-    
+
     public static IPEndPoint ParseEndpoint(ReadOnlySpan<char> s)
     {
 #if NET6_0_OR_GREATER
