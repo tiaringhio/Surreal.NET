@@ -29,6 +29,6 @@ jobs:
         uses: softprops/action-gh-release@v1
         if: startsWith(github.ref, 'refs/tags/')
         with:
-          files: $(pwd)/publish/*.nupkg
+          files: ./publish/*.nupkg
       - name: Publish
         run: dotnet nuget push $(pwd)/publish/*.nupkg --api-key ${{ secrets.NUGET_API_KEY }} --source https://api.nuget.org/v3/index.json
