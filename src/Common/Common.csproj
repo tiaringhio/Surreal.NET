@@ -17,9 +17,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="System.Text.Json">
-	    <HintPath>..\..\..\..\.nuget\packages\system.text.json\6.0.1\lib\netstandard2.0\System.Text.Json.dll</HintPath>
-	  </Reference>
+	  <PackageReference Include="System.Text.Json" Version="6.0.6" />
 	</ItemGroup>
 
 </Project>
