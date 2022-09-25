@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 using SurrealDB.Json.Numbers;
 using SurrealDB.Json.Time;
 
-namespace SurrealDB.Json; 
+namespace SurrealDB.Json;
 
 /// <summary>
 /// Collection of repeatedly used constants.
@@ -34,7 +34,7 @@ public static class Constants {
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             IgnoreReadOnlyFields = false,
             UnknownTypeHandling = JsonUnknownTypeHandling.JsonElement,
-            Converters = { new DecimalConv(), new DoubleConv(), new SingleConv(), new DateTimeConv() , new DateTimeOffsetConv(), new TimeSpanConv(), new TimeOnlyConv(), new DateOnlyConv() },
+            Converters = { new JsonStringEnumConverter(), new DecimalConv(), new DoubleConv(), new SingleConv(), new DateTimeConv() , new DateTimeOffsetConv(), new TimeSpanConv(), new TimeOnlyConv(), new DateOnlyConv() },
         };
     }
 }
