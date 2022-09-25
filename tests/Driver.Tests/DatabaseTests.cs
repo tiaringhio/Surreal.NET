@@ -11,25 +11,23 @@ public sealed class RestDatabaseTest : DatabaseTestDriver<DatabaseRest> {
 [Collection("SurrealDBRequired")]
 public abstract class DatabaseTestDriver<T>
     : DriverBase<T>
-    where T : IDatabase, new() {
+    where T : IDatabase, IDisposable, new() {
 
-    [Fact]
-    protected override async Task TestSuite() {
-        await Database.Open(TestHelper.Default);
-        Database.GetConfig().Should().BeEquivalentTo(TestHelper.Default);
+    protected override async Task Run(T db) {
+        db.GetConfig().Should().BeEquivalentTo(TestHelper.Default);
 
-        IResponse useResp = await Database.Use(TestHelper.Database, TestHelper.Namespace);
+        IResponse useResp = await db.Use(TestHelper.Database, TestHelper.Namespace);
         AssertOk(useResp);
-        IResponse infoResp = await Database.Info();
+        IResponse infoResp = await db.Info();
         AssertOk(infoResp);
 
-        IResponse signInStatus = await Database.Signin(new() { Username = TestHelper.User, Password = TestHelper.Pass, });
+        IResponse signInStatus = await db.Signin(new() { Username = TestHelper.User, Password = TestHelper.Pass, });
 
         AssertOk(signInStatus);
-        //AssertOk(await Database.Invalidate());
+        //AssertOk(await db.Invalidate());
 
         (string id1, string id2) = ("id1", "id2");
-        IResponse res1 = await Database.Create(
+        IResponse res1 = await db.Create(
             "person",
             new {
                 Title = "Founder & CEO",
@@ -41,7 +39,7 @@ public abstract class DatabaseTestDriver<T>
 
         AssertOk(res1);
 
-        IResponse res2 = await Database.Create(
+        IResponse res2 = await db.Create(
             "person",
             new {
                 Title = "Contributor",
@@ -54,15 +52,15 @@ public abstract class DatabaseTestDriver<T>
         AssertOk(res2);
 
         Thing thing2 = Thing.From("person", id2);
-        AssertOk(await Database.Update(thing2, new { Marketing = false, }));
+        AssertOk(await db.Update(thing2, new { Marketing = false, }));
 
-        AssertOk(await Database.Select(thing2));
+        AssertOk(await db.Select(thing2));
 
-        AssertOk(await Database.Delete(thing2));
+        AssertOk(await db.Delete(thing2));
 
         Thing thing1 = Thing.From("person", id1);
         AssertOk(
-            await Database.Change(
+            await db.Change(
                 thing1,
                 new {
                     Title = "Founder & CEO",
@@ -74,19 +72,19 @@ public abstract class DatabaseTestDriver<T>
         );
 
         string newTitle = "Founder & CEO & Ruler of the known free World";
-        IResponse modifyResp = await Database.Modify(thing1, new object[] { new { op = "replace", path = "/Title", value = newTitle, }, });
+        IResponse modifyResp = await db.Modify(thing1, new object[] { new { op = "replace", path = "/Title", value = newTitle, }, });
         AssertOk(modifyResp);
 
-        AssertOk(await Database.Let("tbl", "person"));
+        AssertOk(await db.Let("tbl", "person"));
 
-        IResponse queryResp = await Database.Query(
+        IResponse queryResp = await db.Query(
             "SELECT $props FROM $tbl WHERE title = $title",
             new Dictionary<string, object?> { ["props"] = "title, identifier", ["tbl"] = "person", ["title"] = newTitle, }
         );
 
         AssertOk(queryResp);
 
-        await Database.Close();
+        await db.Close();
     }
 }
 
@@ -95,28 +93,24 @@ public abstract class DatabaseTestDriver<T>
 /// </summary>
 [Collection("SurrealDBRequired")]
 public abstract class DriverBase<T>
-    where T : new() {
+    where T : IDatabase, IDisposable, new() {
 
     TestDatabaseFixture? fixture;
 
-    public DriverBase() {
-        Database = new();
+    [Fact]
+    public async Task TestSuite() {
+        using var handle = await DbHandle<T>.Create();
+        await Run(handle.Database);
     }
 
-    public T Database { get; }
-
-    public async Task Execute() {
-        await TestSuite();
-    }
-
-    protected abstract Task TestSuite();
+    protected abstract Task Run(T db);
 
     [DebuggerStepThrough]
     protected void AssertOk(
         in IResponse rpcResponse,
         [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
-        if (!rpcResponse.TryGetError(out SurrealError err)) {
+        if (!rpcResponse.TryGetError(out Error err)) {
             return;
         }
 

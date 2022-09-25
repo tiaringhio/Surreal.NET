@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
@@ -10,12 +11,13 @@ namespace SurrealDB.Driver.Rpc;
 /// <summary>
 ///     The response from a query to the Surreal database via rpc.
 /// </summary>
+[DebuggerDisplay("{ToString()},nq")]
 public readonly struct RpcResponse : IResponse {
-    private readonly SurrealError _error;
+    private readonly Error _error;
 
 public RpcResponse(
             string id,
-            SurrealError error,
+            Error error,
             Result result) {
         Id = id;
         _error = error;
@@ -28,9 +30,9 @@ public RpcResponse(
     public bool IsError => _error.Code != 0;
 
     public Result UncheckedResult { get; }
-    public SurrealError UncheckedError => _error;
+    public Error UncheckedError => _error;
 
-    public bool TryGetError(out SurrealError error) {
+    public bool TryGetError(out Error error) {
         error = _error;
         return IsError;
     }
@@ -42,7 +44,7 @@ public RpcResponse(
 
     public bool TryGetResult(
         out Result result,
-        out SurrealError error) {
+        out Error error) {
         result = UncheckedResult;
         error = _error;
         return IsOk;
@@ -50,7 +52,7 @@ public RpcResponse(
 
     public void Deconstruct(
         out Result result,
-        out SurrealError error) {
+        out Error error) {
         (result, error) = (UncheckedResult, _error);
     }
 
@@ -65,7 +67,7 @@ public static RpcResponse From(in WsClient.Response rsp) {
 
         var result = UnpackFromStatusDocument(rsp.result);
         result = result.IntoSingle();
-        
+
         // SurrealDB likes to returns a list of one result. Unbox this response, to conform with the REST client
         Result res = Result.From(result);
         return new(rsp.id, default, res);
@@ -118,7 +120,13 @@ public static RpcResponse From(in WsClient.Response rsp) {
         // but was missing some of them
         return root;
     }
-    
+
+    public override string ToString() {
+        string body = TryGetResult(out Result res, out Error err) ? res.ToString() : err.ToString();
+        string status = IsError ? "ERR" : "OK";
+        return $"{status}: {body}";
+    }
+
     [DoesNotReturn]
     private static void ThrowIdMissing() {
         throw new InvalidOperationException("Response does not have an id.");

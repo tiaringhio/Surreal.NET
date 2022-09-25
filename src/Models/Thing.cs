@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Diagnostics.Contracts;
 using System.Runtime.CompilerServices;
 using System.Text;
@@ -13,6 +14,7 @@ namespace SurrealDB.Models;
 ///     `table_name:record_id`
 /// </remarks>
 [JsonConverter(typeof(Converter))]
+[DebuggerDisplay("{Inner},nq")]
 public readonly record struct Thing {
     public const char CHAR_SEP = ':';
     public const char CHAR_PRE = '⟨';

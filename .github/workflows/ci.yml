@@ -55,7 +55,7 @@ jobs:
           dotnet test --no-build --verbosity normal --logger "trx;LogFileName=$(pwd)/test-results.trx" --collect:"XPlat Code Coverage" /p:CollectCoverage=true /p:CoverletOutputFormat=\"cobertura\" /p:CoverletOutput="$(pwd)/" /p:UseSourceLink=true
 
       - name: Test Report
-        if: contains('ref/heads/master', github.ref) && (success() || failure())
+        if: success() || failure()
         uses: phoenix-actions/test-reporting@v8
         with:
           name: unittest-results

@@ -1,6 +1,6 @@
 namespace SurrealDB.Common;
 
-internal static class TimeZoneHelper {
+internal static class TimeHelper {
     /// <summary>
     /// Converts the <see cref="DateTime"/> to a <see cref="DateTimeOffset"/> by adding a offset.
     /// </summary>

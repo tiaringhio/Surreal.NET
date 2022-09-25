@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace SurrealDB.Models;
 
 public interface IResponse {
@@ -5,11 +7,11 @@ public interface IResponse {
 
     public bool IsError { get; }
 
-    public bool TryGetError(out SurrealError error);
+    public bool TryGetError([NotNullWhen(true)] out Error error);
 
-    public bool TryGetResult(out Result result);
+    public bool TryGetResult([NotNullWhen(true)] out Result result);
 
     public bool TryGetResult(
         out Result result,
-        out SurrealError error);
+        out Error error);
 }

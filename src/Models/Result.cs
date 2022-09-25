@@ -10,6 +10,7 @@ namespace SurrealDB.Models;
 /// <summary>
 ///     The result of a successful query to the Surreal database.
 /// </summary>
+[DebuggerDisplay("{Inner},nq")]
 public readonly struct Result : IEquatable<Result>, IComparable<Result> {
     private readonly JsonElement _json;
     private readonly object? _sentinelOrValue;
@@ -171,7 +172,7 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
         if (ReferenceEquals(s_booleanSentinel, _sentinelOrValue)) {
             return ResultKind.Boolean;
         }
-        
+
         if (_sentinelOrValue is string) {
             return ResultKind.String;
         }
@@ -302,6 +303,10 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
         return left.CompareTo(in right) >= 0;
     }
 
+
+    public override string ToString() {
+        return Inner.ToString();
+    }
 
     [DoesNotReturn, DebuggerStepThrough,]
     private static int ThrowInvalidCompareTypes() {

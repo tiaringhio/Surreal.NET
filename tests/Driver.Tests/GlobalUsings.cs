@@ -16,3 +16,5 @@ global using SurrealDB.Driver.Rpc;
 global using SurrealDB.Models;
 global using SurrealDB.Configuration;
 global using SurrealDB.Ws;
+
+global using Xunit.Abstractions;
