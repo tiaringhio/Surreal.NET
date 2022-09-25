@@ -1,22 +1,33 @@
-namespace SurrealDB.Common;
+namespace SurrealDB.Shared.Tests;
 
 public static class SurrealInstance {
     public static Process Create() {
         // Wait until port is closed
         TcpHelper.SpinUntilClosed($"0.0.0.0:{TestHelper.Port}");
+        // We have a race condition between when the SurrealDB socket opens (or closes), and when it accepts connections.
+        // 50ms should be enough to run the tests on most devices.
+        Thread.Sleep(50);
         // Assume we have surreal as a command in PATH
         string? path = GetFullPath("surreal");
         Debug.Assert(path is not null);
 
         // Start new instances
-        var p = Process.Start(path!, $"start memory -b 0.0.0.0:{TestHelper.Port} -u {TestHelper.User} -p {TestHelper.Pass} --log debug");
+        var p = Instantiate(path!);
         Debug.Assert(p is not null);
         TcpHelper.SpinUntilListening($"0.0.0.0:{TestHelper.Port}");
-        // We have a race condition between when the SurrealDB socket opens, and when it accepts connections.
-        // 50ms should be enough to run the tests on most devices.
         Thread.Sleep(50);
         Debug.Assert(!p.HasExited);
         return p;
+    }
+
+    private static Process? Instantiate(string path) {
+        ProcessStartInfo pi = new() {
+            UseShellExecute = true,
+            FileName = path,
+            Arguments = $"start memory -b 0.0.0.0:{TestHelper.Port} -u {TestHelper.User} -p {TestHelper.Pass} --log debug",
+            WorkingDirectory = Environment.CurrentDirectory
+        };
+        return Process.Start(pi);
     }
 
     public static string? GetFullPath(string file)

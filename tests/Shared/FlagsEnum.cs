@@ -1,4 +1,4 @@
-namespace SurrealDB.Common;
+namespace SurrealDB.Shared.Tests;
 
 [Flags]
 public enum FlagsEnum {

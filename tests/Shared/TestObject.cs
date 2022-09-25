@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace SurrealDB.Common;
+namespace SurrealDB.Shared.Tests;
 
 public class TestObject<TKey, TValue> {
     [JsonConstructor]

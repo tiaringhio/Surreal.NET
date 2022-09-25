@@ -1,4 +1,6 @@
-﻿namespace SurrealDB.Core.Tests;
+﻿using SurrealDB.Shared.Tests;
+
+namespace SurrealDB.Core.Tests;
 
 public class ConfigTests {
     [Fact]

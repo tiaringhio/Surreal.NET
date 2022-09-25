@@ -1,6 +1,6 @@
 using SurrealDB.Abstractions;
 
-namespace SurrealDB.Common;
+namespace SurrealDB.Shared.Tests;
 
 public class DbHandle<T> : IDisposable
     where T: IDatabase, IDisposable, new() {

@@ -15,6 +15,7 @@ global using SurrealDB.Driver.Rest;
 global using SurrealDB.Driver.Rpc;
 global using SurrealDB.Models;
 global using SurrealDB.Configuration;
+global using SurrealDB.Shared.Tests;
 global using SurrealDB.Ws;
 
 global using Xunit.Abstractions;

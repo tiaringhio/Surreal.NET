@@ -36,6 +36,9 @@ public readonly struct Result : IEquatable<Result>, IComparable<Result> {
     public JsonElement Inner => _json;
 
     public T? GetObject<T>() {
+        if (_json.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null) {
+            return default;
+        }
         var obj = _json.Deserialize<T>(Constants.JsonOptions);
         return obj;
     }

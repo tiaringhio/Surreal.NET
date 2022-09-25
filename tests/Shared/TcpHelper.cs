@@ -1,7 +1,7 @@
 using System.Net.NetworkInformation;
 using System.Net.Sockets;
 
-namespace SurrealDB.Common;
+namespace SurrealDB.Shared.Tests;
 
 public static class TcpHelper {
     public static void SpinUntilListening(string remote, CancellationToken ct = default) {
@@ -16,7 +16,7 @@ public static class TcpHelper {
         }
         // Now we have a listener, attempt to connect until we do now get connection refused
         bool open = false;
-        while (!open) {
+        while (!open && !ct.IsCancellationRequested) {
             try {
                 using TcpClient c = new();
                 c.Connect(remote);
@@ -25,6 +25,7 @@ public static class TcpHelper {
                 // spin until we can connect
                 open = ex.Message != "Connection refused";
             }
+            ct.ThrowIfCancellationRequested();
         }
     }
 
