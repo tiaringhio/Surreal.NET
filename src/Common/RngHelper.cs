@@ -1,8 +1,8 @@
-namespace SurrealDB.Common; 
+namespace SurrealDB.Common;
 
 public static class RngHelper {
     #if NET6_0_OR_GREATER
-    public static Random Shared => Random.Shared;
+    public static Random Shared => ThreadRng.Shared;
     #else
     [ThreadStatic]
     private static Random? s_random;
