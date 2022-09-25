@@ -1,3 +1,5 @@
+using SurrealDB.Json;
+
 using Xunit.Abstractions;
 
 namespace SurrealDB.Driver.Tests.Queries;
@@ -64,6 +66,7 @@ public abstract class QueryTests<T, U, TKey, TValue>
     [Fact]
     public async Task SimpleSelectFromWhereValueQueryTest() {
         TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
+        Logger.WriteLine("exp: {0}", Serialize(expectedObject));
 
         Thing thing = Thing.From("object", expectedObject.Key!.ToString());
         await Database.Create(thing, expectedObject);
@@ -74,11 +77,24 @@ public abstract class QueryTests<T, U, TKey, TValue>
         };
 
         U response = await Database.Query(sql, param);
+        Logger.WriteLine("rsp: {0}", response);
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetResult(out Result result));
         TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
+        Logger.WriteLine("out: {0}", Serialize(doc));
         doc.Should().BeEquivalentTo(expectedObject);
+    }
+
+    [DebuggerStepThrough]
+    protected static string Serialize<V>(in V value) {
+        return JsonSerializer.Serialize(value, Constants.JsonOptions);
+    }
+
+    [DebuggerStepThrough]
+    protected static V? Deserialize<V>(string value) {
+        return JsonSerializer.Deserialize<V>(value, Constants.JsonOptions);
+
     }
 }
