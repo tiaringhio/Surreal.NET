@@ -12,6 +12,9 @@ public static class SurrealInstance {
         var p = Process.Start(path!, $"start memory -b 0.0.0.0:{TestHelper.Port} -u {TestHelper.User} -p {TestHelper.Pass} --log debug");
         Debug.Assert(p is not null);
         TcpHelper.SpinUntilListening($"0.0.0.0:{TestHelper.Port}");
+        // We have a race condition between when the SurrealDB socket opens, and when it accepts connections.
+        // 50ms should be enough to run the tests on most devices.
+        Thread.Sleep(50);
         Debug.Assert(!p.HasExited);
         return p;
     }

@@ -20,7 +20,7 @@ public class DbHandle<T> : IDisposable
 
     [DebuggerStepThrough]
     public static async Task WithDatabase(Func<T, Task> action) {
-        using DbHandle<T> db = await DbHandle<T>.Create();
+        using DbHandle<T> db = await Create();
         await action(db.Database);
     }
 
