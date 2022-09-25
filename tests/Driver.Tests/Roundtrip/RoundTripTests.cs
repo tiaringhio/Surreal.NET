@@ -81,22 +81,6 @@ public abstract class RoundTripTests<T, U>
 }
 
 public class RoundTripObject {
-    [Flags]
-    public enum FlagsEnum {
-        None = 0,
-        First = 1 << 0,
-        Second = 1 << 1,
-        Third = 1 << 2,
-        Fourth = 1 << 3,
-        All = First | Second | Third | Fourth,
-    }
-
-    public enum StandardEnum {
-        Zero = 0,
-        One = 1,
-        TwoHundred = 200,
-        NegTwoHundred = -200,
-    }
 
     public string String { get; set; } = "A String";
     // public string MultiLineString { get; set; } = "A\nString"; // Fails to write to DB

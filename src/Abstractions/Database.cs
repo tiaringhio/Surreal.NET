@@ -1,4 +1,4 @@
-﻿using SurrealDB.Configuration;
+using SurrealDB.Configuration;
 using SurrealDB.Models;
 
 namespace SurrealDB.Abstractions;
@@ -68,7 +68,7 @@ public interface IDatabase<TResponse>
     /// #
     /// <param name="sql"> Specifies the SurrealQL statements. </param>
     /// <param name="vars"> Assigns variables which can be used in the query. </param>
-    public Task<TResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default);
+    public new Task<TResponse> Query(string sql, IReadOnlyDictionary<string, object?>? vars, CancellationToken ct = default);
 
     /// <summary>
     ///     Selects all records in a table, or a specific record, from the database.
