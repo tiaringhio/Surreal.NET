@@ -1,4 +1,4 @@
-name: Continues Integration
+name: Build & Test
 
 on:
   workflow_dispatch:
