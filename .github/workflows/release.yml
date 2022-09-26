@@ -41,15 +41,16 @@ jobs:
         run: |
           .github/patch_version.sh ${{ github.event.inputs.tag }}
 
-      - name: Create tag
-        run: |
-          git tag ${{ github.event.inputs.tag }}
-
       - name: Commit version
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_options: "--no-verify --signoff"
           file_pattern: "**.props *.md"
+
+      - name: Create tag
+        run: |
+          git tag -a ${{ github.event.inputs.tag }}
+          git push --tags
 
       - name: Merge release -> master
         uses: devmasx/merge-branch@master
