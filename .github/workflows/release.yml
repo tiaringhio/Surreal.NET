@@ -25,20 +25,19 @@ jobs:
       contents: write
     runs-on: ubuntu-latest
     steps:
-      - name: Merge master -> release-stable
+      - name: Merge master -> release
         uses: devmasx/merge-branch@master
         with:
           type: now
           from_branch: master
-          target_branch: release-stable
+          target_branch: release
           github_token: ${{ github.token }}
 
       - uses: actions/checkout@v3
         with:
-          ref: release-stable
+          ref: release
 
       - name: Patch version
-        id: patch-version
         run: |
           ../patch_version.sh ${{ github.event.inputs.tag }}
 
@@ -48,11 +47,11 @@ jobs:
           commit_options: "--no-verify --signoff"
           file_pattern: "**.props *.md"
 
-      - name: Merge release-stable -> master
+      - name: Merge release -> master
         uses: devmasx/merge-branch@master
         with:
           type: now
-          from_branch: release-stable
+          from_branch: release
           target_branch: master
           github_token: ${{ github.token }}
 

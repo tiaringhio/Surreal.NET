@@ -1,0 +1,46 @@
+name: Release
+
+on:
+  schedule:
+    - cron: "0 0 * * *"
+
+env:
+  DOTNET_SKIP_FIRST_TIME_EXPERIENCE: true
+  DOTNET_CLI_TELEMETRY_OPTOUT: 1
+  DOTNET_SYSTEM_GLOBALIZATION_INVARIANT: true
+defaults:
+  run:
+    shell: bash
+
+jobs:
+  release:
+    permissions:
+      contents: write
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+        with:
+          ref: master
+
+      - name: Nightly version
+        run: |
+          .github/nightly_version.sh
+
+      - name: Patch version
+        run: |
+          .github/patch_version.sh ${{ env:NIGHTLY_TAG }}
+
+      - name: Commit version
+        uses: stefanzweifel/git-auto-commit-action@v4
+        with:
+          commit_options: "--no-verify --signoff"
+          file_pattern: "**.props *.md"
+
+      - name: Create release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        with:
+          tag_name: ${{ env:NIGHTLY_TAG }}
+          release_name: ${{ env:NIGHTLY_TAG }} - ${{ Automated nightly release }}
+          generateReleaseNotes: true
