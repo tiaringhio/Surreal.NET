@@ -39,7 +39,7 @@ jobs:
 
       - name: Patch version
         run: |
-          ../patch_version.sh ${{ github.event.inputs.tag }}
+          .github/patch_version.sh ${{ github.event.inputs.tag }}
 
       - name: Commit version
         uses: stefanzweifel/git-auto-commit-action@v4
