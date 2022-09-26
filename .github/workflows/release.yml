@@ -47,11 +47,6 @@ jobs:
           commit_options: "--no-verify --signoff"
           file_pattern: "**.props *.md"
 
-      - name: Create tag
-        run: |
-          git tag -a ${{ github.event.inputs.tag }}
-          git push --tags
-
       - name: Merge release -> master
         uses: devmasx/merge-branch@master
         with:
