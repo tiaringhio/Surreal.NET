@@ -6,7 +6,6 @@
 
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Abstractions for the SurrealDB driver</Description>
-		<PackageVersion>$(SurrealAbstractionsVersion)</PackageVersion>
 		<AssemblyName>SurrealDB.Abstractions</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector abstractions</PackageTags>
 	</PropertyGroup>
@@ -16,8 +15,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Configuration\Configuration.csproj" />
-	  <ProjectReference Include="..\Models\Models.csproj" />
+		<ProjectReference Include="..\Configuration\Configuration.csproj" />
+		<ProjectReference Include="..\Models\Models.csproj" />
 	</ItemGroup>
 
 </Project>

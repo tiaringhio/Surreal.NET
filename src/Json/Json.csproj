@@ -6,7 +6,6 @@
 
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>JSON utility for the SurrealDB driver</Description>
-		<PackageVersion>$(SurrealJsonVersion)</PackageVersion>
 		<AssemblyName>SurrealDB.Json</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
@@ -20,13 +19,13 @@
 	</ItemGroup>
 
 	<ItemGroup Condition="!$(DefineConstants.Contains('NET6_0_OR_GREATER'))">
-		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0"/>
+		<PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
 		<PackageReference Include="System.Text.Encodings.Web" Version="6.0.0" />
 		<PackageReference Include="System.Text.Json" Version="6.0.6" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
 
 </Project>

@@ -6,7 +6,6 @@
 
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Configuration for the SurrealDB driver</Description>
-		<PackageVersion>$(SurrealConfigVersion)</PackageVersion>
 		<AssemblyName>SurrealDB.Configuration</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
@@ -16,7 +15,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\Common\Common.csproj" />
+		<ProjectReference Include="..\Common\Common.csproj" />
 	</ItemGroup>
 
 </Project>

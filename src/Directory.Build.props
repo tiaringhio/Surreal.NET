@@ -2,16 +2,8 @@
 	<Import Project="..\Directory.Build.props" />
 
 	<PropertyGroup>
-		<SurrealDriverRestVersion>1.0.4</SurrealDriverRestVersion>
-		<SurrealDriverRpcVersion>1.0.4</SurrealDriverRpcVersion>
-		<SurrealAbstractionsVersion>1.0.4</SurrealAbstractionsVersion>
-		<SurrealCommonVersion>1.0.4</SurrealCommonVersion>
-		<SurrealConfigVersion>1.0.4</SurrealConfigVersion>
-		<SurrealHostingExtensionsVersion>1.0.4</SurrealHostingExtensionsVersion>
-		<SurrealJsonVersion>1.0.4</SurrealJsonVersion>
-		<SurrealModelsVersion>1.0.4</SurrealModelsVersion>
-		<SurrealWsVersion>1.0.4</SurrealWsVersion>
-		<SurrealExtensionsServiceVersion>1.0.4</SurrealExtensionsServiceVersion>
+		<Version>1.0.4</Version>
+		<AssemblyVersion>$(Version)</AssemblyVersion>
 	</PropertyGroup>
 
 	<PropertyGroup>
