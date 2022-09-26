@@ -1,4 +1,4 @@
-name: Continues Delivery
+name: Nuget
 
 on:
   release:
