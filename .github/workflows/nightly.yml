@@ -22,19 +22,13 @@ jobs:
         with:
           ref: master
 
-      - name: Nightly version
+      - name: Get version
         run: |
           .github/nightly_version.sh
 
       - name: Patch version
         run: |
           .github/patch_version.sh ${{ env:NIGHTLY_TAG }}
-
-      - name: Commit version
-        uses: stefanzweifel/git-auto-commit-action@v4
-        with:
-          commit_options: "--no-verify --signoff"
-          file_pattern: "**.props *.md"
 
       - name: Create release
         uses: actions/create-release@v1
