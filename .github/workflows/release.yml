@@ -56,10 +56,15 @@ jobs:
           github_token: ${{ github.token }}
 
       - name: Create tag
-        uses: rickstaa/action-create-tag@v1
+        uses: actions/github-script@v5
         with:
-          tag: ${{ github.event.inputs.tag }}
-          message: ${{ github.event.inputs.message }}
+          script: |
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/${{ github.event.inputs.tag }}',
+              sha: context.sha
+            })
 
       - name: Create release
         uses: actions/create-release@v1
