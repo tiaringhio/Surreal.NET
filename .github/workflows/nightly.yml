@@ -1,4 +1,4 @@
-name: Release
+name: Nightly
 
 on:
   schedule:
@@ -13,7 +13,7 @@ defaults:
     shell: bash
 
 jobs:
-  release:
+  nightly:
     permissions:
       contents: write
     runs-on: ubuntu-latest
