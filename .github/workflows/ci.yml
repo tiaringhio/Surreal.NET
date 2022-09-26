@@ -21,6 +21,9 @@ jobs:
           [{ ch: "3.1", ver: "netcoreapp31" }, { ch: "6.0", ver: "net60" }]
 
     steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
       - name: Initialize Cache
         uses: actions/cache@v3
         with:
@@ -43,9 +46,6 @@ jobs:
           chmod +x ~/dotnet-install.sh
           ~/dotnet-install.sh -c ${{ matrix.dotnet.ch }}
           dotnet --info
-
-      - name: Checkout
-        uses: actions/checkout@v3
 
       - name: Restore Dependencies
         run: dotnet restore
