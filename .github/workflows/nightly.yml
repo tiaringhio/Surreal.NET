@@ -36,5 +36,5 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
         with:
           tag_name: ${{ env:NIGHTLY_TAG }}
-          release_name: ${{ env:NIGHTLY_TAG }} - ${{ Automated nightly release }}
+          release_name: ${{ env:NIGHTLY_TAG }} - Automated nightly release
           generateReleaseNotes: true
