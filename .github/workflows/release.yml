@@ -41,6 +41,10 @@ jobs:
         run: |
           .github/patch_version.sh ${{ github.event.inputs.tag }}
 
+      - name: Create tag
+        run: |
+          git tag ${{ github.event.inputs.tag }}
+
       - name: Commit version
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
@@ -54,17 +58,6 @@ jobs:
           from_branch: release
           target_branch: master
           github_token: ${{ github.token }}
-
-      - name: Create tag
-        uses: actions/github-script@v5
-        with:
-          script: |
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/${{ github.event.inputs.tag }}',
-              sha: context.sha
-            })
 
       - name: Create release
         uses: actions/create-release@v1
