@@ -6,7 +6,6 @@
 
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Websocket RPC based database driver for SurrealDB</Description>
-		<PackageVersion>$(SurrealDriverRpcVersion)</PackageVersion>
 		<AssemblyName>SurrealDB.Driver.Rpc</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector websockets</PackageTags>
 	</PropertyGroup>

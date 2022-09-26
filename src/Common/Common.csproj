@@ -7,7 +7,6 @@
 
 	<PropertyGroup Label="Nuget Pack Options">
 		<Description>Common utility for the SurrealDB driver</Description>
-		<PackageVersion>$(SurrealCommonVersion)</PackageVersion>
 		<AssemblyName>SurrealDB.Common</AssemblyName>
 		<PackageTags>surrealdb sql nosql database connector</PackageTags>
 	</PropertyGroup>
@@ -17,7 +16,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="System.Text.Json" Version="6.0.6" />
+		<PackageReference Include="System.Text.Json" Version="6.0.6" />
 	</ItemGroup>
 
 </Project>
