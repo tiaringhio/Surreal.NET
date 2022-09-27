@@ -29,7 +29,7 @@ public static class Constants {
             WriteIndented = false,
             NumberHandling = JsonNumberHandling.AllowReadingFromString | JsonNumberHandling.AllowNamedFloatingPointLiterals,
             // This was throwing an exception when set to JsonIgnoreCondition.Always
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingDefault,
+            DefaultIgnoreCondition = JsonIgnoreCondition.Never,
             // TODO: Remove this when the server is fixed, see: https://github.com/surrealdb/surrealdb/issues/137
             Encoder = JavaScriptEncoder.UnsafeRelaxedJsonEscaping,
             IgnoreReadOnlyFields = false,

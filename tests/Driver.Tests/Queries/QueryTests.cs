@@ -12,14 +12,12 @@ public abstract class QueryTests<T, TKey, TValue>
     public QueryTests(ITestOutputHelper logger) {
         Logger = logger;
     }
-
-    protected abstract TKey RandomKey();
-    protected abstract TValue RandomValue();
-
-    [Fact]
-    public async Task SimpleSelectQueryTest() => await DbHandle<T>.WithDatabase(
+    
+    [Theory]
+    [MemberData("KeyAndValuePairs")]
+    public async Task SimpleSelectQueryTest(TKey key, TValue value) => await DbHandle<T>.WithDatabase(
         async db => {
-            TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
+            TestObject<TKey, TValue> expectedObject = new(key, value);
 
             Thing thing = Thing.From("object", expectedObject.Key!.ToString());
             await db.Create(thing, expectedObject);
@@ -35,11 +33,12 @@ public abstract class QueryTests<T, TKey, TValue>
             doc.Should().BeEquivalentTo(expectedObject);
         }
     );
-
-    [Fact]
-    public async Task SimpleSelectFromWhereQueryTest() => await DbHandle<T>.WithDatabase(
+    
+    [Theory]
+    [MemberData("KeyAndValuePairs")]
+    public async Task SimpleSelectFromWhereQueryTest(TKey key, TValue value) => await DbHandle<T>.WithDatabase(
         async db => {
-            TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
+            TestObject<TKey, TValue> expectedObject = new(key, value);
 
             Thing thing = Thing.From("object", expectedObject.Key!.ToString());
             await db.Create(thing, expectedObject);
@@ -57,10 +56,11 @@ public abstract class QueryTests<T, TKey, TValue>
         }
     );
 
-    [Fact]
-    public async Task SimpleSelectFromWhereValueQueryTest() => await DbHandle<T>.WithDatabase(
+    [Theory]
+    [MemberData("KeyAndValuePairs")]
+    public async Task SimpleSelectFromWhereValueQueryTest(TKey key, TValue value) => await DbHandle<T>.WithDatabase(
         async db => {
-            TestObject<TKey, TValue> expectedObject = new(RandomKey(), RandomValue());
+            TestObject<TKey, TValue> expectedObject = new(key, value);
             Logger.WriteLine("exp: {0}", Serialize(expectedObject));
 
             Thing thing = Thing.From("object", expectedObject.Key!.ToString());
