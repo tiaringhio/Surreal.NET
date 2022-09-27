@@ -304,7 +304,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable 
     }
 
     private string ToJson<T>(T? v) {
-        return JsonSerializer.Serialize(v, Constants.JsonOptions);
+        return JsonSerializer.Serialize(v, SerializerOptions.Shared);
     }
 
     private HttpContent ToJsonContent<T>(T? v) {

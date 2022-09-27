@@ -83,12 +83,12 @@ public abstract class QueryTests<T, TKey, TValue>
 
     [DebuggerStepThrough]
     protected static string Serialize<V>(in V value) {
-        return JsonSerializer.Serialize(value, Constants.JsonOptions);
+        return JsonSerializer.Serialize(value, SerializerOptions.Shared);
     }
 
     [DebuggerStepThrough]
     protected static V? Deserialize<V>(string value) {
-        return JsonSerializer.Deserialize<V>(value, Constants.JsonOptions);
+        return JsonSerializer.Deserialize<V>(value, SerializerOptions.Shared);
 
     }
 }
