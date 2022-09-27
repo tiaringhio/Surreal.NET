@@ -12,8 +12,4 @@
 	  <ProjectReference Include="..\..\src\Ws\Ws.csproj" />
 	</ItemGroup>
 
-	<ItemGroup>
-	  <PackageReference Update="xunit" Version="2.4.0" />
-	</ItemGroup>
-
 </Project>

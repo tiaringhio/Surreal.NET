@@ -1,4 +1,4 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<RootNamespace>SurrealDB.Core.Tests</RootNamespace>
@@ -9,10 +9,6 @@
 		<ProjectReference Include="..\..\src\Common\Common.csproj" />
 	  <ProjectReference Include="..\..\src\Configuration\Configuration.csproj" />
 	  <ProjectReference Include="..\Shared\Shared.csproj" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <PackageReference Update="xunit" Version="2.4.0" />
 	</ItemGroup>
 
 </Project>
