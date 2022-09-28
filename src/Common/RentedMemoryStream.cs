@@ -1,15 +1,15 @@
+using System.Buffers;
 using System.Runtime.InteropServices;
 
 namespace SurrealDB.Common;
 
 /// <summary>
-/// Proxy class for <see cref="Stream"/> carrying a owner
+/// <see cref="MemoryStream"/> associated with a owner, like <see cref="System.Buffers.IMemoryOwner{T}"/>
 /// </summary>
 public sealed class RentedMemoryStream : MemoryStream {
     private IDisposable? _owner;
 
-
-    public RentedMemoryStream(IDisposable owner, ArraySegment<byte> buffer, bool writable = false, bool exposed = false)
+    public RentedMemoryStream(IDisposable owner, ArraySegment<byte> buffer, bool writable, bool exposed)
         : base(buffer.Array!, buffer.Offset, buffer.Count, writable, exposed) {
         _owner = owner;
     }
@@ -34,9 +34,15 @@ public sealed class RentedMemoryStream : MemoryStream {
         }
     }
 
+    /// <inheritdoc cref="FromMemory(IDisposable,ReadOnlyMemory{byte},bool,bool)"/>
+    public static Stream FromMemory(IMemoryOwner<byte> owner, bool writable = false, bool exposed = false) {
+        return FromMemory(owner, owner.Memory, writable, exposed);
+    }
+
     /// <summary>
     /// Attempts to create a <see cref="RentedMemoryStream"/> with the owner and backing array of the <see cref="ReadOnlyMemory{byte}"/>.
-    /// If that fails copies the memory and disposes the owner returning a <see cref="MemoryStream"/>; otherwise returns <see cref="RentedMemoryStream"/>.
+    /// If that fails copies the memory and disposes the owner returning a <see cref="MemoryStream"/>; otherwise returns <see cref="RentedMemoryStream"/>,
+    /// which disposed the owner when disposed itself.
     /// </summary>
     public static Stream FromMemory(IDisposable owner, ReadOnlyMemory<byte> memory, bool writable = false, bool exposed = false) {
         // the array will always be accessible from the IMemoryOwner

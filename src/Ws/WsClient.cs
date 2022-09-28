@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.Net.WebSockets;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -109,11 +110,16 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
     }
 
     private static async Task SendStream(WebSocket ws, Stream stream, CancellationToken ct) {
-        using IMemoryOwner<byte> frame = MemoryPool<byte>.Shared.Rent(FRAME_SIZE);
-        int read;
-        while ((read = stream.Read(frame.Memory.Span)) > 0) {
-            await ws.SendAsync(frame.Memory.Slice(0, read), WebSocketMessageType.Text, IsLastFrame(stream, FRAME_SIZE), ct);
+        using IMemoryOwner<byte> owner = MemoryPool<byte>.Shared.Rent(FRAME_SIZE);
+        bool end = false;
+        while (!end && !ct.IsCancellationRequested) {
+            int read = stream.Read(owner.Memory.Span);
+            end = read != owner.Memory.Length;
+            await ws.SendAsync(owner.Memory.Slice(0, read), WebSocketMessageType.Text, end, ct);
+
+            ct.ThrowIfCancellationRequested();
         }
+        Debug.Assert(end, "Unfinished message sent!");
     }
 
     private static async Task ReceiveStream(WebSocket ws, Stream stream, CancellationToken ct) {
@@ -123,10 +129,6 @@ public sealed class WsClient : IDisposable, IAsyncDisposable {
             res = await ws.ReceiveAsync(frame.Memory, ct);
             await stream.WriteAsync(frame.Memory.Slice(0, res.Count), ct);
         } while (!res.EndOfMessage);
-    }
-
-    private static bool IsLastFrame(Stream stream, long frameSize) {
-        return stream.Position + frameSize >= stream.Length;
     }
 
     private void ThrowIfDisconnected() {
