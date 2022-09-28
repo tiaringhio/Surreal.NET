@@ -113,7 +113,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable 
         if (value is null) {
             _vars.Remove(key);
         } else {
-            _vars[key] = ToJson(value);
+            _vars[key] = value;
         }
 
         return CompletedOk;
