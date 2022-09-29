@@ -7,7 +7,7 @@ namespace SurrealDB.Abstractions;
 ///     Shared interface for interacting with a Surreal database instance
 /// </summary>
 public interface IDatabase<TResponse>
-    : IDatabase
+    : IDisposable
     where TResponse : IResponse {
 
     /// <summary>
@@ -141,7 +141,8 @@ public interface IDatabase<TResponse>
 /// <summary>
 ///     Shared interface for interacting with a Surreal database instance
 /// </summary>
-public interface IDatabase {
+public interface IDatabase
+    : IDisposable {
     /// <summary>
     ///     Returns a copy of the current configuration.
     /// </summary>
