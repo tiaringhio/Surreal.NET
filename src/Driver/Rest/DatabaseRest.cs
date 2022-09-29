@@ -157,7 +157,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable 
         return await rsp.ToSurreal();
     }
 
-    public async Task<RestResponse> Modify(Thing thing, object[] patches, CancellationToken ct = default) {
+    public async Task<RestResponse> Modify(Thing thing, Patch[] patches, CancellationToken ct = default) {
         // Is this the most optimal way?
         string sql = "UPDATE $what PATCH $data RETURN DIFF";
         Dictionary<string, object?> vars = new() { ["what"] = thing, ["data"] = patches, };
