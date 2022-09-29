@@ -20,11 +20,7 @@ public sealed class Ws : IDisposable, IAsyncDisposable {
     public async Task Close(CancellationToken ct = default) {
         Task t1 = _tx.Close(ct);
         Task t2 = Task.Run(ClearHandlers, ct);
-        try {
-            _cts.Cancel();
-        } catch (OperationCanceledException) {
-            // expected
-        }
+        _cts.Cancel();
 
         await t1;
         await t2;
@@ -106,8 +102,14 @@ public sealed class Ws : IDisposable, IAsyncDisposable {
     }
 
     public async ValueTask DisposeAsync() {
-        await Close();
-        _tx.Dispose();
+        try {
+            await Close();
+            _tx.Dispose();
+        } catch (OperationCanceledException) {
+            // expected
+        } catch (AggregateException) {
+            // wrapping OperationCanceledException for async
+        }
     }
 
     [DoesNotReturn]
