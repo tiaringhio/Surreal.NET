@@ -5,7 +5,7 @@ using SurrealDB.Ws;
 
 namespace SurrealDB.Driver.Rpc;
 
-public sealed partial class DatabaseRpc : IDatabase<RpcResponse>, IDisposable {
+public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     private readonly WsClient _client = new();
     private Config _config;
     private bool _configured;

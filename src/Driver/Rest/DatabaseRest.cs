@@ -8,7 +8,7 @@ using SurrealDB.Models;
 
 namespace SurrealDB.Driver.Rest;
 
-public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable {
+public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     private readonly HttpClient _client = new();
     private Configuration.Config _config;
     private bool _configured;
