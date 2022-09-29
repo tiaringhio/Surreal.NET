@@ -8,7 +8,7 @@ namespace SurrealDB.Models;
 /// JSON Patch is a format for describing changes to a JSON document. It can be used to avoid sending a whole document when only a part has changed. When used in combination with the HTTP PATCH method, it allows partial updates for HTTP APIs in a standards compliant way.
 /// </summary>
 public readonly record struct Patch {
-    [DebuggerStepThrough]
+    [DebuggerStepThrough, JsonConstructor]
     private Patch(Mode op, string path, string? from, object? value) {
         this.op = op;
         this.path = path;
