@@ -40,14 +40,18 @@ public sealed class WsTx : IDisposable {
     /// Parses the header.
     /// The body contains the result array including the end object token `[...]}`.
     /// </summary>
-    public async Task<(string id, RspHeader rsp, NtyHeader nty, Stream body)> Tr(CancellationToken ct) {
+    public async Task<(string? id, RspHeader rsp, NtyHeader nty, Stream body)> Tr(CancellationToken ct) {
         ThrowIfDisconnected();
         // this method assumes that the header size never exceeds DefaultBufferSize!
         IMemoryOwner<byte> owner = MemoryPool<byte>.Shared.Rent(DefaultBufferSize);
         var r = await _ws.ReceiveAsync(owner.Memory, ct);
 
+        if (r.Count <= 0) {
+            return (default, default, default, default!);
+        }
+
         // parse the header
-        var (rsp, nty, off) = ParseHeader(owner, r);
+        var (rsp, nty, off) = ParseHeader(owner.Memory.Span.Slice(0, r.Count));
         string? id = rsp.IsDefault ? nty.id : rsp.id;
         if (String.IsNullOrEmpty(id)) {
             ThrowHeaderId();
@@ -57,8 +61,7 @@ public sealed class WsTx : IDisposable {
         return (id,  rsp, nty, body);
     }
 
-    private static (RspHeader rsp, NtyHeader nty, int off) ParseHeader(IMemoryOwner<byte> owner, ValueWebSocketReceiveResult r) {
-        ReadOnlySpan<byte> utf8 = owner.Memory.Span.Slice(0, r.Count);
+    private static (RspHeader rsp, NtyHeader nty, int off) ParseHeader(ReadOnlySpan<byte> utf8) {
         var (rsp, rspOff, rspErr) = RspHeader.Parse(utf8);
         if (rspErr is null) {
             return (rsp, default, (int)rspOff);
@@ -137,7 +140,7 @@ public sealed class WsTx : IDisposable {
         throw new JsonException(err, default, default, off);
     }
 
-    public readonly record struct NtyHeader(string? id, string? method) {
+    public readonly record struct NtyHeader(string? id, string? method, WsClient.Error err) {
         public bool IsDefault => default == this;
 
         /// <summary>
@@ -153,7 +156,7 @@ public sealed class WsTx : IDisposable {
             if (!fsm.Success) {
                 return (default, fsm.Lexer.BytesConsumed, $"Error while parsing {nameof(RspHeader)} at {fsm.Lexer.TokenStartIndex}: {fsm.Err}");
             }
-            return (new(fsm.Id, fsm.Method), default, default);
+            return (new(fsm.Id, fsm.Method, fsm.Error), default, default);
         }
 
         private enum Fsms {
@@ -161,6 +164,7 @@ public sealed class WsTx : IDisposable {
             Prop, // -> PropId | PropAsync | PropMethod | ProsResult
             PropId, // -> Prop | End
             PropMethod, // -> Prop | End
+            PropError, // -> End
             PropParams, // -> End
             End
         }
@@ -173,6 +177,7 @@ public sealed class WsTx : IDisposable {
 
             public string? Name;
             public string? Id;
+            public WsClient.Error Error;
             public string? Method;
 
             public bool MoveNext() {
@@ -181,6 +186,7 @@ public sealed class WsTx : IDisposable {
                     Fsms.Prop => Prop(),
                     Fsms.PropId => PropId(),
                     Fsms.PropMethod => PropMethod(),
+                    Fsms.PropError => PropError(),
                     Fsms.PropParams => PropParams(),
                     Fsms.End => End(),
                     _ => false
@@ -218,6 +224,10 @@ public sealed class WsTx : IDisposable {
                     State = Fsms.PropMethod;
                     return true;
                 }
+                if ("error".Equals(Name, StringComparison.OrdinalIgnoreCase)) {
+                    State = Fsms.PropError;
+                    return true;
+                }
                 if ("params".Equals(Name, StringComparison.OrdinalIgnoreCase)) {
                     State = Fsms.PropParams;
                     return true;
@@ -235,6 +245,12 @@ public sealed class WsTx : IDisposable {
 
                 State = Fsms.Prop;
                 Id = Lexer.GetString();
+                return true;
+            }
+
+            private bool PropError() {
+                Error = JsonSerializer.Deserialize<WsClient.Error>(ref Lexer, SerializerOptions.Shared);
+                State = Fsms.End;
                 return true;
             }
 
@@ -340,7 +356,10 @@ public sealed class WsTx : IDisposable {
                     State = Fsms.PropResult;
                     return true;
                 }
-
+                if ("error".Equals(Name, StringComparison.OrdinalIgnoreCase)) {
+                    State = Fsms.PropError;
+                    return true;
+                }
 
                 Err = $"Unknown PropertyName `{Name}`";
                 return false;

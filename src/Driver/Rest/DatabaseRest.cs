@@ -163,9 +163,9 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse>, IDisposable 
 
     public async Task<RestResponse> Modify(
         Thing thing,
-        object data,
+        object[] patches,
         CancellationToken ct = default) {
-        HttpRequestMessage req = ToRequestMessage(HttpMethod.Patch, BuildRequestUri(thing), ToJson(data));
+        HttpRequestMessage req = ToRequestMessage(HttpMethod.Patch, BuildRequestUri(thing), ToJson(patches));
         HttpResponseMessage rsp = await _client.SendAsync(req, ct);
         return await rsp.ToSurreal();
     }

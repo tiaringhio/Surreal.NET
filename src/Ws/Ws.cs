@@ -68,6 +68,10 @@ public sealed class Ws : IDisposable, IAsyncDisposable {
 
             stoppingToken.ThrowIfCancellationRequested();
 
+            if (String.IsNullOrEmpty(id)) {
+                continue; // Invalid response
+            }
+
             if (!_handlers.TryGetValue(id, out IHandler? handler)) {
                 // assume that unhandled responses belong to other clients
                 // discard!
