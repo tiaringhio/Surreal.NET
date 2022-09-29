@@ -62,7 +62,7 @@ jobs:
         if: success() || failure()
         uses: phoenix-actions/test-reporting@v8
         with:
-          name: unittest-results
+          name: results-${{ matrix.dotnet.ver }}-${{ matrix.nightly }}
           path: test-results.trx
           reporter: dotnet-trx
           fail-on-error: false
