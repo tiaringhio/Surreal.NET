@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text.Json.Serialization;
 // ReSharper disable InconsistentNaming
 
@@ -7,6 +8,7 @@ namespace SurrealDB.Models;
 /// JSON Patch is a format for describing changes to a JSON document. It can be used to avoid sending a whole document when only a part has changed. When used in combination with the HTTP PATCH method, it allows partial updates for HTTP APIs in a standards compliant way.
 /// </summary>
 public readonly record struct Patch {
+    [DebuggerStepThrough]
     private Patch(Mode op, string path, string? from, object? value) {
         this.op = op;
         this.path = path;
@@ -15,16 +17,22 @@ public readonly record struct Patch {
     }
 
     /// <inheritdoc cref="Mode.add"/>
+    [DebuggerStepThrough]
     public static Patch Add(string path, object value) => new(Mode.add, path, default, value);
     /// <inheritdoc cref="Mode.remove"/>
+    [DebuggerStepThrough]
     public static Patch Remove(string path) => new(Mode.remove, path, default, default);
     /// <inheritdoc cref="Mode.replace"/>
+    [DebuggerStepThrough]
     public static Patch Replace(string path, object value) => new(Mode.replace, path, default, value);
     /// <inheritdoc cref="Mode.copy"/>
+    [DebuggerStepThrough]
     public static Patch Copy(string path, string from) => new(Mode.copy, path, from, default);
     /// <inheritdoc cref="Mode.move"/>
+    [DebuggerStepThrough]
     public static Patch Move(string path, string from) => new(Mode.move, path, from, default);
     /// <inheritdoc cref="Mode.test"/>
+    [DebuggerStepThrough]
     public static Patch Test(string path, object value) => new(Mode.test, path, default, value);
 
     /// <summary>The operation to perform.</summary>
