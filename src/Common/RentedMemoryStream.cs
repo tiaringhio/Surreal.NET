@@ -1,4 +1,5 @@
 using System.Buffers;
+using System.Diagnostics;
 using System.Runtime.InteropServices;
 
 namespace SurrealDB.Common;
@@ -35,7 +36,7 @@ public sealed class RentedMemoryStream : MemoryStream {
     }
 
     /// <inheritdoc cref="FromMemory(IDisposable,ReadOnlyMemory{byte},bool,bool)"/>
-    public static Stream FromMemory(IMemoryOwner<byte> owner, bool writable = false, bool exposed = false) {
+    public static MemoryStream FromMemory(IMemoryOwner<byte> owner, bool writable = false, bool exposed = false) {
         return FromMemory(owner, owner.Memory, writable, exposed);
     }
 
@@ -44,9 +45,9 @@ public sealed class RentedMemoryStream : MemoryStream {
     /// If that fails copies the memory and disposes the owner returning a <see cref="MemoryStream"/>; otherwise returns <see cref="RentedMemoryStream"/>,
     /// which disposed the owner when disposed itself.
     /// </summary>
-    public static Stream FromMemory(IDisposable owner, ReadOnlyMemory<byte> memory, bool writable = false, bool exposed = false) {
+    public static MemoryStream FromMemory(IDisposable owner, ReadOnlyMemory<byte> memory, bool writable = false, bool exposed = false) {
         // the array will always be accessible from the IMemoryOwner
-        Stream s;
+        MemoryStream s;
         if (MemoryMarshal.TryGetArray(memory, out ArraySegment<byte> arr)) {
             s = new RentedMemoryStream(owner, arr, writable, exposed);
         } else {

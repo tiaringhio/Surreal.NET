@@ -1,4 +1,4 @@
-namespace SurrealDB.Ws.Models;
+namespace SurrealDB.Ws;
 
 internal interface IHandler : IDisposable {
 
@@ -6,11 +6,11 @@ internal interface IHandler : IDisposable {
 
     public bool Persistent { get; }
 
-    public void Handle(ResponseHeader rsp, NotifyHeader nty, Stream stm);
+    public void Handle(WsTx.RspHeader rsp, WsTx.NtyHeader nty, Stream stm);
 }
 
 internal sealed class ResponseHandler : IHandler {
-    private TaskCompletionSource<(ResponseHeader, NotifyHeader, Stream)>? _tcs = new();
+    private readonly TaskCompletionSource<(WsTx.RspHeader, WsTx.NtyHeader, Stream)> _tcs = new();
     private readonly string _id;
     private readonly CancellationToken _ct;
 
@@ -19,28 +19,27 @@ internal sealed class ResponseHandler : IHandler {
         _ct = ct;
     }
 
-    public Task<(ResponseHeader rsp, NotifyHeader nty, Stream stm)> Task => _tcs!.Task;
+    public Task<(WsTx.RspHeader rsp, WsTx.NtyHeader nty, Stream stm)> Task => _tcs!.Task;
 
     public string Id => _id;
 
     public bool Persistent => false;
 
-    public void Handle(ResponseHeader rsp, NotifyHeader nty, Stream stm) {
-        _tcs?.SetResult((rsp, nty, stm));
-        _tcs = null;
+    public void Handle(WsTx.RspHeader rsp, WsTx.NtyHeader nty, Stream stm) {
+        _tcs.SetResult((rsp, nty, stm));
     }
 
     public void Dispose() {
-        _tcs?.SetCanceled();
+        _tcs.TrySetCanceled();
     }
 
 }
 
-internal class NotificationHandler : IHandler, IAsyncEnumerable<(ResponseHeader rsp, NotifyHeader nty, Stream stm)> {
-    private readonly WsMediator _mediator;
+internal class NotificationHandler : IHandler, IAsyncEnumerable<(WsTx.RspHeader rsp, WsTx.NtyHeader nty, Stream stm)> {
+    private readonly Ws _mediator;
     private readonly CancellationToken _ct;
-    private TaskCompletionSource<(ResponseHeader, NotifyHeader, Stream)> _tcs = new();
-    public NotificationHandler(WsMediator mediator, string id, CancellationToken ct) {
+    private TaskCompletionSource<(WsTx.RspHeader, WsTx.NtyHeader, Stream)> _tcs = new();
+    public NotificationHandler(Ws mediator, string id, CancellationToken ct) {
         _mediator = mediator;
         Id = id;
         _ct = ct;
@@ -49,18 +48,18 @@ internal class NotificationHandler : IHandler, IAsyncEnumerable<(ResponseHeader 
     public string Id { get; }
     public bool Persistent => true;
 
-    public void Handle(ResponseHeader rsp, NotifyHeader nty, Stream stm) {
+    public void Handle(WsTx.RspHeader rsp, WsTx.NtyHeader nty, Stream stm) {
         _tcs.SetResult((rsp, nty, stm));
         _tcs = new();
     }
 
     public void Dispose() {
-        _tcs.SetCanceled();
+        _tcs.TrySetCanceled();
     }
 
-    public async IAsyncEnumerator<(ResponseHeader rsp, NotifyHeader nty, Stream stm)> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
+    public async IAsyncEnumerator<(WsTx.RspHeader rsp, WsTx.NtyHeader nty, Stream stm)> GetAsyncEnumerator(CancellationToken cancellationToken = default) {
         while (!_ct.IsCancellationRequested) {
-            (ResponseHeader, NotifyHeader, Stream) res;
+            (WsTx.RspHeader, WsTx.NtyHeader, Stream) res;
             try {
                 res = await _tcs.Task;
             } catch (OperationCanceledException) {
@@ -74,7 +73,6 @@ internal class NotificationHandler : IHandler, IAsyncEnumerable<(ResponseHeader 
         if (_ct.IsCancellationRequested) {
             _mediator.Unregister(this);
         }
-        _ct.ThrowIfCancellationRequested();
     }
 }
 
