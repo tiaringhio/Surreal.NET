@@ -97,20 +97,17 @@ public abstract class QueryTests<T, TKey, TValue>
 
             Thing thing = Thing.From("object", createdObject.Key!.ToString());
             await db.Create(thing, createdObject);
-            var rspMod = await db.Modify(thing, new[] {
+            await db.Modify(thing, new[] {
                 new {  op = "replace", path = "/Value", value = value },
                 new {  op = "add", path = "/MergeValue", value = value },
             });
 
-            Assert.NotNull(rspMod);
-            TestHelper.AssertOk(rspMod);
-
             // Modify return the applied JSON patch from the request!
             // Select the altered object, and validate against the expected object.
-            var rspSel = await db.Select(thing);
-            Assert.NotNull(rspSel);
-            TestHelper.AssertOk(rspSel);
-            Assert.True(rspSel.TryGetResult(out Result result));
+            var response = await db.Select(thing);
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
             TestObject<TKey, TValue>? doc = result.GetObject<ExtendedTestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
