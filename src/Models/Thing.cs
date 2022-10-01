@@ -209,7 +209,7 @@ public readonly record struct Thing {
             var allNumberChars = true;
             for (int i = rec; i < len; i++) {
                 char ch = text[i];
-                if (char.IsLetter(ch)) {
+                if (char.IsLetter(ch) || ch == '_') {
                     allNumberChars = false;
                     break;
                 }
