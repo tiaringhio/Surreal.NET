@@ -21,3 +21,18 @@ public class ExtendedTestObject<TKey, TValue> : TestObject<TKey, TValue> {
     
     public TValue MergeValue { get; set; }
 }
+
+public record SimpleSignupRequest(
+    string user,
+    string password,
+    string NS,
+    string DB,
+    string SC) : SignupRequestBase(NS, DB, SC);
+
+public record IdSignupRequest(
+    string user,
+    string password,
+    string id,
+    string NS,
+    string DB,
+    string SC) : SignupRequestBase(NS, DB, SC);

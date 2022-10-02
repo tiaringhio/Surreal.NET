@@ -59,6 +59,68 @@ public abstract class GeneralQueryTests<T>
         }
     );
 
+    
+    [Fact]
+    public async Task SignInRootTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var signinObject = new BasicSigninRequest(TestHelper.User, TestHelper.Pass );
+            var response = await db.Signin(signinObject);
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+        }
+    );
+    
+    [Fact]
+    public async Task SignUpScopedUserTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var user = "TestUser@example.com";
+            var password = "TestPassword";
+            var scope = "account";
+
+            string sql = $"DEFINE SCOPE {scope}\n"
+              + "   SIGNIN ( SELECT * FROM user WHERE email = $user AND crypto::argon2::compare(password, $pass) )\n"
+              + "   SIGNUP ( CREATE user SET email = $user, password = crypto::argon2::generate($pass) )\n"
+              + ";";
+            var queryResponse = await db.Query(sql, null);
+            Assert.NotNull(queryResponse);
+            TestHelper.AssertOk(queryResponse);
+            
+            var signupObject = new SimpleSignupRequest( user, password, TestHelper.Namespace, TestHelper.Database, scope );
+            var response = await db.Signup(signupObject);
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            string? doc = result.GetObject<string>();
+            doc.Should().NotBeNullOrEmpty();
+        }
+    );
+    
+    [Fact]
+    public async Task SignUpScopedUserDefinedIdTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var user = "TestUser@example.com";
+            var password = "TestPassword";
+            var scope = "account";
+            var userId = "user:123";
+
+            string sql = $"DEFINE SCOPE {scope}\n"
+              + "   SIGNIN ( SELECT * FROM user WHERE email = $user AND crypto::argon2::compare(password, $pass) )\n"
+              + "   SIGNUP ( CREATE $id SET email = $user, password = crypto::argon2::generate($pass) )\n"
+              + ";";
+            var queryResponse = await db.Query(sql, null);
+            Assert.NotNull(queryResponse);
+            TestHelper.AssertOk(queryResponse);
+            
+            var signupObject = new IdSignupRequest( user, password, userId, TestHelper.Namespace, TestHelper.Database, scope );
+            var response = await db.Signup(signupObject);
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            string? doc = result.GetObject<string>();
+            doc.Should().NotBeNullOrEmpty();
+        }
+    );
+
     [Fact]
     public async Task SwitchDatabaseTest() => await DbHandle<T>.WithDatabase(
         async db => {

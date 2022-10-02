@@ -74,17 +74,17 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Signup(
-        object auth,
-        CancellationToken ct = default) {
-        return await _client.Send(new() { method = "signup", parameters = new() { auth, }, }, ct).ToSurreal();
+    public async Task<RpcResponse> Signup<TRequest>(
+        TRequest auth,
+        CancellationToken ct = default) where TRequest : SignupRequestBase {
+        return await _client.Send(new() { method = "signup", parameters = new() { auth } }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Signin(
-        object auth,
-        CancellationToken ct = default) {
-        WsClient.Response rsp = await _client.Send(new() { method = "signin", parameters = new() { auth, }, }, ct);
+    public async Task<RpcResponse> Signin<TRequest>(
+        TRequest auth,
+        CancellationToken ct = default) where TRequest : SigninRequestBase {
+        WsClient.Response rsp = await _client.Send(new() { method = "signin", parameters = new() { auth } }, ct);
 
         // TODO: Update auth
         return rsp.ToSurreal();
@@ -181,7 +181,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         // TODO: Support jwt auth
         _config.Username = user;
         _config.Password = pass;
-        await Signin(new{ user = user, pass = pass, }, ct);
+        await Signin(new BasicSigninRequest(user, pass), ct);
     }
 
     public void Dispose() {
