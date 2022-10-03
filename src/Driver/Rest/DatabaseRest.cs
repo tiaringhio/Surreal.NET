@@ -99,14 +99,14 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
 
     public async Task<RestResponse> Signup<TRequest>(
         TRequest auth,
-        CancellationToken ct = default) where TRequest : SignupRequestBase {
+        CancellationToken ct = default) where TRequest : IAuth {
         return await Signup(ToJsonContent(auth), ct);
     }
 
     public async Task<RestResponse> Signin<TRequest>(
         TRequest auth,
-        CancellationToken ct = default) where TRequest : SigninRequestBase {
-        // SetAuth(auth.Username, auth.Password);
+        CancellationToken ct = default) where TRequest : IAuth {
+        
         HttpResponseMessage rsp = await _client.PostAsync("signin", ToJsonContent(auth), ct);
         return await rsp.ToSurrealFromAuthResponse();
     }

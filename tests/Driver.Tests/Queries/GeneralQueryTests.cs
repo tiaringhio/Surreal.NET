@@ -61,17 +61,62 @@ public abstract class GeneralQueryTests<T>
 
     
     [Fact]
-    public async Task SignInRootTest() => await DbHandle<T>.WithDatabase(
+    public async Task SignInRootAuthTest() => await DbHandle<T>.WithDatabase(
         async db => {
-            var signinObject = new BasicSigninRequest(TestHelper.User, TestHelper.Pass );
+            var signinObject = new RootAuth(TestHelper.User, TestHelper.Pass);
             var response = await db.Signin(signinObject);
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
+            Assert.True(response.TryGetResult(out Result result));
+            string? signinJwt = result.GetObject<string>();
+            signinJwt.Should().BeNullOrEmpty();
+        }
+    );
+
+    [Fact]
+    public async Task SignInNamespaceUserTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var user = "DatabaseUser";
+            var password = "TestPassword";
+
+            string sql = $"DEFINE LOGIN {user} ON NAMESPACE PASSWORD '{password}';";
+            var queryResponse = await db.Query(sql, null);
+            Assert.NotNull(queryResponse);
+            TestHelper.AssertOk(queryResponse);
+
+            var signinObject = new NamespaceAuth( user, password, TestHelper.Namespace );
+            var signinResponse = await db.Signin(signinObject);
+            Assert.NotNull(signinResponse);
+            TestHelper.AssertOk(signinResponse);
+            Assert.True(signinResponse.TryGetResult(out Result result));
+            string? signinJwt = result.GetObject<string>();
+            signinJwt.Should().NotBeNullOrEmpty();
+        }
+    );
+
+    [Fact]
+    public async Task SignInDatabaseUserTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var user = "DatabaseUser";
+            var password = "TestPassword";
+
+            string sql = $"DEFINE LOGIN {user} ON DATABASE PASSWORD '{password}';";
+            var queryResponse = await db.Query(sql, null);
+            Assert.NotNull(queryResponse);
+            TestHelper.AssertOk(queryResponse);
+
+            var signinObject = new DatabaseAuth( user, password, TestHelper.Namespace, TestHelper.Database );
+            var signinResponse = await db.Signin(signinObject);
+            Assert.NotNull(signinResponse);
+            TestHelper.AssertOk(signinResponse);
+            Assert.True(signinResponse.TryGetResult(out Result result));
+            string? signinJwt = result.GetObject<string>();
+            signinJwt.Should().NotBeNullOrEmpty();
         }
     );
     
     [Fact]
-    public async Task SignUpScopedUserTest() => await DbHandle<T>.WithDatabase(
+    public async Task SignUpAndSignInScopedUserTest() => await DbHandle<T>.WithDatabase(
         async db => {
             var user = "TestUser@example.com";
             var password = "TestPassword";
@@ -85,23 +130,31 @@ public abstract class GeneralQueryTests<T>
             Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
             
-            var signupObject = new SimpleSignupRequest( user, password, TestHelper.Namespace, TestHelper.Database, scope );
-            var response = await db.Signup(signupObject);
-            Assert.NotNull(response);
-            TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
-            string? doc = result.GetObject<string>();
-            doc.Should().NotBeNullOrEmpty();
+            var signupObject = new ScopeAuth( user, password, TestHelper.Namespace, TestHelper.Database, scope );
+            var signupResponse = await db.Signup(signupObject);
+            Assert.NotNull(signupResponse);
+            TestHelper.AssertOk(signupResponse);
+            Assert.True(signupResponse.TryGetResult(out Result signupResult));
+            string? signupJwt = signupResult.GetObject<string>();
+            signupJwt.Should().NotBeNullOrEmpty();
+
+            var signinObject = new ScopeAuth( user, password, TestHelper.Namespace, TestHelper.Database, scope );
+            var signinResponse = await db.Signin(signinObject);
+            Assert.NotNull(signinResponse);
+            TestHelper.AssertOk(signinResponse);
+            Assert.True(signinResponse.TryGetResult(out Result result));
+            string? signinJwt = result.GetObject<string>();
+            signinJwt.Should().NotBeNullOrEmpty();
         }
     );
     
     [Fact]
-    public async Task SignUpScopedUserDefinedIdTest() => await DbHandle<T>.WithDatabase(
+    public async Task SignUpAndSignInScopedUserWithDefinedIdTest() => await DbHandle<T>.WithDatabase(
         async db => {
             var user = "TestUser@example.com";
             var password = "TestPassword";
             var scope = "account";
-            var userId = "user:123";
+            var id = "user:123";
 
             string sql = $"DEFINE SCOPE {scope}\n"
               + "   SIGNIN ( SELECT * FROM user WHERE email = $user AND crypto::argon2::compare(password, $pass) )\n"
@@ -111,13 +164,21 @@ public abstract class GeneralQueryTests<T>
             Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
             
-            var signupObject = new IdSignupRequest( user, password, userId, TestHelper.Namespace, TestHelper.Database, scope );
-            var response = await db.Signup(signupObject);
-            Assert.NotNull(response);
-            TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
-            string? doc = result.GetObject<string>();
-            doc.Should().NotBeNullOrEmpty();
+            var signupObject = new IdScopeAuth( id, user, password, TestHelper.Namespace, TestHelper.Database, scope );
+            var signupResponse = await db.Signup(signupObject);
+            Assert.NotNull(signupResponse);
+            TestHelper.AssertOk(signupResponse);
+            Assert.True(signupResponse.TryGetResult(out Result signupResult));
+            string? signupJwt = signupResult.GetObject<string>();
+            signupJwt.Should().NotBeNullOrEmpty();
+
+            var signinObject = new ScopeAuth( user, password, TestHelper.Namespace, TestHelper.Database, scope );
+            var signinResponse = await db.Signin(signinObject);
+            Assert.NotNull(signinResponse);
+            TestHelper.AssertOk(signinResponse);
+            Assert.True(signinResponse.TryGetResult(out Result result)); 
+            string? signinJwt = result.GetObject<string>();
+            signinJwt.Should().NotBeNullOrEmpty();
         }
     );
 

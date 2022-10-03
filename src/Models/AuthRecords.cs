@@ -1,30 +1,30 @@
 using SurrealDB.Models;
 
 using System.Net;
+// ReSharper disable InconsistentNaming
 
 namespace SurrealDB.Models;
 
-/// <summary>
-/// The base object for a Signup request.
-/// Inherit from this object to build your own login request based on the you want to supply when signing up
-/// </summary>
-/// <param name="NS">Namespace</param>
-/// <param name="DB">Database</param>
-/// <param name="SC">Scope</param>
-public abstract record SignupRequestBase(
+public interface IAuth {}
+
+public readonly record struct RootAuth(
+    string user,
+    string pass) : IAuth;
+
+public readonly record struct NamespaceAuth(
+    string user,
+    string pass,
+    string NS) : IAuth;
+
+public readonly record struct DatabaseAuth(
+    string user,
+    string pass,
+    string NS,
+    string DB) : IAuth;
+
+public readonly record struct ScopeAuth(
+    string user,
+    string pass,
     string NS,
     string DB,
-    string SC);
-
-/// <summary>
-/// The base object for a Signin request.
-/// </summary>
-public abstract record SigninRequestBase();
-
-/// <summary>
-/// A Signin request using the "Basic" authentication scheme (RFC 7617).
-/// </summary>
-public record BasicSigninRequest(
-    string user,
-    string pass
-    ) : SigninRequestBase;
+    string SC) : IAuth;
