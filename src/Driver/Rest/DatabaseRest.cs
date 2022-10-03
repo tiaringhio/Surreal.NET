@@ -121,7 +121,9 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     public Task<RestResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
-        throw new NotSupportedException(); // TODO: Is it tho???
+        SetAuth(token);
+
+        return CompletedOk;
     }
 
     public Task<RestResponse> Let(
@@ -197,7 +199,8 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     private void SetAuth(
         string? user,
         string? pass) {
-        // TODO: Support jwt auth
+        RemoveAuth();
+
         _config.Username = user;
         _config.Password = pass;
         AuthenticationHeaderValue header = new(
@@ -208,7 +211,18 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         _client.DefaultRequestHeaders.Authorization = header;
     }
 
+    private void SetAuth(
+        string? jwt) {
+        RemoveAuth();
+
+        _config.JsonWebToken = jwt;
+        AuthenticationHeaderValue header = new("Bearer", jwt);
+
+        _client.DefaultRequestHeaders.Authorization = header;
+    }
+
     private void RemoveAuth() {
+        _config.JsonWebToken = null;
         _config.Username = null;
         _config.Password = null;
         _client.DefaultRequestHeaders.Authorization = null;

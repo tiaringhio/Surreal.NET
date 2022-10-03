@@ -28,3 +28,13 @@ public readonly record struct ScopeAuth(
     string NS,
     string DB,
     string SC) : IAuth;
+
+public readonly record struct Token(
+    string ID,
+    string NS,
+    string DB,
+    string SC,
+    DateTime exp,
+    DateTime iat,
+    DateTime nbf,
+    string iss) : IAuth;
