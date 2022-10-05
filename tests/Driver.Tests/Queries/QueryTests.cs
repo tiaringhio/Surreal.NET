@@ -229,7 +229,7 @@ public abstract class QueryTests<T, TKey, TValue>
             Thing thing2 = Thing.From("object2", expectedObject.Key!.ToString());
             await db.Create(thing2, expectedObject);
 
-            var relateSql = "RELATE $thing1->hasOtherThing->$thing2;";
+            var relateSql = "RELATE ($thing1)->hasOtherThing->($thing2)";
             var vars = new Dictionary<string, object>
             {
                 {"thing1", thing1},
@@ -239,13 +239,13 @@ public abstract class QueryTests<T, TKey, TValue>
             Assert.NotNull(relateResponse);
             TestHelper.AssertOk(relateResponse);
 
-            var thing2Sql = "SELECT * FROM object2 WHERE $thing1->hasOtherThing->object2.*";
+            var thing2Sql = "SELECT ->hasOtherThing->object2.* AS field FROM $thing1";
             var thing2Response = await db.Query(thing2Sql, vars);
             Assert.NotNull(thing2Response);
             TestHelper.AssertOk(thing2Response);
             Assert.True(thing2Response.TryGetResult(out Result thing2Result));
-            TestObject<TKey, TValue>? thing2Doc = thing2Result.GetObject<TestObject<TKey, TValue>>();
-            thing2Doc.Should().BeEquivalentTo(expectedObject);
+            Field<TestObject<TKey, TValue>>? thing2Doc = thing2Result.GetObject<Field<TestObject<TKey, TValue>>>();
+            thing2Doc.field.First().Should().BeEquivalentTo(expectedObject);
         }
     );
 
