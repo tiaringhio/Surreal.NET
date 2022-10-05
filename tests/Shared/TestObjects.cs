@@ -32,4 +32,5 @@ public record struct IdScopeAuth(
 
 public record struct User(
     string id,
-    string email);
+    string email,
+    string password);

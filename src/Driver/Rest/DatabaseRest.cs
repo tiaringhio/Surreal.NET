@@ -30,12 +30,12 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     ///     Indicates whether the client has valid connection details.
     /// </summary>
     public bool InvalidConnectionDetails =>
-        _client.DefaultRequestHeaders.Contains(NAMESPACE) &&
-        _client.DefaultRequestHeaders.Contains(DATABASE) &&
-        _client.DefaultRequestHeaders.Authorization != null;
+        !_client.DefaultRequestHeaders.Contains(NAMESPACE) ||
+        !_client.DefaultRequestHeaders.Contains(DATABASE) ||
+        _client.DefaultRequestHeaders.Authorization == null;
 
     private void ThrowIfInvalidConnection() {
-        if (!InvalidConnectionDetails) {
+        if (InvalidConnectionDetails) {
             throw new InvalidOperationException("The connection details is invalid.");
         }
     }
@@ -48,15 +48,15 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return _config;
     }
 
-    public Task Open(Configuration.Config config, CancellationToken ct = default) {
+    public async Task Open(Configuration.Config config, CancellationToken ct = default) {
         _config = config;
         _configured = false;
-        return Open(ct);
+        await Open(ct);
     }
 
-    public Task Open(CancellationToken ct = default) {
+    public async Task Open(CancellationToken ct = default) {
         if (_configured) {
-            return Task.CompletedTask;
+            return;
         }
         _config.ThrowIfInvalid();
         _configured = true;
@@ -64,16 +64,19 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
 
         // Authentication
         _client.BaseAddress = _config.RestEndpoint;
-        SetAuth(_config.Username, _config.Password);
 
         // Use database
         SetUse(_config.Database, _config.Namespace);
 
+        if (_config.Username != null && _config.Password != null) {
+            SetAuth(_config.Username, _config.Password);
+        } else if (_config.JsonWebToken != null)  {
+            await Authenticate(_config.JsonWebToken, ct);
+        }
+
         // The warp package Surreal uses for HTTP will return a 405
         // on OSX if the `Accept` header is not set.
         _client.DefaultRequestHeaders.Add("Accept", new[] { "application/json" });
-
-        return Task.CompletedTask;
     }
 
     public Task Close(CancellationToken ct = default) {
@@ -81,11 +84,9 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return Task.CompletedTask;
     }
 
-    /// <summary>
-    ///     UNSUPPORTED FOR REST IMPLEMENTATION
-    /// </summary>
-    public Task<RestResponse> Info(CancellationToken ct = default) {
-        return CompletedOk;
+    public async Task<RestResponse> Info(CancellationToken ct = default) {
+        string authSql = "SELECT * FROM $auth;";
+        return await Query(authSql, null);
     }
 
     public Task<RestResponse> Use(
@@ -112,7 +113,6 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     }
 
     public Task<RestResponse> Invalidate(CancellationToken ct = default) {
-        SetUse(null, null);
         RemoveAuth();
 
         return CompletedOk;
