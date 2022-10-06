@@ -10,6 +10,21 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     private Config _config;
     private bool _configured;
 
+    /// <summary>
+    ///     Indicates whether the client has valid connection details.
+    /// </summary>
+    public bool InvalidConnectionDetails =>
+        _config.Namespace == null ||
+        _config.Database == null ||
+        ((_config.Username == null || _config.Password == null) &&
+            _config.JsonWebToken == null);
+
+    private void ThrowIfInvalidConnection() {
+        if (InvalidConnectionDetails) {
+            throw new InvalidOperationException("The connection details is invalid.");
+        }
+    }
+
     public DatabaseRpc() {}
 
     public DatabaseRpc(in Config config) {
@@ -41,7 +56,11 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         await _client.Open(_config.RpcEndpoint!, ct);
 
         // Authenticate
-        await SetAuth(_config.Username, _config.Password, ct);
+        if (_config.Username != null && _config.Password != null) {
+            await Signin(new RootAuth(_config.Username, _config.Password), ct);
+        } else if (_config.JsonWebToken != null)  {
+            await Authenticate(_config.JsonWebToken, ct);
+        }
 
         // Use database
         await SetUse(_config.Database, _config.Namespace, ct);
@@ -91,14 +110,26 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
 
     /// <inheritdoc />
     public async Task<RpcResponse> Invalidate(CancellationToken ct = default) {
-        return await _client.Send(new() { method = "invalidate", }, ct).ToSurreal();
+        var response = await _client.Send(new() { method = "invalidate", }, ct).ToSurreal();
+
+        if (response.IsOk) {
+            RemoveAuth();
+        }
+
+        return response;
     }
 
     /// <inheritdoc />
     public async Task<RpcResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
-        return await _client.Send(new() { method = "authenticate", parameters = new() { token, }, }, ct).ToSurreal();
+        var response = await _client.Send(new() { method = "authenticate", parameters = new() { token, }, }, ct).ToSurreal();
+
+        if (response.IsOk) {
+            SetAuth(token);
+        }
+
+        return response;
     }
 
     /// <inheritdoc />
@@ -173,14 +204,26 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         await Use(db, ns, ct);
     }
 
-    private async Task SetAuth(
+    private void SetAuth(
         string? user,
-        string? pass,
-        CancellationToken ct) {
-        // TODO: Support jwt auth
+        string? pass) {
+        RemoveAuth();
+
         _config.Username = user;
         _config.Password = pass;
-        await Signin(new RootAuth(user, pass), ct);
+    }
+
+    private void SetAuth(
+        string? jwt) {
+        RemoveAuth();
+
+        _config.JsonWebToken = jwt;
+    }
+
+    private void RemoveAuth() {
+        _config.JsonWebToken = null;
+        _config.Username = null;
+        _config.Password = null;
     }
 
     public void Dispose() {
