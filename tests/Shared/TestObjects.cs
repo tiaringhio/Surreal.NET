@@ -34,3 +34,6 @@ public readonly record struct User(
     string id,
     string email,
     string password);
+
+public record Field<T>(
+    List<T> field);
