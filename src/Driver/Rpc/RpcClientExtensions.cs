@@ -19,12 +19,15 @@ internal static class RpcClientExtensions {
             return new RpcResponse(new ErrorResult(rsp.error.code, string.Empty, rsp.error.message));
         }
 
-        var result = UnpackFromStatusDocument(rsp.result);
-        result = result.IntoSingle();
+        var docs = UnpackFromStatusDocument(rsp.result);
 
-        // SurrealDB likes to returns a list of one result. Unbox this response, to conform with the REST client
-        OkResult res = OkResult.From(result);
-        return new(res);
+        if (docs == null) {
+            return new RpcResponse();
+        }
+
+        var results = docs.Select(e => e.ToResult()).ToList();
+
+        return new RpcResponse(results);
     }
 
     [DoesNotReturn]
@@ -32,8 +35,8 @@ internal static class RpcClientExtensions {
         throw new InvalidOperationException("Response does not have an id.");
     }
 
-    private static JsonElement UnpackFromStatusDocument(in JsonElement root) {
-        // Some results come as a simple array of objects (basically just a results array)
+    private static List<RawResult>? UnpackFromStatusDocument(in JsonElement root) {
+        // Some results come as a simple object or an array of objects or even and empty string
         // [ { }, { }, ... ]
         // Others come embedded into a 'status document' that can have multiple result sets
         //[
@@ -43,15 +46,15 @@ internal static class RpcClientExtensions {
         //    "time": "71.775µs"
         //  }
         //]
-
+        
         if (root.ValueKind != JsonValueKind.Array) {
-            return root;
+            return ToSingleRawResult(root);
         }
 
         foreach (var resultStatusDoc in root.EnumerateArray()) {
             if (resultStatusDoc.ValueKind != JsonValueKind.Object) {
                 // if this was a status document, we would expect an object here
-                return root;
+                return ToSingleRawResult(root);
             }
 
             var propertyCount = 0;
@@ -65,18 +68,26 @@ internal static class RpcClientExtensions {
                     // this property is not part of the 'status document',
                     // at this point we can be confident that it is just a simple array of objects
                     // so lets just return it
-                    return root;
+                    return ToSingleRawResult(root);
                 }
             }
 
             if (propertyCount == 3) {
                 // We ended up with 3 properties, so this must be a status document
-                return resultProperty!.Value;
+                var results = root.Deserialize<List<RawResult>>(SerializerOptions.Shared);
+                return results;
             }
         }
-
+        
         // if we get here then all the properties had valid status document names
         // but was missing some of them
-        return root;
+        return ToSingleRawResult(root);
     }
+
+    private static List<RawResult> ToSingleRawResult(in JsonElement element) {
+        var result = new RawResult(string.Empty, RawResult.OK, string.Empty, element.IntoSingle());
+        var rawResultList = new List<RawResult> { result };
+        return rawResultList;
+    }
+
 }

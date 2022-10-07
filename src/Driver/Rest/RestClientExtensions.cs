@@ -79,19 +79,6 @@ internal static class RestClientExtensions {
         return read <= 0;
     }
 
-    private readonly record struct RawResult(string time,
-        string status,
-        string detail,
-        JsonElement result) {
-        internal IResult ToResult() {
-            if (status == "OK") {
-                return OkResult.From(result.IntoSingle());
-            } else {
-                return new ErrorResult(-1, status, detail);
-            }
-        }
-    }
-
     private readonly record struct RestError(int code,
         string details,
         string description,

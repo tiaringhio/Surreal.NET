@@ -177,6 +177,23 @@ GROUP BY country;";
     );
 
     [Fact]
+    public async Task MultipleResultSetQueryTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            string expectedResult = "A Name";
+            string sql = $"LET $name = \"{expectedResult}\";\n"
+              + "SELECT * FROM $name;\n";
+            var response = await db.Query(sql, null);
+
+            Assert.NotNull(response);
+            TestHelper.AssertOk(response);
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            string? doc = result.GetObject<string>();
+            Assert.NotNull(doc);
+            doc.Should().Be(expectedResult);
+        }
+    );
+
+    [Fact]
     public async Task SimultaneousDatabaseOperations() => await DbHandle<T>.WithDatabase(
         async db => {
             var taskCount = 50;
