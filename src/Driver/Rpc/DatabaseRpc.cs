@@ -112,7 +112,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     public async Task<RpcResponse> Invalidate(CancellationToken ct = default) {
         var response = await _client.Send(new() { method = "invalidate", }, ct).ToSurreal();
 
-        if (response.IsOk) {
+        if (!response.HasErrors) {
             RemoveAuth();
         }
 
@@ -125,7 +125,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
         CancellationToken ct = default) {
         var response = await _client.Send(new() { method = "authenticate", parameters = new() { token, }, }, ct).ToSurreal();
 
-        if (response.IsOk) {
+        if (!response.HasErrors) {
             SetAuth(token);
         }
 

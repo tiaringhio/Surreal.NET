@@ -16,7 +16,7 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
@@ -35,7 +35,7 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
@@ -54,7 +54,7 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
@@ -73,7 +73,7 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }

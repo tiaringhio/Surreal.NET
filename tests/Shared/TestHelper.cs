@@ -27,25 +27,34 @@ public static class TestHelper {
 
     public static void AssertOk(
         in IResponse rpcResponse,
-        // [CallerArgumentExpression("rpcResponse")]
+        [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
-        if (!rpcResponse.TryGetError(out Error err)) {
+        if (!rpcResponse.HasErrors) {
             return;
         }
 
-        Exception ex = new($"Expected Ok, got error code {err.Code} ({err.Message}) in {caller}");
+        var errorResponses = rpcResponse.AllErrorResults.ToList();
+        var message = $"Expected OK, got {errorResponses.Count} Error responses in {caller}";
+        foreach (var errorResponse in errorResponses) {
+            message += $"\n\tCode:{errorResponse.Code} | Status: {errorResponse.Status} | Message: {errorResponse.Message}";
+        }
+
+        Exception ex = new(message);
         throw ex;
     }
-
+    
     public static void AssertError(
         in IResponse rpcResponse,
-        // [CallerArgumentExpression("rpcResponse")]
+        [CallerArgumentExpression("rpcResponse")]
         string caller = "") {
-        if (rpcResponse.TryGetError(out Error err)) {
+        if (rpcResponse.HasErrors) {
             return;
         }
 
-        Exception ex = new($"Expected Error, got ok response in {caller}");
+        var errorResponses = rpcResponse.AllErrorResults.ToList();
+        var message = $"Expected Error, got {errorResponses.Count} OK responses in {caller}";
+
+        Exception ex = new(message);
         throw ex;
     }
 }

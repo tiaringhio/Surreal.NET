@@ -45,7 +45,7 @@ public abstract class GeneralQueryTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             DateTime? doc = result.GetObject<DateTime>();
             doc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(10));
         }
@@ -70,7 +70,7 @@ GROUP BY country;";
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             List<GroupedCountries>? doc = result.GetObject<List<GroupedCountries>>();
             doc.Should().HaveCount(2);
         }
@@ -85,7 +85,7 @@ GROUP BY country;";
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             string? doc = result.GetObject<string>();
             doc.Should().BeEquivalentTo("4768b3fc7ac751e03a614e2349abf3bf");
         }
@@ -105,7 +105,7 @@ GROUP BY country;";
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
             doc.Should().BeEquivalentTo(expectedResult);
         }
@@ -126,7 +126,7 @@ GROUP BY country;";
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
             Assert.NotNull(doc);
             doc!.result.Should().BeApproximately(expectedResult.result, 0.000001f);
@@ -148,7 +148,7 @@ GROUP BY country;";
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
             Assert.NotNull(doc);
             doc!.result.Should().BeApproximately(expectedResult.result, 0.001f);
@@ -170,7 +170,7 @@ GROUP BY country;";
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
             doc.Should().BeEquivalentTo(expectedResult);
         }
@@ -211,7 +211,7 @@ GROUP BY country;";
     private static void AssertResponse(IResponse? response, TestObject<int, int> expectedResult) {
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out Result result));
+        Assert.True(response.TryGetFirstOkResult(out OkResult result));
         TestObject<int, int>? doc = result.GetObject<TestObject<int, int>>();
         doc.Should().BeEquivalentTo(expectedResult);
     }

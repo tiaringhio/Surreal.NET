@@ -249,7 +249,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         HttpContent auth,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync("signup", auth, ct);
-        return await rsp.ToSurrealFromAuthResponse();
+        return await rsp.ToSurrealFromAuthResponse(ct);
     }
 
     /// <inheritdoc cref="Query(string, IReadOnlyDictionary{string, object?}?, CancellationToken)" />
@@ -257,7 +257,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         HttpContent sql,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync("sql", sql, ct);
-        return await rsp.ToSurreal();
+        return await rsp.ToSurreal(ct);
     }
 
     public async Task<RestResponse> Create(
@@ -265,7 +265,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         HttpContent data,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync(BuildRequestUri(thing), data, ct);
-        return await rsp.ToSurreal();
+        return await rsp.ToSurreal(ct);
     }
 
     public async Task<RestResponse> Update(
@@ -273,7 +273,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         HttpContent data,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PutAsync(BuildRequestUri(thing), data, ct);
-        return await rsp.ToSurreal();
+        return await rsp.ToSurreal(ct);
     }
 
     private string FormatUrl(

@@ -22,7 +22,7 @@ public abstract class ResultTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var wasSuccessful = result.TryGetValue(out int value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -43,7 +43,7 @@ public abstract class ResultTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var wasSuccessful = result.TryGetValue(out long value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -70,7 +70,7 @@ public abstract class ResultTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var wasSuccessful = result.TryGetValue(out float value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -97,7 +97,7 @@ public abstract class ResultTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var wasSuccessful = result.TryGetValue(out double value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -115,7 +115,7 @@ public abstract class ResultTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var wasSuccessful = result.TryGetValue(out bool value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);

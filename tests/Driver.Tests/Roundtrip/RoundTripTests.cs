@@ -23,7 +23,7 @@ public abstract class RoundTripTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -38,7 +38,7 @@ public abstract class RoundTripTests<T>
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetResult(out Result result));
+            Assert.True(response.TryGetFirstOkResult(out OkResult result));
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -54,7 +54,7 @@ public abstract class RoundTripTests<T>
 
             response.Should().NotBeNull();
             TestHelper.AssertOk(response);
-            response.TryGetResult(out Result result).Should().BeTrue();
+            response.TryGetFirstOkResult(out OkResult result).Should().BeTrue();
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -64,7 +64,7 @@ public abstract class RoundTripTests<T>
     public async Task CreateAndParameterizedQueryRoundTripTest() => await DbHandle<T>.WithDatabase(async db => {
         Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
         var rsp = await db.Create(thing, Expected);
-        rsp.IsOk.Should().BeTrue();
+        rsp.HasErrors.Should().BeFalse();
         string sql = "SELECT * FROM $thing";
         Dictionary<string, object?> param = new() { ["thing"] = thing, };
 
@@ -72,7 +72,7 @@ public abstract class RoundTripTests<T>
 
         Assert.NotNull(response);
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetResult(out Result result));
+        Assert.True(response.TryGetFirstOkResult(out OkResult result));
         var returnedDocument = result.GetObject<RoundTripObject>();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     });
