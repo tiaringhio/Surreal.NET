@@ -20,7 +20,7 @@ public sealed class DatabaseRpc : IDatabase {
             _config.JsonWebToken == null);
 
     private void ThrowIfInvalidConnection() {
-        if (InvalidConnectionDetails) {
+        if (!_configured || InvalidConnectionDetails) {
             throw new InvalidOperationException("The connection details is invalid.");
         }
     }
@@ -74,6 +74,7 @@ public sealed class DatabaseRpc : IDatabase {
     /// <param name="ct"> </param>
     /// <inheritdoc />
     public async Task<DriverResponse> Info(CancellationToken ct) {
+        ThrowIfInvalidConnection();
         return await _client.Send(new() { method = "info", }, ct).ToSurreal();
     }
 
@@ -82,6 +83,7 @@ public sealed class DatabaseRpc : IDatabase {
         string? db,
         string? ns,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         WsClient.Response rsp = await _client.Send(new() { method = "use", parameters = new(){ db, ns } }, ct);
 
         if (rsp.error == default) {
@@ -96,6 +98,7 @@ public sealed class DatabaseRpc : IDatabase {
     public async Task<DriverResponse> Signup<TRequest>(
         TRequest auth,
         CancellationToken ct = default) where TRequest : IAuth {
+        ThrowIfInvalidConnection();
         return await _client.Send(new() { method = "signup", parameters = new() { auth } }, ct).ToSurreal();
     }
 
@@ -103,6 +106,7 @@ public sealed class DatabaseRpc : IDatabase {
     public async Task<DriverResponse> Signin<TRequest>(
         TRequest auth,
         CancellationToken ct = default) where TRequest : IAuth {
+        ThrowIfInvalidConnection();
         WsClient.Response rsp = await _client.Send(new() { method = "signin", parameters = new() { auth } }, ct);
 
         return rsp.ToSurreal();
@@ -110,6 +114,7 @@ public sealed class DatabaseRpc : IDatabase {
 
     /// <inheritdoc />
     public async Task<DriverResponse> Invalidate(CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         var response = await _client.Send(new() { method = "invalidate", }, ct).ToSurreal();
 
         if (!response.HasErrors) {
@@ -123,6 +128,7 @@ public sealed class DatabaseRpc : IDatabase {
     public async Task<DriverResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         var response = await _client.Send(new() { method = "authenticate", parameters = new() { token, }, }, ct).ToSurreal();
 
         if (!response.HasErrors) {
@@ -137,6 +143,7 @@ public sealed class DatabaseRpc : IDatabase {
         string key,
         object? value,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         return await _client.Send(new() { method = "let", parameters = new() { key, value, }, }, ct).ToSurreal();
     }
 
@@ -145,6 +152,7 @@ public sealed class DatabaseRpc : IDatabase {
         string sql,
         IReadOnlyDictionary<string, object?>? vars,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         WsClient.Request req = new() { method = "query", parameters = new() { sql, vars, }, };
         WsClient.Response rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
@@ -154,6 +162,7 @@ public sealed class DatabaseRpc : IDatabase {
     public async Task<DriverResponse> Select(
         Thing thing,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         WsClient.Request req = new() { method = "select", parameters = new() { thing, }, };
         WsClient.Response rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
@@ -164,6 +173,7 @@ public sealed class DatabaseRpc : IDatabase {
         Thing thing,
         object data,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         WsClient.Request req = new() { method = "create", async = true, parameters = new() { thing, data, }, };
         WsClient.Response rsp = await _client.Send(req, ct);
         return rsp.ToSurreal();
@@ -174,6 +184,7 @@ public sealed class DatabaseRpc : IDatabase {
         Thing thing,
         object data,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         return await _client.Send(new() { method = "update", parameters = new() { thing, data, }, }, ct).ToSurreal();
     }
 
@@ -182,16 +193,19 @@ public sealed class DatabaseRpc : IDatabase {
         Thing thing,
         object data,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         return await _client.Send(new() { method = "change", parameters = new() { thing, data, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<DriverResponse> Modify(Thing thing, Patch[] patches, CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         return await _client.Send(new() { method = "modify", parameters = new() { thing, patches, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
     public async Task<DriverResponse> Delete(Thing thing, CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         return await _client.Send(new() { method = "delete", parameters = new() { thing, }, }, ct).ToSurreal();
     }
 
