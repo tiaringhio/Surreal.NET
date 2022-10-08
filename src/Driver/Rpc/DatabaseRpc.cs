@@ -1,11 +1,12 @@
 using SurrealDB.Abstractions;
 using SurrealDB.Configuration;
+using SurrealDB.Driver.Rest;
 using SurrealDB.Models;
 using SurrealDB.Ws;
 
 namespace SurrealDB.Driver.Rpc;
 
-public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
+public sealed class DatabaseRpc : IDatabase {
     private readonly WsClient _client = new();
     private Config _config;
     private bool _configured;
@@ -73,12 +74,12 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
 
     /// <param name="ct"> </param>
     /// <inheritdoc />
-    public async Task<RpcResponse> Info(CancellationToken ct) {
+    public async Task<DriverResponse> Info(CancellationToken ct) {
         return await _client.Send(new() { method = "info", }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Use(
+    public async Task<DriverResponse> Use(
         string? db,
         string? ns,
         CancellationToken ct = default) {
@@ -93,23 +94,23 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Signup<TRequest>(
+    public async Task<DriverResponse> Signup<TRequest>(
         TRequest auth,
         CancellationToken ct = default) where TRequest : IAuth {
         return await _client.Send(new() { method = "signup", parameters = new() { auth } }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Signin<TRequest>(
+    public async Task<DriverResponse> Signin<TRequest>(
         TRequest auth,
         CancellationToken ct = default) where TRequest : IAuth {
         WsClient.Response rsp = await _client.Send(new() { method = "signin", parameters = new() { auth } }, ct);
-        
+
         return rsp.ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Invalidate(CancellationToken ct = default) {
+    public async Task<DriverResponse> Invalidate(CancellationToken ct = default) {
         var response = await _client.Send(new() { method = "invalidate", }, ct).ToSurreal();
 
         if (!response.HasErrors) {
@@ -120,7 +121,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Authenticate(
+    public async Task<DriverResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
         var response = await _client.Send(new() { method = "authenticate", parameters = new() { token, }, }, ct).ToSurreal();
@@ -133,7 +134,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Let(
+    public async Task<DriverResponse> Let(
         string key,
         object? value,
         CancellationToken ct = default) {
@@ -141,7 +142,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Query(
+    public async Task<DriverResponse> Query(
         string sql,
         IReadOnlyDictionary<string, object?>? vars,
         CancellationToken ct = default) {
@@ -151,7 +152,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Select(
+    public async Task<DriverResponse> Select(
         Thing thing,
         CancellationToken ct = default) {
         WsClient.Request req = new() { method = "select", parameters = new() { thing, }, };
@@ -160,7 +161,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Create(
+    public async Task<DriverResponse> Create(
         Thing thing,
         object data,
         CancellationToken ct = default) {
@@ -170,7 +171,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Update(
+    public async Task<DriverResponse> Update(
         Thing thing,
         object data,
         CancellationToken ct = default) {
@@ -178,7 +179,7 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Change(
+    public async Task<DriverResponse> Change(
         Thing thing,
         object data,
         CancellationToken ct = default) {
@@ -186,12 +187,12 @@ public sealed partial class DatabaseRpc : IDatabase<RpcResponse> {
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Modify(Thing thing, Patch[] patches, CancellationToken ct = default) {
+    public async Task<DriverResponse> Modify(Thing thing, Patch[] patches, CancellationToken ct = default) {
         return await _client.Send(new() { method = "modify", parameters = new() { thing, patches, }, }, ct).ToSurreal();
     }
 
     /// <inheritdoc />
-    public async Task<RpcResponse> Delete(Thing thing, CancellationToken ct = default) {
+    public async Task<DriverResponse> Delete(Thing thing, CancellationToken ct = default) {
         return await _client.Send(new() { method = "delete", parameters = new() { thing, }, }, ct).ToSurreal();
     }
 

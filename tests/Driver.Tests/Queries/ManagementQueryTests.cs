@@ -1,4 +1,4 @@
-using SurrealDB.Common;
+
 // ReSharper disable All
 #pragma warning disable CS0169
 
@@ -68,7 +68,7 @@ public abstract class ManagementQueryTests<T>
 
                 Assert.NotNull(response);
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOkResult(out OkResult result));
+                Assert.True(response.TryGetFirstOk(out OkResult result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOtherObject);
             }
@@ -82,7 +82,7 @@ public abstract class ManagementQueryTests<T>
 
                 Assert.NotNull(response);
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOkResult(out OkResult result));
+                Assert.True(response.TryGetFirstOk(out OkResult result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOriginalObject);
             }
@@ -114,7 +114,7 @@ public abstract class ManagementQueryTests<T>
 
                 Assert.NotNull(response);
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOkResult(out OkResult result));
+                Assert.True(response.TryGetFirstOk(out OkResult result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOtherObject);
             }
@@ -128,7 +128,7 @@ public abstract class ManagementQueryTests<T>
 
                 Assert.NotNull(response);
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOkResult(out OkResult result));
+                Assert.True(response.TryGetFirstOk(out OkResult result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOriginalObject);
             }

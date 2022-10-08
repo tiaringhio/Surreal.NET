@@ -16,7 +16,7 @@ public abstract class EqualityQueryTests<T, TKey, TValue> : QueryTests<T, TKey, 
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
@@ -35,7 +35,7 @@ public abstract class EqualityQueryTests<T, TKey, TValue> : QueryTests<T, TKey, 
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }

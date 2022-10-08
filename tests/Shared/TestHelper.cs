@@ -1,7 +1,7 @@
 namespace SurrealDB.Shared.Tests;
 
 public static class TestHelper {
-    
+
     public const string Loopback = "127.0.0.1";
     public const int Port = 8082;
     public const string User = "root";
@@ -26,14 +26,14 @@ public static class TestHelper {
     }
 
     public static void AssertOk(
-        in IResponse rpcResponse,
-        [CallerArgumentExpression("rpcResponse")]
+        in IResponse DriverResponse,
+        [CallerArgumentExpression("DriverResponse")]
         string caller = "") {
-        if (!rpcResponse.HasErrors) {
+        if (!DriverResponse.HasErrors) {
             return;
         }
 
-        var errorResponses = rpcResponse.AllErrorResults.ToList();
+        var errorResponses = DriverResponse.Errors.ToList();
         var message = $"Expected OK, got {errorResponses.Count} Error responses in {caller}";
         foreach (var errorResponse in errorResponses) {
             message += $"\n\tCode:{errorResponse.Code} | Status: {errorResponse.Status} | Message: {errorResponse.Message}";
@@ -42,16 +42,16 @@ public static class TestHelper {
         Exception ex = new(message);
         throw ex;
     }
-    
+
     public static void AssertError(
-        in IResponse rpcResponse,
-        [CallerArgumentExpression("rpcResponse")]
+        in IResponse DriverResponse,
+        [CallerArgumentExpression("DriverResponse")]
         string caller = "") {
-        if (rpcResponse.HasErrors) {
+        if (DriverResponse.HasErrors) {
             return;
         }
 
-        var errorResponses = rpcResponse.AllErrorResults.ToList();
+        var errorResponses = DriverResponse.Errors.ToList();
         var message = $"Expected Error, got {errorResponses.Count} OK responses in {caller}";
 
         Exception ex = new(message);

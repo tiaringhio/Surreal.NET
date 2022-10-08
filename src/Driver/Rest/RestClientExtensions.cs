@@ -10,7 +10,7 @@ using SurrealDB.Models;
 namespace SurrealDB.Driver.Rest;
 
 internal static class RestClientExtensions {
-    internal static async Task<RestResponse> ToSurreal(this HttpResponseMessage msg, CancellationToken ct = default) {
+    internal static async Task<DriverResponse> ToSurreal(this HttpResponseMessage msg, CancellationToken ct = default) {
 #if NET6_0_OR_GREATER
         Stream stream = await msg.Content.ReadAsStreamAsync(ct);
 #else
@@ -18,31 +18,29 @@ internal static class RestClientExtensions {
 #endif
         if (!msg.IsSuccessStatusCode) {
             RestError restError = await JsonSerializer.DeserializeAsync<RestError>(stream, SerializerOptions.Shared, ct);
-            ErrorResult errorResult = restError.ToErrorResult();
-            return new RestResponse(errorResult);
+            return new DriverResponse(restError.ToErrorResult());
         }
 
         if (await PeekIsEmpty(stream, ct)) {
             // Success and empty message -> invalid json
-            return new RestResponse();
-        }
-        
-        List<RawResult>? docs = await JsonSerializer.DeserializeAsync<List<RawResult>>(stream, SerializerOptions.Shared, ct);
-
-        if (docs == null) {
-            return new RestResponse();
+            return default;
         }
 
-        var results = docs.Select(e => e.ToResult()).ToList();
+        ArrayBuilder<RawResult> builder = new();
+        await foreach (RawResult res in JsonSerializer.DeserializeAsyncEnumerable<RawResult>(stream, SerializerOptions.Shared, ct)) {
+            if (!res.IsDefault) {
+                builder.Append(res);
+            }
+        }
 
-        return new RestResponse(results);
+        return DriverResponse.FromOwned(builder.AsSegment());
     }
-    
-    internal static async Task<RestResponse> ToSurrealFromAuthResponse(this HttpResponseMessage msg, CancellationToken ct = default) {
-        
+
+    internal static async Task<DriverResponse> ToSurrealFromAuthResponse(this HttpResponseMessage msg, CancellationToken ct = default) {
+
             // Signin and Signup returns a different object to the other response
             // And for that reason needs it's on deserialization path
-            // The whole response is ultimately shoved into the RestResponse.Success.result field
+            // The whole response is ultimately shoved into the DriverResponse.Success.result field
             // {"code":200,"details":"Authentication succeeded","token":"a.jwt.token"}
 
 #if NET6_0_OR_GREATER
@@ -52,13 +50,12 @@ internal static class RestClientExtensions {
 #endif
         if (msg.StatusCode != HttpStatusCode.OK) {
             RestError restError = await JsonSerializer.DeserializeAsync<RestError>(stream, SerializerOptions.Shared, ct);
-            ErrorResult errorResult = restError.ToErrorResult();
-            return new RestResponse(errorResult);
+            return new DriverResponse(restError.ToErrorResult());
         }
 
         AuthResult result = await JsonSerializer.DeserializeAsync<AuthResult>(stream, SerializerOptions.Shared, ct);
 
-        return new RestResponse(result.ToResult());
+        return new DriverResponse(result.ToResult());
     }
 
     /// <summary>
@@ -79,22 +76,21 @@ internal static class RestClientExtensions {
         return read <= 0;
     }
 
-    private readonly record struct RestError(int code,
-        string details,
-        string description,
-        string information) {
-        internal ErrorResult ToErrorResult() {
-            ErrorResult errorResult = new (code, details, $"{description}\n{information}");
-            return errorResult;
+    private readonly record struct RestError(int Code,
+        string Details,
+        string Description,
+        string Information) {
+        internal RawResult ToErrorResult() {
+            return RawResult.TransportError(Code, Details, $"{Description}\n{Information}");
         }
     }
 
     public readonly record struct AuthResult(
-        HttpStatusCode code,
-        string details,
-        JsonElement token) {
-        internal IResult ToResult() {
-            return OkResult.From(token);
+        HttpStatusCode Code,
+        string Details,
+        JsonElement Token) {
+        internal RawResult ToResult() {
+            return RawResult.Auth(Token);
         }
     }
 }

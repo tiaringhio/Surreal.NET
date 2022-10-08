@@ -8,7 +8,7 @@ using SurrealDB.Models;
 
 namespace SurrealDB.Driver.Rest;
 
-public sealed partial class DatabaseRest : IDatabase<RestResponse> {
+public sealed class DatabaseRest : IDatabase {
     private readonly HttpClient _client = new();
     private Configuration.Config _config;
     private bool _configured;
@@ -19,7 +19,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         _config = config;
     }
 
-    private static Task<RestResponse> CompletedOk => Task.FromResult(RestResponse.EmptyOk);
+    private static Task<DriverResponse> CompletedOk => Task.FromResult(DriverResponse.EmptyOk);
 
     private readonly Dictionary<string, object?> _vars = new();
 
@@ -84,12 +84,12 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return Task.CompletedTask;
     }
 
-    public async Task<RestResponse> Info(CancellationToken ct = default) {
+    public async Task<DriverResponse> Info(CancellationToken ct = default) {
         string authSql = "SELECT * FROM $auth;";
         return await Query(authSql, null);
     }
 
-    public Task<RestResponse> Use(
+    public Task<DriverResponse> Use(
         string? db,
         string? ns,
         CancellationToken ct = default) {
@@ -98,27 +98,27 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return CompletedOk;
     }
 
-    public async Task<RestResponse> Signup<TRequest>(
+    public async Task<DriverResponse> Signup<TRequest>(
         TRequest auth,
         CancellationToken ct = default) where TRequest : IAuth {
         return await Signup(ToJsonContent(auth), ct);
     }
 
-    public async Task<RestResponse> Signin<TRequest>(
+    public async Task<DriverResponse> Signin<TRequest>(
         TRequest auth,
         CancellationToken ct = default) where TRequest : IAuth {
-        
+
         HttpResponseMessage rsp = await _client.PostAsync("signin", ToJsonContent(auth), ct);
         return await rsp.ToSurrealFromAuthResponse();
     }
 
-    public Task<RestResponse> Invalidate(CancellationToken ct = default) {
+    public Task<DriverResponse> Invalidate(CancellationToken ct = default) {
         RemoveAuth();
 
         return CompletedOk;
     }
 
-    public Task<RestResponse> Authenticate(
+    public Task<DriverResponse> Authenticate(
         string token,
         CancellationToken ct = default) {
         SetAuth(token);
@@ -126,7 +126,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return CompletedOk;
     }
 
-    public Task<RestResponse> Let(
+    public Task<DriverResponse> Let(
         string key,
         object? value,
         CancellationToken ct = default) {
@@ -139,7 +139,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return CompletedOk;
     }
 
-    public async Task<RestResponse> Query(
+    public async Task<DriverResponse> Query(
         string sql,
         IReadOnlyDictionary<string, object?>? vars,
         CancellationToken ct = default) {
@@ -148,7 +148,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return await Query(content, ct);
     }
 
-    public async Task<RestResponse> Select(
+    public async Task<DriverResponse> Select(
         Thing thing,
         CancellationToken ct = default) {
         HttpRequestMessage requestMessage = ToRequestMessage(HttpMethod.Get, BuildRequestUri(thing));
@@ -156,7 +156,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return await rsp.ToSurreal();
     }
 
-    public async Task<RestResponse> Create(
+    public async Task<DriverResponse> Create(
         Thing thing,
         object data,
         CancellationToken ct = default) {
@@ -164,27 +164,27 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     }
 
 
-    public async Task<RestResponse> Update(
+    public async Task<DriverResponse> Update(
         Thing thing,
         object data,
         CancellationToken ct = default) {
         return await Update(thing, ToJsonContent(data), ct);
     }
 
-    public async Task<RestResponse> Change(Thing thing, object data, CancellationToken ct = default) {
+    public async Task<DriverResponse> Change(Thing thing, object data, CancellationToken ct = default) {
         HttpRequestMessage req = ToRequestMessage(HttpMethod.Patch, BuildRequestUri(thing), ToJson(data));
         HttpResponseMessage rsp = await _client.SendAsync(req, ct);
         return await rsp.ToSurreal();
     }
 
-    public async Task<RestResponse> Modify(Thing thing, Patch[] patches, CancellationToken ct = default) {
+    public async Task<DriverResponse> Modify(Thing thing, Patch[] patches, CancellationToken ct = default) {
         // Is this the most optimal way?
         string sql = "UPDATE $what PATCH $data RETURN DIFF";
         Dictionary<string, object?> vars = new() { ["what"] = thing, ["data"] = patches, };
         return await Query(sql, vars, ct);
     }
 
-    public async Task<RestResponse> Delete(
+    public async Task<DriverResponse> Delete(
         Thing thing,
         CancellationToken ct = default) {
         HttpRequestMessage requestMessage = ToRequestMessage(HttpMethod.Delete, BuildRequestUri(thing));
@@ -245,7 +245,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     }
 
     /// <inheritdoc cref="Signup(Authentication, CancellationToken)" />
-    public async Task<RestResponse> Signup(
+    public async Task<DriverResponse> Signup(
         HttpContent auth,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync("signup", auth, ct);
@@ -253,14 +253,14 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
     }
 
     /// <inheritdoc cref="Query(string, IReadOnlyDictionary{string, object?}?, CancellationToken)" />
-    public async Task<RestResponse> Query(
+    public async Task<DriverResponse> Query(
         HttpContent sql,
         CancellationToken ct = default) {
         HttpResponseMessage rsp = await _client.PostAsync("sql", sql, ct);
         return await rsp.ToSurreal(ct);
     }
 
-    public async Task<RestResponse> Create(
+    public async Task<DriverResponse> Create(
         Thing thing,
         HttpContent data,
         CancellationToken ct = default) {
@@ -268,7 +268,7 @@ public sealed partial class DatabaseRest : IDatabase<RestResponse> {
         return await rsp.ToSurreal(ct);
     }
 
-    public async Task<RestResponse> Update(
+    public async Task<DriverResponse> Update(
         Thing thing,
         HttpContent data,
         CancellationToken ct = default) {

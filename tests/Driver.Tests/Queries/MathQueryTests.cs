@@ -19,7 +19,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<TValue>();
             AssertEquivalency(resultValue, expectedResult);
         }
@@ -38,7 +38,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            Assert.True(response.TryGetFirstOk(out OkResult result));
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
@@ -57,7 +57,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            Assert.True(response.TryGetFirstOk(out OkResult result));
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
@@ -89,7 +89,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
 
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            Assert.True(response.TryGetFirstOk(out OkResult result));
 
             if (!divisorIsZero) {
                 var value = result.GetObject<TValue>();

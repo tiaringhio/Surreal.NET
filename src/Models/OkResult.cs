@@ -58,7 +58,7 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
     }
 
     public bool TryGetValue([NotNullWhen(true)] out string? value) {
-        bool isString = GetKind() == ResultKind.String;
+        bool isString = GetKind() == Kind.String;
         value = isString ? (string)_sentinelOrValue! : null;
         return isString;
     }
@@ -70,13 +70,13 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
     }
 
     public bool TryGetValue(out long value) {
-        bool isInt = GetKind() == ResultKind.SignedInteger;
+        bool isInt = GetKind() == Kind.SignedInteger;
         value = isInt ? _int64ValueField : 0;
         return isInt;
     }
 
     public bool TryGetValue(out ulong value) {
-        bool isInt = GetKind() == ResultKind.SignedInteger;
+        bool isInt = GetKind() == Kind.SignedInteger;
         long data = _int64ValueField;
         value = isInt ? Unsafe.As<long, ulong>(ref data) : 0;
         return isInt;
@@ -89,14 +89,14 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
     }
 
     public bool TryGetValue(out double value) {
-        bool isFloat = GetKind() == ResultKind.Float;
+        bool isFloat = GetKind() == Kind.Float;
         long data = _int64ValueField;
         value = isFloat ? Unsafe.As<long, double>(ref data) : 0;
         return isFloat;
     }
 
     public bool TryGetValue(out bool value) {
-        bool isBoolean = GetKind() == ResultKind.Boolean;
+        bool isBoolean = GetKind() == Kind.Boolean;
         value = isBoolean && _int64ValueField != FALSE_VALUE;
         return isBoolean;
     }
@@ -146,42 +146,42 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
         return new(json, s_noneSentinel);
     }
 
-    private ResultKind GetKind() {
+    public Kind GetKind() {
 
         if (ReferenceEquals(s_objectSentinel, _sentinelOrValue)) {
-            return ResultKind.Object;
+            return Kind.Object;
         }
 
         if (ReferenceEquals(s_arraySentinel, _sentinelOrValue)) {
-            return ResultKind.Array;
+            return Kind.Array;
         }
 
         if (ReferenceEquals(s_noneSentinel, _sentinelOrValue)) {
-            return ResultKind.None;
+            return Kind.None;
         }
 
         if (ReferenceEquals(s_signedIntegerSentinel, _sentinelOrValue)) {
-            return ResultKind.SignedInteger;
+            return Kind.SignedInteger;
         }
 
         if (ReferenceEquals(s_unsignedIntegerSentinel, _sentinelOrValue)) {
-            return ResultKind.UnsignedInteger;
+            return Kind.UnsignedInteger;
         }
 
         if (ReferenceEquals(s_floatSentinel, _sentinelOrValue)) {
-            return ResultKind.Float;
+            return Kind.Float;
         }
 
         if (ReferenceEquals(s_booleanSentinel, _sentinelOrValue)) {
-            return ResultKind.Boolean;
+            return Kind.Boolean;
         }
 
         if (_sentinelOrValue is string) {
-            return ResultKind.String;
+            return Kind.String;
         }
 
         Debug.Assert(false); // Should not happen, but is not fatal; None covers all edge cases.
-        return ResultKind.None;
+        return Kind.None;
     }
 
     [DoesNotReturn, DebuggerStepThrough,]
@@ -199,7 +199,7 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
         }
 
         // More expensive check for the type of the boxed value.
-        ResultKind kind = GetKind();
+        Kind kind = GetKind();
 
         // Most expensive check requires unboxing of the value.
         return kind == other.GetKind() && EqualsUnboxed(in other, in kind);
@@ -207,13 +207,13 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
 
     private bool EqualsUnboxed(
         in OkResult other,
-        in ResultKind kind) {
+        in Kind kind) {
         return kind switch {
-            ResultKind.Object or ResultKind.None => EqualityComparer<JsonElement>.Default.Equals(
+            Kind.Object or Kind.None => EqualityComparer<JsonElement>.Default.Equals(
                 _json,
                 other._json
             ),
-            ResultKind.String => string.Equals((string)_sentinelOrValue!, (string)other._sentinelOrValue!),
+            Kind.String => string.Equals((string)_sentinelOrValue!, (string)other._sentinelOrValue!),
             // Due to the unsafe case we are still able to use the operator and do not need to cast to compare structs.
             _ => _int64ValueField == other._int64ValueField,
         };
@@ -246,31 +246,31 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
 
 
     public int CompareTo(in OkResult other) {
-        ResultKind thisKind = GetKind();
-        ResultKind otherKind = other.GetKind();
+        Kind thisKind = GetKind();
+        Kind otherKind = other.GetKind();
 
         long thisValue = _int64ValueField;
         long otherValue = other._int64ValueField;
 
         return (thisKind, otherKind) switch {
-            (ResultKind.SignedInteger, ResultKind.SignedInteger) => thisValue.CompareTo(otherValue),
-            (ResultKind.SignedInteger, ResultKind.UnsignedInteger) =>
+            (Kind.SignedInteger, Kind.SignedInteger) => thisValue.CompareTo(otherValue),
+            (Kind.SignedInteger, Kind.UnsignedInteger) =>
                 ((double)thisValue).CompareTo(Unsafe.As<long, ulong>(ref otherValue)),
-            (ResultKind.SignedInteger, ResultKind.Float) =>
+            (Kind.SignedInteger, Kind.Float) =>
                 ((double)thisValue).CompareTo(Unsafe.As<long, double>(ref otherValue)),
 
-            (ResultKind.UnsignedInteger, ResultKind.SignedInteger) =>
+            (Kind.UnsignedInteger, Kind.SignedInteger) =>
                 ((double)Unsafe.As<long, ulong>(ref thisValue)).CompareTo(otherValue),
-            (ResultKind.UnsignedInteger, ResultKind.UnsignedInteger) =>
+            (Kind.UnsignedInteger, Kind.UnsignedInteger) =>
                 Unsafe.As<long, ulong>(ref thisValue).CompareTo(Unsafe.As<long, ulong>(ref otherValue)),
-            (ResultKind.UnsignedInteger, ResultKind.Float) =>
+            (Kind.UnsignedInteger, Kind.Float) =>
                 ((double)Unsafe.As<long, ulong>(ref thisValue)).CompareTo(Unsafe.As<long, double>(ref otherValue)),
 
-            (ResultKind.Float, ResultKind.SignedInteger) =>
+            (Kind.Float, Kind.SignedInteger) =>
                 Unsafe.As<long, double>(ref thisValue).CompareTo(otherValue),
-            (ResultKind.Float, ResultKind.UnsignedInteger) =>
+            (Kind.Float, Kind.UnsignedInteger) =>
                 Unsafe.As<long, double>(ref thisValue).CompareTo(Unsafe.As<long, ulong>(ref otherValue)),
-            (ResultKind.Float, ResultKind.Float) =>
+            (Kind.Float, Kind.Float) =>
                 Unsafe.As<long, double>(ref thisValue).CompareTo(Unsafe.As<long, double>(ref otherValue)),
 
             _ => ThrowInvalidCompareTypes(),
@@ -314,5 +314,16 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
     [DoesNotReturn, DebuggerStepThrough,]
     private static int ThrowInvalidCompareTypes() {
         throw new InvalidOperationException("Cannot compare SurrealResult of different types, if one or more is not numeric..");
+    }
+
+    public enum Kind : byte {
+        Object,
+        Array,
+        None,
+        String,
+        SignedInteger,
+        UnsignedInteger,
+        Float,
+        Boolean
     }
 }

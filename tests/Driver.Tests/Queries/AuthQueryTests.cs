@@ -1,4 +1,4 @@
-using SurrealDB.Common;
+
 // ReSharper disable All
 #pragma warning disable CS0169
 
@@ -29,7 +29,7 @@ public abstract class AuthQueryTests<T>
             var response = await db.Signin(signinObject);
             Assert.NotNull(response);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOkResult(out OkResult result));
+            Assert.True(response.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().BeNullOrEmpty();
         }
@@ -50,7 +50,7 @@ public abstract class AuthQueryTests<T>
             var signinResponse = await db.Signin(signinObject);
             Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
-            Assert.True(signinResponse.TryGetFirstOkResult(out OkResult result));
+            Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
             
@@ -62,7 +62,7 @@ public abstract class AuthQueryTests<T>
             var tokenQueryResponse = await db.Query(tokenSql, null);
             Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
-            Assert.True(tokenQueryResponse.TryGetFirstOkResult(out OkResult tokenQueryResult));
+            Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
             token.Should().NotBeNull();
             token.Value.ID.Should().Be(user);
@@ -91,7 +91,7 @@ public abstract class AuthQueryTests<T>
             var signinResponse = await db.Signin(signinObject);
             Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
-            Assert.True(signinResponse.TryGetFirstOkResult(out OkResult result));
+            Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
             
@@ -108,7 +108,7 @@ public abstract class AuthQueryTests<T>
             var tokenQueryResponse = await db.Query(tokenSql, null);
             Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
-            Assert.True(tokenQueryResponse.TryGetFirstOkResult(out OkResult tokenQueryResult));
+            Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
             token.Should().NotBeNull();
             token.Value.ID.Should().Be(user);
@@ -137,7 +137,7 @@ public abstract class AuthQueryTests<T>
             var signinResponse = await db.Signin(signinObject);
             Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
-            Assert.True(signinResponse.TryGetFirstOkResult(out OkResult result));
+            Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
 
@@ -149,7 +149,7 @@ public abstract class AuthQueryTests<T>
             var tokenQueryResponse = await db.Query(tokenSql, null);
             Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
-            Assert.True(tokenQueryResponse.TryGetFirstOkResult(out OkResult tokenQueryResult));
+            Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
             token.Should().NotBeNull();
             token.Value.ID.Should().Be(user);
@@ -179,7 +179,7 @@ public abstract class AuthQueryTests<T>
             var signinResponse = await db.Signin(signinObject);
             Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
-            Assert.True(signinResponse.TryGetFirstOkResult(out OkResult result));
+            Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
             
@@ -196,7 +196,7 @@ public abstract class AuthQueryTests<T>
             var tokenQueryResponse = await db.Query(tokenSql, null);
             Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
-            Assert.True(tokenQueryResponse.TryGetFirstOkResult(out OkResult tokenQueryResult));
+            Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
             token.Should().NotBeNull();
             token.Value.ID.Should().Be(user);
@@ -235,7 +235,7 @@ public abstract class AuthQueryTests<T>
             var signupResponse = await db.Signup(signupObject);
             Assert.NotNull(signupResponse);
             TestHelper.AssertOk(signupResponse);
-            Assert.True(signupResponse.TryGetFirstOkResult(out OkResult signupResult));
+            Assert.True(signupResponse.TryGetFirstOk(out OkResult signupResult));
             string? signupJwt = signupResult.GetObject<string>();
             signupJwt.Should().NotBeNullOrEmpty();
 
@@ -243,7 +243,7 @@ public abstract class AuthQueryTests<T>
             var signinResponse = await db.Signin(signinObject);
             Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
-            Assert.True(signinResponse.TryGetFirstOkResult(out OkResult result));
+            Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
             
@@ -255,7 +255,7 @@ public abstract class AuthQueryTests<T>
             var tokenQueryResponse = await db.Query(tokenSql, null);
             Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
-            Assert.True(tokenQueryResponse.TryGetFirstOkResult(out OkResult tokenQueryResult));
+            Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
             token.Should().NotBeNull();
             token.Value.NS.Should().Be(TestHelper.Namespace);
@@ -266,7 +266,7 @@ public abstract class AuthQueryTests<T>
             var authQueryResponse = await db.Query(authSql, null);
             Assert.NotNull(authQueryResponse);
             TestHelper.AssertOk(authQueryResponse);
-            Assert.True(authQueryResponse.TryGetFirstOkResult(out OkResult authQueryResult));
+            Assert.True(authQueryResponse.TryGetFirstOk(out OkResult authQueryResult));
             User? authUser = authQueryResult.GetObject<User>();
             authUser.Should().NotBeNull();
             authUser.Value.id.Should().Be(token.Value.ID);
@@ -275,7 +275,7 @@ public abstract class AuthQueryTests<T>
             var infoResponse = await db.Info();
             Assert.NotNull(infoResponse);
             TestHelper.AssertOk(infoResponse);
-            Assert.True(infoResponse.TryGetFirstOkResult(out OkResult infoResult));
+            Assert.True(infoResponse.TryGetFirstOk(out OkResult infoResult));
             User? infoUser = infoResult.GetObject<User>();
             infoUser.Should().BeEquivalentTo(authUser);
 
@@ -313,7 +313,7 @@ public abstract class AuthQueryTests<T>
             var signupResponse = await db.Signup(signupObject);
             Assert.NotNull(signupResponse);
             TestHelper.AssertOk(signupResponse);
-            Assert.True(signupResponse.TryGetFirstOkResult(out OkResult signupResult));
+            Assert.True(signupResponse.TryGetFirstOk(out OkResult signupResult));
             string? signupJwt = signupResult.GetObject<string>();
             signupJwt.Should().NotBeNullOrEmpty();
 
@@ -321,7 +321,7 @@ public abstract class AuthQueryTests<T>
             var signinResponse = await db.Signin(signinObject);
             Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
-            Assert.True(signinResponse.TryGetFirstOkResult(out OkResult result)); 
+            Assert.True(signinResponse.TryGetFirstOk(out OkResult result)); 
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
             
@@ -333,7 +333,7 @@ public abstract class AuthQueryTests<T>
             var tokenQueryResponse = await db.Query(tokenSql, null);
             Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
-            Assert.True(tokenQueryResponse.TryGetFirstOkResult(out OkResult tokenQueryResult));
+            Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
             token.Should().NotBeNull();
             token.Value.ID.Should().Be(id);
@@ -345,7 +345,7 @@ public abstract class AuthQueryTests<T>
             var authQueryResponse = await db.Query(authSql, null);
             Assert.NotNull(authQueryResponse);
             TestHelper.AssertOk(authQueryResponse);
-            Assert.True(authQueryResponse.TryGetFirstOkResult(out OkResult authQueryResult));
+            Assert.True(authQueryResponse.TryGetFirstOk(out OkResult authQueryResult));
             User? authUser = authQueryResult.GetObject<User>();
             authUser.Should().NotBeNull();
             authUser.Value.id.Should().Be(token.Value.ID);
@@ -354,7 +354,7 @@ public abstract class AuthQueryTests<T>
             var infoResponse = await db.Info();
             Assert.NotNull(infoResponse);
             TestHelper.AssertOk(infoResponse);
-            Assert.True(infoResponse.TryGetFirstOkResult(out OkResult infoResult));
+            Assert.True(infoResponse.TryGetFirstOk(out OkResult infoResult));
             User? infoUser = infoResult.GetObject<User>();
             infoUser.Should().BeEquivalentTo(authUser);
 
@@ -392,7 +392,7 @@ public abstract class AuthQueryTests<T>
             var signupResponse = await db.Signup(signupObject);
             Assert.NotNull(signupResponse);
             TestHelper.AssertOk(signupResponse);
-            Assert.True(signupResponse.TryGetFirstOkResult(out OkResult signupResult));
+            Assert.True(signupResponse.TryGetFirstOk(out OkResult signupResult));
             string? signupJwt = signupResult.GetObject<string>();
             signupJwt.Should().NotBeNullOrEmpty();
 
@@ -409,7 +409,7 @@ public abstract class AuthQueryTests<T>
             var tokenQueryResponse = await db.Query(tokenSql, null);
             Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
-            Assert.True(tokenQueryResponse.TryGetFirstOkResult(out OkResult tokenQueryResult));
+            Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
             token.Should().NotBeNull();
             token.Value.NS.Should().Be(TestHelper.Namespace);
@@ -420,7 +420,7 @@ public abstract class AuthQueryTests<T>
             var authQueryResponse = await db.Query(authSql, null);
             Assert.NotNull(authQueryResponse);
             TestHelper.AssertOk(authQueryResponse);
-            Assert.True(authQueryResponse.TryGetFirstOkResult(out OkResult authQueryResult));
+            Assert.True(authQueryResponse.TryGetFirstOk(out OkResult authQueryResult));
             User? authUser = authQueryResult.GetObject<User>();
             authUser.Should().NotBeNull();
             authUser.Value.id.Should().Be(token.Value.ID);
@@ -429,7 +429,7 @@ public abstract class AuthQueryTests<T>
             var infoResponse = await db.Info();
             Assert.NotNull(infoResponse);
             TestHelper.AssertOk(infoResponse);
-            Assert.True(infoResponse.TryGetFirstOkResult(out OkResult infoResult));
+            Assert.True(infoResponse.TryGetFirstOk(out OkResult infoResult));
             User? infoUser = infoResult.GetObject<User>();
             infoUser.Should().BeEquivalentTo(authUser);
 
