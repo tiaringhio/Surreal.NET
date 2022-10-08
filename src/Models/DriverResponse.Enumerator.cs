@@ -4,42 +4,43 @@ namespace SurrealDB.Models;
 
 public readonly partial struct DriverResponse {
     public struct Enumerator : IEnumerator<RawResult> {
-        private readonly ref DriverResponse _rsp;
+        private readonly DriverResponse _rsp;
         private int _pos;
+        private RawResult _current;
 
-        internal Enumerator(in DriverResponse rsp) {
-            // need to own, because we cant ensure the memory scope
-            //_rsp = ref Unsafe.AsRef(in rsp);
+        internal Enumerator(DriverResponse rsp) {
             _rsp = rsp;
         }
 
-        /// <summary>
-        /// Exposed the reference to the current element.
-        /// </summary>
-        public ref readonly RawResult RawCurrent;
-
-        public RawResult Current => RawCurrent;
+        public readonly RawResult Current => _current;
 
         object IEnumerator.Current => Current;
 
-        public bool MoveNext() {
+        public bool Next(out RawResult current) {
             int pos = _pos;
             if (pos < 0) {
-                return false; // object disposed
+                current = default;
+                return false;
             }
 
             if (pos == 0 && _rsp.IsSingle) {
-                RawCurrent = ref _rsp._single;
+                current = _rsp._single;
                 _pos = pos + 1;
                 return true;
             }
 
             if (pos < _rsp.Raw.Length) {
-                RawCurrent = ref _rsp.Raw[pos];
+                current = _rsp.Raw[pos];
                 _pos = pos + 1;
+                return true;
             }
 
+            current = default;
             return false;
+        }
+
+        public bool MoveNext() {
+            return Next(out _current);
         }
 
         public void Reset() {
@@ -61,7 +62,7 @@ public readonly partial struct DriverResponse {
 
         public bool MoveNext() {
             while (_en.MoveNext()) {
-                if (!_en.RawCurrent.TryGetError(out ErrorResult err)) {
+                if (!_en.Current.TryGetError(out ErrorResult err)) {
                     continue;
                 }
 
@@ -108,7 +109,7 @@ public readonly partial struct DriverResponse {
 
         public bool MoveNext() {
             while (_en.MoveNext()) {
-                if (!_en.RawCurrent.TryGetOk(out OkResult ok)) {
+                if (!_en.Current.TryGetOk(out OkResult ok)) {
                     continue;
                 }
 

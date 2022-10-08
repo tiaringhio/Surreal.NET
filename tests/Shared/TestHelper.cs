@@ -3,7 +3,7 @@ namespace SurrealDB.Shared.Tests;
 public static class TestHelper {
 
     public const string Loopback = "127.0.0.1";
-    public const int Port = 8082;
+    public const int Port = 23458;
     public const string User = "root";
     public const string Pass = "root";
     public const string Database = "test";
@@ -26,7 +26,7 @@ public static class TestHelper {
     }
 
     public static void AssertOk(
-        in DriverResponse rsp,
+        DriverResponse rsp,
         [CallerArgumentExpression("rsp")]
         string caller = "") {
         Assert.False(rsp.IsDefault);
