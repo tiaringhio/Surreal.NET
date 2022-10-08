@@ -59,9 +59,9 @@ public abstract class QueryTests<T, TKey, TValue>
 
             var selectResponse = await db.Select(thing);
             TestHelper.AssertOk(selectResponse);
-            ResultValue result = selectResponse.FirstValue();
-            TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
-            Assert.Null(doc);
+            selectResponse.TryGetFirstValue(out ResultValue result).Should().BeTrue();
+            result.Inner.ValueKind.Should().Be(JsonValueKind.Array);
+            result.Inner.GetArrayLength().Should().Be(0);
         }
     );
 

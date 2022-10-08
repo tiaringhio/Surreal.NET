@@ -6,28 +6,28 @@ using SurrealDB.Models.DriverResult;
 namespace SurrealDB.Models;
 
 public static class ResponseExtensions {
-    public static bool TryGetFirstError(in this DriverResponse rsp, out ErrorResult err) {
+    public static bool TryGetFirstError(in this DriverResponse rsp, out ErrorResult result) {
         foreach (ErrorResult res in rsp.Errors) {
-            err = res;
+            result = res;
             return true;
         }
 
-        err = default;
+        result = default;
         return false;
     }
 
     public static ErrorResult FirstError(in this DriverResponse rsp) => rsp.TryGetFirstError(out var err) ? err : ResultContentException.ExpectedAnyError();
     public static ErrorResult FirstError(in this DriverResponse rsp, in ErrorResult fallback) => rsp.TryGetFirstError(out var err) ? err : fallback;
 
-    public static bool TryGetFirstValue(in this DriverResponse rsp, out ResultValue ok) {
+    public static bool TryGetFirstValue(in this DriverResponse rsp, out ResultValue result) {
         foreach (OkResult res in rsp.Oks) {
             if (res.Value.Inner.ValueKind is not (JsonValueKind.Undefined or JsonValueKind.Null)) {
-                ok = res.Value;
+                result = res.Value;
                 return true;
             }
         }
 
-        ok = default;
+        result = default;
         return false;
     }
 
@@ -35,18 +35,18 @@ public static class ResponseExtensions {
 
     public static ResultValue FirstValue(in this DriverResponse rsp, in ResultValue fallback) => rsp.TryGetFirstValue(out var err) ? err : fallback;
 
-    public static bool TryGetSingleError(in this DriverResponse rsp, out ErrorResult err) {
+    public static bool TryGetSingleError(in this DriverResponse rsp, out ErrorResult result) {
         DriverResponse.ErrorIterator en = rsp.Errors;
-        return SequenceHelper.TrySingle(ref en, out err);
+        return SequenceHelper.TrySingle(ref en, out result);
     }
 
     public static ErrorResult SingleError(in this DriverResponse rsp) => rsp.TryGetSingleError(out var err) ? err : ResultContentException.ExpectedSingleError();
     public static ErrorResult SingleError(in this DriverResponse rsp, in ErrorResult fallback) => rsp.TryGetSingleError(out var err) ? err : fallback;
 
-    public static bool TryGetSingleValue(in this DriverResponse rsp, out ResultValue value) {
+    public static bool TryGetSingleValue(in this DriverResponse rsp, out ResultValue result) {
         DriverResponse.OkIterator en = rsp.Oks;
         bool success = SequenceHelper.TrySingle(ref en, out OkResult ok);
-        value = ok.Value;
+        result = ok.Value;
         return success;
     }
 
