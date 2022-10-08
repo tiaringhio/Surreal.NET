@@ -56,7 +56,7 @@ internal static class RpcClientExtensions {
 
         // if we get here then all the properties had valid status document names
         // but was missing some of them
-        return ToSingleAny(rsp);
+        return new(RawResult.Ok(default, rsp.result));
     }
 
     private static DriverResponse ToSingleAny(in WsClient.Response rsp) {
@@ -74,7 +74,7 @@ internal static class RpcClientExtensions {
             return new(results.AsSegment());
         }
 
-        return new(RawResult.Unknown(root));
+        return new(RawResult.Ok(default, root));
     }
 
     private static DriverResponse FromNestedStatus(in WsClient.Response rsp) {
