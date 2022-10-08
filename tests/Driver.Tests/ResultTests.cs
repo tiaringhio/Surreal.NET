@@ -23,7 +23,7 @@ public abstract class ResultTests<T>
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var wasSuccessful = result.TryGetValue(out int value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -43,7 +43,7 @@ public abstract class ResultTests<T>
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var wasSuccessful = result.TryGetValue(out long value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -69,7 +69,7 @@ public abstract class ResultTests<T>
             DriverResponse response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var wasSuccessful = result.TryGetValue(out float value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -95,7 +95,7 @@ public abstract class ResultTests<T>
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var wasSuccessful = result.TryGetValue(out double value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);
@@ -112,7 +112,7 @@ public abstract class ResultTests<T>
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var wasSuccessful = result.TryGetValue(out bool value);
             wasSuccessful.Should().BeTrue();
             value.Should().Be(expectedValue);

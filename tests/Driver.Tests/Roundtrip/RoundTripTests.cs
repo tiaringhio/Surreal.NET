@@ -22,7 +22,7 @@ public abstract class RoundTripTests<T>
             var response = await db.Create(thing, Expected);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -36,7 +36,7 @@ public abstract class RoundTripTests<T>
             var response = await db.Select(thing);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -69,7 +69,7 @@ public abstract class RoundTripTests<T>
         var response = await db.Query(sql, param);
 
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetFirstValue(out ResultValue result));
+        ResultValue result = response.FirstValue();
         var returnedDocument = result.GetObject<RoundTripObject>();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     });
@@ -186,8 +186,8 @@ public class RoundTripObject {
     public static void AssertAreEqual(
         RoundTripObject? a,
         RoundTripObject? b) {
-        Assert.NotNull(a);
-        Assert.NotNull(b);
+        a.Should().NotBeNull();
+        b.Should().NotBeNull();
 
         b.Should().BeEquivalentTo(a);
     }

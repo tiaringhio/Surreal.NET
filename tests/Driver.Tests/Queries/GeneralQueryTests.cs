@@ -47,7 +47,7 @@ public abstract class GeneralQueryTests<T>
             var response = await db.Query(sql, null);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             DateTime? doc = result.GetObject<DateTime>();
             doc.Should().BeCloseTo(DateTime.UtcNow, TimeSpan.FromMinutes(10));
         }
@@ -71,7 +71,7 @@ GROUP BY country;";
             var response = await db.Query(sql, null);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             List<GroupedCountries>? doc = result.GetObject<List<GroupedCountries>>();
             doc.Should().HaveCount(2);
         }
@@ -85,7 +85,7 @@ GROUP BY country;";
             var response = await db.Query(sql, null);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             string? doc = result.GetObject<string>();
             doc.Should().BeEquivalentTo("4768b3fc7ac751e03a614e2349abf3bf");
         }
@@ -104,7 +104,7 @@ GROUP BY country;";
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
             doc.Should().BeEquivalentTo(expectedResult);
         }
@@ -124,9 +124,9 @@ GROUP BY country;";
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
-            Assert.NotNull(doc);
+            doc.Should().NotBeNull();
             doc!.result.Should().BeApproximately(expectedResult.result, 0.000001f);
         }
     );
@@ -145,9 +145,9 @@ GROUP BY country;";
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
-            Assert.NotNull(doc);
+            doc.Should().NotBeNull();
             doc!.result.Should().BeApproximately(expectedResult.result, 0.001f);
         }
     );
@@ -166,7 +166,7 @@ GROUP BY country;";
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
             doc.Should().BeEquivalentTo(expectedResult);
         }
@@ -181,9 +181,9 @@ GROUP BY country;";
             var response = await db.Query(sql, null);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             string? doc = result.GetObject<string>();
-            Assert.NotNull(doc);
+            doc.Should().NotBeNull();
             doc.Should().Be(expectedResult);
         }
     );

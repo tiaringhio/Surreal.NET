@@ -20,7 +20,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             DriverResponse response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var resultValue = result.GetObject<TValue>();
             AssertEquivalency(resultValue, expectedResult);
         }
@@ -38,7 +38,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
@@ -56,7 +56,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
@@ -87,7 +87,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstValue(out ResultValue result));
+            ResultValue result = response.FirstValue();
 
             if (!divisorIsZero) {
                 var value = result.GetObject<TValue>();

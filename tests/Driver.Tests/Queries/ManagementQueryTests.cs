@@ -67,7 +67,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstValue(out ResultValue result));
+                ResultValue result = response.FirstValue();
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOtherObject);
             }
@@ -79,7 +79,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstValue(out ResultValue result));
+                ResultValue result = response.FirstValue();
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOriginalObject);
             }
@@ -109,7 +109,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstValue(out ResultValue result));
+                ResultValue result = response.FirstValue();
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOtherObject);
             }
@@ -121,7 +121,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstValue(out ResultValue result));
+                ResultValue result = response.FirstValue();
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOriginalObject);
             }
