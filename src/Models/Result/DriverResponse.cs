@@ -1,18 +1,14 @@
 using System.Collections;
 using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
-using SurrealDB.Common;
-using SurrealDB.Models.DriverResult;
-
-namespace SurrealDB.Models;
+namespace SurrealDB.Models.Result;
 
 /// <summary>
 ///     The response from a query to the Surreal database via REST.
 /// </summary>
 [DebuggerDisplay("{ToString(),nq}")]
-public readonly partial struct DriverResponse : IEnumerable<RawResult> {
+public readonly partial record struct DriverResponse : IEnumerable<RawResult> {
     internal static DriverResponse EmptyOk = new(ArraySegment<RawResult>.Empty);
 
     // arraysegment is faster then readonlymemory, tho we do need expicit write protection

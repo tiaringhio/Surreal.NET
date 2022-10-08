@@ -1,6 +1,6 @@
 using System.Text.Json;
 
-namespace SurrealDB.Models.DriverResult;
+namespace SurrealDB.Models.Result;
 
 public readonly record struct OkOrErrorResult(
     TimeSpan Time,

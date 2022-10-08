@@ -1,4 +1,6 @@
-using SurrealDB.Models.DriverResult;
+using SurrealDB.Models.Result;
+
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
 
 namespace SurrealDB.Driver.Tests;
 

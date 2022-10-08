@@ -1,6 +1,6 @@
 using System.Diagnostics;
 
-namespace SurrealDB.Models.DriverResult;
+namespace SurrealDB.Models.Result;
 
 /// <summary>
 ///     The result of a failed query to the Surreal database.

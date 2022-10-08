@@ -6,7 +6,9 @@ using System.Text.Json;
 using SurrealDB.Common;
 using SurrealDB.Json;
 using SurrealDB.Models;
-using SurrealDB.Models.DriverResult;
+using SurrealDB.Models.Result;
+
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
 
 namespace SurrealDB.Driver.Rest;
 
@@ -91,7 +93,7 @@ internal static class RestClientExtensions {
         string Details,
         JsonElement Token) {
         internal RawResult ToResult() {
-            return RawResult.Auth(Token);
+            return RawResult.Ok(default, Token);
         }
     }
 }

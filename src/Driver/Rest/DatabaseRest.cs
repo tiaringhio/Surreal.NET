@@ -6,6 +6,8 @@ using SurrealDB.Abstractions;
 using SurrealDB.Json;
 using SurrealDB.Models;
 
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
+
 namespace SurrealDB.Driver.Rest;
 
 public sealed class DatabaseRest : IDatabase {

@@ -6,7 +6,7 @@ using System.Text.Json;
 using SurrealDB.Common;
 using SurrealDB.Json;
 
-namespace SurrealDB.Models.DriverResult;
+namespace SurrealDB.Models.Result;
 
 /// <summary>
 ///     The value of a successful query to the Surreal database.

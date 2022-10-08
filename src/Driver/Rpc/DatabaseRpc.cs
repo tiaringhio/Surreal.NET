@@ -3,6 +3,8 @@ using SurrealDB.Configuration;
 using SurrealDB.Models;
 using SurrealDB.Ws;
 
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
+
 namespace SurrealDB.Driver.Rpc;
 
 public sealed class DatabaseRpc : IDatabase {

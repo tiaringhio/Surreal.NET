@@ -1,6 +1,8 @@
 using SurrealDB.Configuration;
 using SurrealDB.Models;
 
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
+
 namespace SurrealDB.Abstractions;
 
 /// <summary>

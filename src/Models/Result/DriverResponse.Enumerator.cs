@@ -1,16 +1,14 @@
 using System.Collections;
 
-using SurrealDB.Models.DriverResult;
+namespace SurrealDB.Models.Result;
 
-namespace SurrealDB.Models;
-
-public readonly partial struct DriverResponse {
+public readonly partial record struct DriverResponse {
     public struct Enumerator : IEnumerator<RawResult> {
-        private readonly DriverResponse _rsp;
+        private readonly Result.DriverResponse _rsp;
         private int _pos;
         private RawResult _current;
 
-        internal Enumerator(DriverResponse rsp) {
+        internal Enumerator(Result.DriverResponse rsp) {
             _rsp = rsp;
         }
 
@@ -111,12 +109,10 @@ public readonly partial struct DriverResponse {
 
         public bool MoveNext() {
             while (_en.MoveNext()) {
-                if (!_en.Current.TryGetOk(out OkResult ok)) {
-                    continue;
+                if (_en.Current.TryGetOk(out OkResult ok)) {
+                    _cur = ok;
+                    return true;
                 }
-
-                _cur = ok;
-                return true;
             }
 
             _cur = default;

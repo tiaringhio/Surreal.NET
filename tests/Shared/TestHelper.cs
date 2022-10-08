@@ -1,3 +1,5 @@
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
+
 namespace SurrealDB.Shared.Tests;
 
 public static class TestHelper {

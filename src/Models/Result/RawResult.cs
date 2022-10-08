@@ -2,9 +2,7 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
-using SurrealDB.Common;
-
-namespace SurrealDB.Models.DriverResult;
+namespace SurrealDB.Models.Result;
 
 public readonly record struct RawResult {
     private RawResult(Kind wrapped, int code, TimeSpan time, string? status, string? detail, JsonElement result) {
@@ -31,7 +29,6 @@ public readonly record struct RawResult {
     public static RawResult Ok(TimeSpan time, JsonElement inner) => new(Kind.Ok, default, time, "OK", default, inner);
     public static RawResult Error(TimeSpan time, string status, string detail) => new(Kind.Error, default, time, status, detail, default);
     public static RawResult TransportError(int code, string status, string detail) => new(Kind.TransportError, code, default, status, detail, default);
-    public static RawResult Auth(JsonElement token) => new(Kind.Auth, default, default, default, default, token);
 
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetUnknown([NotNullWhen(true)] out JsonElement inner) {
@@ -77,22 +74,10 @@ public readonly record struct RawResult {
         return false;
     }
 
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetAuth([NotNullWhen(true)] out JsonElement auth) {
-        if (Wrapped == Kind.Auth) {
-            auth = _result;
-            return true;
-        }
-
-        auth = default;
-        return false;
-    }
-
     public enum Kind: byte {
         Unknown = 0,
         Ok,
         Error,
         TransportError,
-        Auth,
     }
 }

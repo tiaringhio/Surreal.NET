@@ -4,8 +4,11 @@ using System.Text.Json;
 using SurrealDB.Common;
 using SurrealDB.Json;
 using SurrealDB.Models;
-using SurrealDB.Models.DriverResult;
+using SurrealDB.Models.Result;
 using SurrealDB.Ws;
+
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
+
 namespace SurrealDB.Driver.Rpc;
 
 internal static class RpcClientExtensions {
@@ -36,7 +39,7 @@ internal static class RpcClientExtensions {
         //]
 
         if (rsp.result.ValueKind != JsonValueKind.Array) {
-            return ToSingleAny(in rsp);
+            return new(RawResult.Ok(default, rsp.result));
         }
 
         foreach (var resultStatusDoc in rsp.result.EnumerateArray()) {

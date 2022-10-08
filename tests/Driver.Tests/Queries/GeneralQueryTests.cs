@@ -1,7 +1,9 @@
 
 // ReSharper disable All
 
-using SurrealDB.Models.DriverResult;
+using SurrealDB.Models.Result;
+
+using DriverResponse = SurrealDB.Models.Result.DriverResponse;
 
 #pragma warning disable CS0169
 

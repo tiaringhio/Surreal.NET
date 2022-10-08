@@ -1,9 +1,7 @@
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.Serialization;
 
-using SurrealDB.Models.DriverResult;
-
-namespace SurrealDB.Models;
+namespace SurrealDB.Models.Result;
 
 public sealed class ResultContentException : Exception {
     public ResultContentException() {
@@ -19,14 +17,14 @@ public sealed class ResultContentException : Exception {
     }
 
     [DoesNotReturn]
-    public static ErrorResult ExpectedAnyError() => throw new ResultContentException($"The {nameof(DriverResponse)} does not contain any {nameof(ErrorResult)}");
+    public static ErrorResult ExpectedAnyError() => throw new ResultContentException($"The {nameof(Result.DriverResponse)} does not contain any {nameof(ErrorResult)}");
 
     [DoesNotReturn]
-    public static OkResult ExpectedAnyOk() => throw new ResultContentException($"The {nameof(DriverResponse)} does not contain any {nameof(OkResult)}");
+    public static OkResult ExpectedAnyOk() => throw new ResultContentException($"The {nameof(Result.DriverResponse)} does not contain any {nameof(OkResult)}");
 
     [DoesNotReturn]
-    public static ErrorResult ExpectedSingleError() => throw new ResultContentException($"The {nameof(DriverResponse)} does not contain exactly one {nameof(ErrorResult)}");
+    public static ErrorResult ExpectedSingleError() => throw new ResultContentException($"The {nameof(Result.DriverResponse)} does not contain exactly one {nameof(ErrorResult)}");
 
     [DoesNotReturn]
-    public static OkResult ExpectedSingleOk() => throw new ResultContentException($"The {nameof(DriverResponse)} does not contain exactly one {nameof(OkResult)}");
+    public static OkResult ExpectedSingleOk() => throw new ResultContentException($"The {nameof(Result.DriverResponse)} does not contain exactly one {nameof(OkResult)}");
 }
