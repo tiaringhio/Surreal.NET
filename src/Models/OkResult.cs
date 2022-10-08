@@ -97,7 +97,7 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
 
     public bool TryGetValue(out bool value) {
         bool isBoolean = GetKind() == Kind.Boolean;
-        value = isBoolean && _int64ValueField != FALSE_VALUE;
+        value = isBoolean && _int64ValueField != FalseValue;
         return isBoolean;
     }
 
@@ -113,8 +113,8 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
     private static readonly object s_floatSentinel = new();
     private static readonly object s_booleanSentinel = new();
 
-    private const long TRUE_VALUE = 1;
-    private const long FALSE_VALUE = 0;
+    private const long TrueValue = 1;
+    private const long FalseValue = 0;
 
     public static OkResult From(in JsonElement json) {
         return json.ValueKind switch {
@@ -123,8 +123,8 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
             JsonValueKind.Array => new(json, s_arraySentinel),
             JsonValueKind.String => new(json, json.GetString()),
             JsonValueKind.Number => FromNumber(json),
-            JsonValueKind.True => new(json, s_booleanSentinel, TRUE_VALUE),
-            JsonValueKind.False => new(json, s_booleanSentinel, FALSE_VALUE),
+            JsonValueKind.True => new(json, s_booleanSentinel, TrueValue),
+            JsonValueKind.False => new(json, s_booleanSentinel, FalseValue),
             JsonValueKind.Null => new(json, s_noneSentinel),
             _ => ThrowUnknownJsonValueKind(json),
         };
