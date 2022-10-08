@@ -16,18 +16,18 @@ public abstract class DatabaseTestDriver<T>
     protected override async Task Run(T db) {
         db.GetConfig().Should().BeEquivalentTo(TestHelper.Default);
 
-        IResponse useResp = await db.Use(TestHelper.Database, TestHelper.Namespace);
+        var useResp = await db.Use(TestHelper.Database, TestHelper.Namespace);
         TestHelper.AssertOk(useResp);
-        IResponse infoResp = await db.Info();
+        var infoResp = await db.Info();
         TestHelper.AssertOk(infoResp);
 
-        IResponse signInStatus = await db.Signin(new RootAuth(TestHelper.User, TestHelper.Pass));
+        var signInStatus = await db.Signin(new RootAuth(TestHelper.User, TestHelper.Pass));
 
         TestHelper.AssertOk(signInStatus);
         //AssertOk(await db.Invalidate());
 
         (string id1, string id2) = ("id1", "id2");
-        IResponse res1 = await db.Create(
+        var res1 = await db.Create(
             "person",
             new {
                 Title = "Founder & CEO",
@@ -39,7 +39,7 @@ public abstract class DatabaseTestDriver<T>
 
         TestHelper.AssertOk(res1);
 
-        IResponse res2 = await db.Create(
+        var res2 = await db.Create(
             "person",
             new {
                 Title = "Contributor",
@@ -72,14 +72,14 @@ public abstract class DatabaseTestDriver<T>
         );
 
         string newTitle = "Founder & CEO & Ruler of the known free World";
-        IResponse modifyResp = await db.Modify(thing1, new[] {
+        var modifyResp = await db.Modify(thing1, new[] {
             Patch.Replace("/Title", newTitle),
         });
         TestHelper.AssertOk(modifyResp);
 
         TestHelper.AssertOk(await db.Let("tbl", "person"));
 
-        IResponse queryResp = await db.Query(
+        var queryResp = await db.Query(
             "SELECT $props FROM $tbl WHERE title = $title",
             new Dictionary<string, object?> { ["props"] = "title, identifier", ["tbl"] = "person", ["title"] = newTitle, }
         );

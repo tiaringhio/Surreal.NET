@@ -1,6 +1,5 @@
 using SurrealDB.Abstractions;
 using SurrealDB.Configuration;
-using SurrealDB.Driver.Rest;
 using SurrealDB.Models;
 using SurrealDB.Ws;
 

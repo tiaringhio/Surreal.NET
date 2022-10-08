@@ -20,7 +20,6 @@ public abstract class ResultTests<T>
             Dictionary<string, object?> param = new() { ["value"] = expectedValue };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var wasSuccessful = result.TryGetValue(out int value);
@@ -41,7 +40,6 @@ public abstract class ResultTests<T>
             Dictionary<string, object?> param = new() { ["value"] = expectedValue };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var wasSuccessful = result.TryGetValue(out long value);
@@ -66,9 +64,8 @@ public abstract class ResultTests<T>
         async db => {
             string sql = "select * from <float>($value)";
             Dictionary<string, object?> param = new() { ["value"] = expectedValue };
-            var response = await db.Query(sql, param);
+            DriverResponse response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var wasSuccessful = result.TryGetValue(out float value);
@@ -95,7 +92,6 @@ public abstract class ResultTests<T>
             Dictionary<string, object?> param = new() { ["value"] = expectedValue };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var wasSuccessful = result.TryGetValue(out double value);
@@ -113,7 +109,6 @@ public abstract class ResultTests<T>
             Dictionary<string, object?> param = new() { ["value"] = expectedValue };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var wasSuccessful = result.TryGetValue(out bool value);

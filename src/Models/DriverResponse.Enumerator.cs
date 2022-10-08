@@ -1,83 +1,9 @@
 using System.Collections;
-using System.Diagnostics;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
 
-using SurrealDB.Models;
+namespace SurrealDB.Models;
 
-namespace SurrealDB.Driver.Rest;
-
-/// <summary>
-///     The response from a query to the Surreal database via REST.
-/// </summary>
-[DebuggerDisplay("{ToString(),nq}")]
-public readonly struct DriverResponse : IResponse {
-    internal static DriverResponse EmptyOk = new();
-
-    // arraysegment is faster then readonlymemory, tho we do need expicit write protection
-    private readonly ArraySegment<RawResult> _raw;
-    private readonly RawResult _single;
-
-    /// <summary>
-    /// Initializes a new instance of <see cref="DriverResponse"/> from existing results, by copying the data.
-    /// </summary>
-    /// <param name="results">The existing data</param>
-    /// <param name="owned">Whether the data is already owned; does not copy if true AND (<paramref name="results"/> is a array, OR <see cref="ArraySegment{T}"/>)!</param>
-    public DriverResponse(IEnumerable<RawResult> results, bool owned = false) {
-        // do not copy owned memory!
-        if (owned && results is RawResult[] arr) {
-            _raw = arr;
-            return;
-        }
-
-        if (owned && results is ArraySegment<RawResult> seg) {
-            _raw = seg;
-            return;
-        }
-
-        var raw = results.ToArray(); // by now ToArray is faster, then manually checking the CopyTo method, by using the IListProvider interface
-        // unbox single element array, or an empty array
-        var rawS = raw.AsSpan(); // never use arrays directly!
-        if (rawS.Length == 0) {
-            // ignore empty arrays
-            return;
-        }
-        if (rawS.Length == 1) {
-            _single = rawS[0];
-        }
-        // keep boxed array
-        _raw = new(raw);
-    }
-
-    private DriverResponse(ArraySegment<RawResult> owned) {
-        _raw = owned;
-    }
-
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    internal static DriverResponse FromOwned(ArraySegment<RawResult> owned) => new(owned); // protect ctor
-
-    /// <summary>
-    /// Boxes the result.
-    /// </summary>
-    /// <param name="result"></param>
-    public DriverResponse(RawResult result) {
-        _single = result;
-    }
-
-    /// <summary>
-    /// Returns the memory occupied by the result data, returns an empty span if empty
-    /// </summary>
-    public ReadOnlySpan<RawResult> Raw => _raw.Array is null && !_single.IsDefault ? MemoryMarshal.CreateSpan(ref Unsafe.AsRef(in _single), 1) : _raw.AsSpan();
-
-    private OkIterator Oks => new(GetEnumerator());
-    IEnumerable<OkResult> IResponse.Oks => Oks;
-
-    private ErrorIterator Errors => new(GetEnumerator());
-    IEnumerable<ErrorResult> IResponse.Errors => Errors;
-    public bool HasErrors => Errors.Any();
-    public bool IsEmpty => _raw.Array is null && _single.IsDefault;
-
-    public struct Enumerator : IEnumerator<IResult> {
+public readonly partial struct DriverResponse {
+    public struct Enumerator : IEnumerator<RawResult> {
         private readonly ref DriverResponse _rsp;
         private int _pos;
 
@@ -86,12 +12,13 @@ public readonly struct DriverResponse : IResponse {
             //_rsp = ref Unsafe.AsRef(in rsp);
             _rsp = rsp;
         }
+
         /// <summary>
         /// Exposed the reference to the current element.
         /// </summary>
         public ref readonly RawResult RawCurrent;
 
-        public IResult Current => RawCurrent.ToResult();
+        public RawResult Current => RawCurrent;
 
         object IEnumerator.Current => Current;
 
@@ -100,10 +27,18 @@ public readonly struct DriverResponse : IResponse {
             if (pos < 0) {
                 return false; // object disposed
             }
+
+            if (pos == 0 && _rsp.IsSingle) {
+                RawCurrent = ref _rsp._single;
+                _pos = pos + 1;
+                return true;
+            }
+
             if (pos < _rsp.Raw.Length) {
                 RawCurrent = ref _rsp.Raw[pos];
                 _pos = pos + 1;
             }
+
             return false;
         }
 
@@ -125,7 +60,6 @@ public readonly struct DriverResponse : IResponse {
         }
 
         public bool MoveNext() {
-
             while (_en.MoveNext()) {
                 if (!_en.RawCurrent.TryGetError(out ErrorResult err)) {
                     continue;
@@ -174,7 +108,7 @@ public readonly struct DriverResponse : IResponse {
 
         public bool MoveNext() {
             while (_en.MoveNext()) {
-                if (!_en.RawCurrent.TryGetValue(out OkResult ok)) {
+                if (!_en.RawCurrent.TryGetOk(out OkResult ok)) {
                     continue;
                 }
 
@@ -213,11 +147,7 @@ public readonly struct DriverResponse : IResponse {
 
     public Enumerator GetEnumerator() => new(this);
 
-    IEnumerator<IResult> IEnumerable<IResult>.GetEnumerator() {
-        return GetEnumerator();
-    }
-
-    IEnumerator IEnumerable.GetEnumerator() {
+    IEnumerator<RawResult> IEnumerable<RawResult>.GetEnumerator() {
         return GetEnumerator();
     }
 }

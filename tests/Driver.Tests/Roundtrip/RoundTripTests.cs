@@ -19,7 +19,6 @@ public abstract class RoundTripTests<T>
             Thing thing = Thing.From("object", ThreadRng.Shared.Next().ToString());
             var response = await db.Create(thing, Expected);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var returnedDocument = result.GetObject<RoundTripObject>();
@@ -34,7 +33,6 @@ public abstract class RoundTripTests<T>
             await db.Create(thing, Expected);
             var response = await db.Select(thing);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var returnedDocument = result.GetObject<RoundTripObject>();
@@ -68,7 +66,6 @@ public abstract class RoundTripTests<T>
 
         var response = await db.Query(sql, param);
 
-        Assert.NotNull(response);
         TestHelper.AssertOk(response);
         Assert.True(response.TryGetFirstOk(out OkResult result));
         var returnedDocument = result.GetObject<RoundTripObject>();

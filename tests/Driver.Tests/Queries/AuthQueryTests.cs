@@ -21,13 +21,12 @@ public abstract class AuthQueryTests<T>
     public AuthQueryTests(ITestOutputHelper logger) {
         Logger = logger;
     }
-    
+
     [Fact]
     public async Task SignInRootAuthTest() => await DbHandle<T>.WithDatabase(
         async db => {
             var signinObject = new RootAuth(TestHelper.User, TestHelper.Pass);
             var response = await db.Signin(signinObject);
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
@@ -43,24 +42,20 @@ public abstract class AuthQueryTests<T>
 
             string sql = $"DEFINE LOGIN {user} ON NAMESPACE PASSWORD '{password}';";
             var queryResponse = await db.Query(sql, null);
-            Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
 
             var signinObject = new NamespaceAuth(user, password, TestHelper.Namespace);
             var signinResponse = await db.Signin(signinObject);
-            Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
             Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
-            
-            var authenticateResponse = await db.Authenticate(signinJwt);
-            Assert.NotNull(authenticateResponse);
+
+            var authenticateResponse = await db.Authenticate(signinJwt!);
             TestHelper.AssertOk(authenticateResponse);
 
             string tokenSql = $"SELECT * FROM $token;";
             var tokenQueryResponse = await db.Query(tokenSql, null);
-            Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
             Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
@@ -69,7 +64,6 @@ public abstract class AuthQueryTests<T>
             token.Value.NS.Should().Be(TestHelper.Namespace);
 
             var invalidateResponse = await db.Invalidate();
-            Assert.NotNull(invalidateResponse);
             TestHelper.AssertOk(invalidateResponse);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
@@ -84,17 +78,15 @@ public abstract class AuthQueryTests<T>
 
             string sql = $"DEFINE LOGIN {user} ON NAMESPACE PASSWORD '{password}';";
             var queryResponse = await db.Query(sql, null);
-            Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
 
             var signinObject = new NamespaceAuth(user, password, TestHelper.Namespace);
             var signinResponse = await db.Signin(signinObject);
-            Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
             Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
-            
+
             var config = TestHelper.Default;
             config.Username = null;
             config.Password = null;
@@ -106,7 +98,6 @@ public abstract class AuthQueryTests<T>
 
             string tokenSql = $"SELECT * FROM $token;";
             var tokenQueryResponse = await db.Query(tokenSql, null);
-            Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
             Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
@@ -115,7 +106,6 @@ public abstract class AuthQueryTests<T>
             token.Value.NS.Should().Be(TestHelper.Namespace);
 
             var invalidateResponse = await db.Invalidate();
-            Assert.NotNull(invalidateResponse);
             TestHelper.AssertOk(invalidateResponse);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
@@ -130,24 +120,20 @@ public abstract class AuthQueryTests<T>
 
             string sql = $"DEFINE LOGIN {user} ON DATABASE PASSWORD '{password}';";
             var queryResponse = await db.Query(sql, null);
-            Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
 
             var signinObject = new DatabaseAuth(user, password, TestHelper.Namespace, TestHelper.Database);
             var signinResponse = await db.Signin(signinObject);
-            Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
             Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
 
-            var authenticateResponse = await db.Authenticate(signinJwt);
-            Assert.NotNull(authenticateResponse);
+            var authenticateResponse = await db.Authenticate(signinJwt!);
             TestHelper.AssertOk(authenticateResponse);
 
             string tokenSql = $"SELECT * FROM $token;";
             var tokenQueryResponse = await db.Query(tokenSql, null);
-            Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
             Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
@@ -157,7 +143,6 @@ public abstract class AuthQueryTests<T>
             token.Value.DB.Should().Be(TestHelper.Database);
 
             var invalidateResponse = await db.Invalidate();
-            Assert.NotNull(invalidateResponse);
             TestHelper.AssertOk(invalidateResponse);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
@@ -172,17 +157,15 @@ public abstract class AuthQueryTests<T>
 
             string sql = $"DEFINE LOGIN {user} ON DATABASE PASSWORD '{password}';";
             var queryResponse = await db.Query(sql, null);
-            Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
 
             var signinObject = new DatabaseAuth(user, password, TestHelper.Namespace, TestHelper.Database);
             var signinResponse = await db.Signin(signinObject);
-            Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
             Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
-            
+
             var config = TestHelper.Default;
             config.Username = null;
             config.Password = null;
@@ -194,7 +177,6 @@ public abstract class AuthQueryTests<T>
 
             string tokenSql = $"SELECT * FROM $token;";
             var tokenQueryResponse = await db.Query(tokenSql, null);
-            Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
             Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
@@ -204,13 +186,12 @@ public abstract class AuthQueryTests<T>
             token.Value.DB.Should().Be(TestHelper.Database);
 
             var invalidateResponse = await db.Invalidate();
-            Assert.NotNull(invalidateResponse);
             TestHelper.AssertOk(invalidateResponse);
 
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
         }
     );
-    
+
     [Fact]
     public async Task SignUpAndSignInScopedUserTest() => await DbHandle<T>.WithDatabase(
         async db => {
@@ -228,12 +209,10 @@ public abstract class AuthQueryTests<T>
               + "    FOR select, update WHERE id = $auth.id,\n    FOR create, delete NONE;"
               + ";";
             var queryResponse = await db.Query(sql, null);
-            Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
-            
+
             var signupObject = new ScopeAuth(email, password, TestHelper.Namespace, TestHelper.Database, scope);
             var signupResponse = await db.Signup(signupObject);
-            Assert.NotNull(signupResponse);
             TestHelper.AssertOk(signupResponse);
             Assert.True(signupResponse.TryGetFirstOk(out OkResult signupResult));
             string? signupJwt = signupResult.GetObject<string>();
@@ -241,19 +220,16 @@ public abstract class AuthQueryTests<T>
 
             var signinObject = new ScopeAuth(email, password, TestHelper.Namespace, TestHelper.Database, scope);
             var signinResponse = await db.Signin(signinObject);
-            Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
             Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
-            
-            var authenticateResponse = await db.Authenticate(signinJwt);
-            Assert.NotNull(authenticateResponse);
+
+            var authenticateResponse = await db.Authenticate(signinJwt!);
             TestHelper.AssertOk(authenticateResponse);
 
             string tokenSql = $"SELECT * FROM $token;";
             var tokenQueryResponse = await db.Query(tokenSql, null);
-            Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
             Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
@@ -264,7 +240,6 @@ public abstract class AuthQueryTests<T>
 
             string authSql = $"SELECT * FROM $auth;"; // This query required permisions to be set on the user table
             var authQueryResponse = await db.Query(authSql, null);
-            Assert.NotNull(authQueryResponse);
             TestHelper.AssertOk(authQueryResponse);
             Assert.True(authQueryResponse.TryGetFirstOk(out OkResult authQueryResult));
             User? authUser = authQueryResult.GetObject<User>();
@@ -273,21 +248,19 @@ public abstract class AuthQueryTests<T>
             authUser.Value.email.Should().Be(email);
 
             var infoResponse = await db.Info();
-            Assert.NotNull(infoResponse);
             TestHelper.AssertOk(infoResponse);
             Assert.True(infoResponse.TryGetFirstOk(out OkResult infoResult));
             User? infoUser = infoResult.GetObject<User>();
             infoUser.Should().BeEquivalentTo(authUser);
 
             var invalidateResponse = await db.Invalidate();
-            Assert.NotNull(invalidateResponse);
             TestHelper.AssertOk(invalidateResponse);
-            
+
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Info());
         }
     );
-    
+
     [Fact]
     public async Task SignUpAndSignInScopedUserWithDefinedIdTest() => await DbHandle<T>.WithDatabase(
         async db => {
@@ -306,12 +279,10 @@ public abstract class AuthQueryTests<T>
               + "    FOR select, update WHERE id = $auth.id,\n    FOR create, delete NONE;"
               + ";";
             var queryResponse = await db.Query(sql, null);
-            Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
-            
+
             var signupObject = new IdScopeAuth(id, email, password, TestHelper.Namespace, TestHelper.Database, scope);
             var signupResponse = await db.Signup(signupObject);
-            Assert.NotNull(signupResponse);
             TestHelper.AssertOk(signupResponse);
             Assert.True(signupResponse.TryGetFirstOk(out OkResult signupResult));
             string? signupJwt = signupResult.GetObject<string>();
@@ -319,19 +290,16 @@ public abstract class AuthQueryTests<T>
 
             var signinObject = new ScopeAuth(email, password, TestHelper.Namespace, TestHelper.Database, scope);
             var signinResponse = await db.Signin(signinObject);
-            Assert.NotNull(signinResponse);
             TestHelper.AssertOk(signinResponse);
-            Assert.True(signinResponse.TryGetFirstOk(out OkResult result)); 
+            Assert.True(signinResponse.TryGetFirstOk(out OkResult result));
             string? signinJwt = result.GetObject<string>();
             signinJwt.Should().NotBeNullOrEmpty();
-            
-            var authenticateResponse = await db.Authenticate(signinJwt);
-            Assert.NotNull(authenticateResponse);
+
+            var authenticateResponse = await db.Authenticate(signinJwt!);
             TestHelper.AssertOk(authenticateResponse);
 
             string tokenSql = $"SELECT * FROM $token;";
             var tokenQueryResponse = await db.Query(tokenSql, null);
-            Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
             Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
@@ -343,7 +311,6 @@ public abstract class AuthQueryTests<T>
 
             string authSql = $"SELECT * FROM $auth;"; // This query required permisions to be set on the user table
             var authQueryResponse = await db.Query(authSql, null);
-            Assert.NotNull(authQueryResponse);
             TestHelper.AssertOk(authQueryResponse);
             Assert.True(authQueryResponse.TryGetFirstOk(out OkResult authQueryResult));
             User? authUser = authQueryResult.GetObject<User>();
@@ -352,22 +319,20 @@ public abstract class AuthQueryTests<T>
             authUser.Value.email.Should().Be(email);
 
             var infoResponse = await db.Info();
-            Assert.NotNull(infoResponse);
             TestHelper.AssertOk(infoResponse);
             Assert.True(infoResponse.TryGetFirstOk(out OkResult infoResult));
             User? infoUser = infoResult.GetObject<User>();
             infoUser.Should().BeEquivalentTo(authUser);
 
             var invalidateResponse = await db.Invalidate();
-            Assert.NotNull(invalidateResponse);
             TestHelper.AssertOk(invalidateResponse);
-            
+
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Info());
         }
     );
 
-        
+
     [Fact]
     public async Task SignUpScopedUserThenOpenConnectionWithJwtTest() => await DbHandle<T>.WithDatabase(
         async db => {
@@ -385,12 +350,10 @@ public abstract class AuthQueryTests<T>
               + "    FOR select, update WHERE id = $auth.id,\n    FOR create, delete NONE;"
               + ";";
             var queryResponse = await db.Query(sql, null);
-            Assert.NotNull(queryResponse);
             TestHelper.AssertOk(queryResponse);
-            
+
             var signupObject = new ScopeAuth(email, password, TestHelper.Namespace, TestHelper.Database, scope);
             var signupResponse = await db.Signup(signupObject);
-            Assert.NotNull(signupResponse);
             TestHelper.AssertOk(signupResponse);
             Assert.True(signupResponse.TryGetFirstOk(out OkResult signupResult));
             string? signupJwt = signupResult.GetObject<string>();
@@ -407,7 +370,6 @@ public abstract class AuthQueryTests<T>
 
             string tokenSql = $"SELECT * FROM $token;";
             var tokenQueryResponse = await db.Query(tokenSql, null);
-            Assert.NotNull(tokenQueryResponse);
             TestHelper.AssertOk(tokenQueryResponse);
             Assert.True(tokenQueryResponse.TryGetFirstOk(out OkResult tokenQueryResult));
             Token? token = tokenQueryResult.GetObject<Token>();
@@ -418,7 +380,6 @@ public abstract class AuthQueryTests<T>
 
             string authSql = $"SELECT * FROM $auth;"; // This query required permisions to be set on the user table
             var authQueryResponse = await db.Query(authSql, null);
-            Assert.NotNull(authQueryResponse);
             TestHelper.AssertOk(authQueryResponse);
             Assert.True(authQueryResponse.TryGetFirstOk(out OkResult authQueryResult));
             User? authUser = authQueryResult.GetObject<User>();
@@ -427,16 +388,14 @@ public abstract class AuthQueryTests<T>
             authUser.Value.email.Should().Be(email);
 
             var infoResponse = await db.Info();
-            Assert.NotNull(infoResponse);
             TestHelper.AssertOk(infoResponse);
             Assert.True(infoResponse.TryGetFirstOk(out OkResult infoResult));
             User? infoUser = infoResult.GetObject<User>();
             infoUser.Should().BeEquivalentTo(authUser);
 
             var invalidateResponse = await db.Invalidate();
-            Assert.NotNull(invalidateResponse);
             TestHelper.AssertOk(invalidateResponse);
-            
+
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Info());
         }

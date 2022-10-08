@@ -21,7 +21,7 @@ public abstract class GeneralQueryTests<T>
     public GeneralQueryTests(ITestOutputHelper logger) {
         Logger = logger;
     }
-    
+
     private record GroupedCountries {
         string? country;
         string? total;
@@ -43,7 +43,6 @@ public abstract class GeneralQueryTests<T>
 
             var response = await db.Query(sql, null);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             DateTime? doc = result.GetObject<DateTime>();
@@ -68,7 +67,6 @@ GROUP BY country;";
 
             var response = await db.Query(sql, null);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             List<GroupedCountries>? doc = result.GetObject<List<GroupedCountries>>();
@@ -83,7 +81,6 @@ GROUP BY country;";
 
             var response = await db.Query(sql, null);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             string? doc = result.GetObject<string>();
@@ -103,7 +100,6 @@ GROUP BY country;";
             Dictionary<string, object?> param = new() { ["record"] = thing };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
@@ -124,7 +120,6 @@ GROUP BY country;";
             Dictionary<string, object?> param = new() { ["record"] = thing };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
@@ -146,7 +141,6 @@ GROUP BY country;";
             Dictionary<string, object?> param = new() { ["record"] = thing };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
@@ -168,7 +162,6 @@ GROUP BY country;";
             Dictionary<string, object?> param = new() { ["record"] = thing };
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             MathResultDocument? doc = result.GetObject<MathResultDocument>();
@@ -184,7 +177,6 @@ GROUP BY country;";
               + "SELECT * FROM $name;\n";
             var response = await db.Query(sql, null);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             string? doc = result.GetObject<string>();
@@ -211,11 +203,11 @@ GROUP BY country;";
         var createResponse = await db.Create(thing, expectedResult).ConfigureAwait(false);
         AssertResponse(createResponse, expectedResult);
         Logger.WriteLine($"Create {i} - Thread ID {Thread.CurrentThread.ManagedThreadId}");
-        
+
         var selectResponse = await db.Select(thing).ConfigureAwait(false);
         AssertResponse(selectResponse, expectedResult);
         Logger.WriteLine($"Select {i} - Thread ID {Thread.CurrentThread.ManagedThreadId}");
-        
+
         string sql = "SELECT * FROM $record";
         Dictionary<string, object?> param = new() { ["record"] = thing };
         var queryResponse = await db.Query(sql, param).ConfigureAwait(false);
@@ -225,10 +217,9 @@ GROUP BY country;";
         Logger.WriteLine($"End {i} - Thread ID {Thread.CurrentThread.ManagedThreadId}");
     }
 
-    private static void AssertResponse(IResponse? response, TestObject<int, int> expectedResult) {
-        Assert.NotNull(response);
+    private static void AssertResponse(DriverResponse response, TestObject<int, int> expectedResult) {
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetFirstOk(out OkResult result));
+        Assert.True(response!.TryGetFirstOk(out OkResult result));
         TestObject<int, int>? doc = result.GetObject<TestObject<int, int>>();
         doc.Should().BeEquivalentTo(expectedResult);
     }

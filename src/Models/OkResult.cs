@@ -11,7 +11,7 @@ namespace SurrealDB.Models;
 ///     The result of a successful query to the Surreal database.
 /// </summary>
 [DebuggerDisplay("{Inner,nq}")]
-public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkResult> {
+public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
     private readonly JsonElement _json;
     private readonly object? _sentinelOrValue;
     private readonly long _int64ValueField;
@@ -51,7 +51,7 @@ public readonly struct OkResult : IResult, IEquatable<OkResult>, IComparable<OkR
         var en = _json.EnumerateArray();
         while (en.MoveNext()) {
             T? v = en.Current.Deserialize<T>(SerializerOptions.Shared);
-            if (!EqualityComparer<T>.Default.Equals(default, v)) {
+            if (!EqualityComparer<T>.Default.Equals(default!, v!)) {
                 yield return v!;
             }
         }

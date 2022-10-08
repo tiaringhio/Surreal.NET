@@ -15,16 +15,15 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             string sql = $"SELECT * FROM {ValueCast()}($val1 + $val2)";
             Dictionary<string, object?> param = new() { ["val1"] = val1, ["val2"] = val2, };
 
-            var response = await db.Query(sql, param);
+            DriverResponse response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<TValue>();
             AssertEquivalency(resultValue, expectedResult);
         }
     );
-    
+
     [Theory]
     [MemberData("ValuePairs")]
     public async Task SubtractionQueryTest(TValue val1, TValue val2) => await DbHandle<T>.WithDatabase(
@@ -36,14 +35,13 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
 
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
     );
-    
+
     [Theory]
     [MemberData("ValuePairs")]
     public async Task MultiplicationQueryTest(TValue val1, TValue val2) => await DbHandle<T>.WithDatabase(
@@ -55,14 +53,13 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
 
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
     );
-    
+
     [Theory]
     [MemberData("ValuePairs")]
     public async Task DivisionQueryTest(TValue val1, TValue val2) => await DbHandle<T>.WithDatabase(
@@ -87,7 +84,6 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
 
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
 

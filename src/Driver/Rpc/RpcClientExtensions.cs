@@ -2,7 +2,6 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using SurrealDB.Common;
-using SurrealDB.Driver.Rest;
 using SurrealDB.Models;
 using SurrealDB.Ws;
 namespace SurrealDB.Driver.Rpc;

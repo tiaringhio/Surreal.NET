@@ -18,4 +18,13 @@
 		<ProjectReference Include="..\Json\Json.csproj" />
 	</ItemGroup>
 
+	<ItemGroup>
+	  <Compile Update="DriverResponse.Enumerator.cs">
+	    <DependentUpon>DriverResponse.cs</DependentUpon>
+	  </Compile>
+	  <Compile Update="DriverResponse.IResponse.cs">
+	    <DependentUpon>DriverResponse.cs</DependentUpon>
+	  </Compile>
+	</ItemGroup>
+
 </Project>

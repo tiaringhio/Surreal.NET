@@ -26,14 +26,15 @@ public static class TestHelper {
     }
 
     public static void AssertOk(
-        in IResponse DriverResponse,
-        [CallerArgumentExpression("DriverResponse")]
+        in DriverResponse rsp,
+        [CallerArgumentExpression("rsp")]
         string caller = "") {
-        if (!DriverResponse.HasErrors) {
+        Assert.False(rsp.IsDefault);
+        if (!rsp.HasErrors) {
             return;
         }
 
-        var errorResponses = DriverResponse.Errors.ToList();
+        var errorResponses = rsp.Errors.ToList();
         var message = $"Expected OK, got {errorResponses.Count} Error responses in {caller}";
         foreach (var errorResponse in errorResponses) {
             message += $"\n\tCode:{errorResponse.Code} | Status: {errorResponse.Status} | Message: {errorResponse.Message}";

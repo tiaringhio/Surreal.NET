@@ -1,5 +1,4 @@
 using SurrealDB.Configuration;
-using SurrealDB.Driver.Rest;
 using SurrealDB.Models;
 
 namespace SurrealDB.Abstractions;

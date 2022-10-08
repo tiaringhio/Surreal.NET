@@ -2,7 +2,7 @@ namespace SurrealDB.Driver.Tests.Queries;
 
 public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests<T, TKey, TValue>
     where T : IDatabase, IDisposable, new() {
-    
+
     [Theory]
     [MemberData("ValuePairs")]
     public async Task LessThanQueryTest(TValue val1, TValue val2) => await DbHandle<T>.WithDatabase(
@@ -14,14 +14,13 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
     );
-    
+
     [Theory]
     [MemberData("ValuePairs")]
     public async Task LessThanOrEqualToQueryTest(TValue val1, TValue val2) => await DbHandle<T>.WithDatabase(
@@ -33,14 +32,13 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
     );
-    
+
     [Theory]
     [MemberData("ValuePairs")]
     public async Task GreaterThanQueryTest(TValue val1, TValue val2) => await DbHandle<T>.WithDatabase(
@@ -52,14 +50,13 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
     );
-    
+
     [Theory]
     [MemberData("ValuePairs")]
     public async Task GreaterThanOrEqualToQueryTest(TValue val1, TValue val2) => await DbHandle<T>.WithDatabase(
@@ -71,7 +68,6 @@ public abstract class InequalityQueryTests<T, TKey, TValue> : EqualityQueryTests
 
             var response = await db.Query(sql, param);
 
-            Assert.NotNull(response);
             TestHelper.AssertOk(response);
             Assert.True(response.TryGetFirstOk(out OkResult result));
             var resultValue = result.GetObject<bool>();

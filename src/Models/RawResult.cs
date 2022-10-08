@@ -34,25 +34,9 @@ public readonly record struct RawResult {
 
     public bool IsDefault => MemoryHelper.Compare(in this, default) == 0;
 
-    public IResult ToResult() {
-        return TryGetValue(out OkResult ok, out ErrorResult err) ? ok : err;
-    }
-
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetValue([NotNullWhen(true)] out OkResult ok, [NotNullWhen(false)] out ErrorResult err) {
-        if (Type is Kind.Ok) {
-            ok = OkResult.From(Result.IntoSingle());
-            err = default;
-            return true;
-        }
-
-        ok = default;
-        err = new ErrorResult(-1, Status, Detail);
-        return false;
-    }
-    [MethodImpl(MethodImplOptions.AggressiveInlining)]
-    public bool TryGetValue([NotNullWhen(true)] out OkResult ok) {
-        if (Status.Equals(OK, StringComparison.OrdinalIgnoreCase)) {
+    public bool TryGetOk([NotNullWhen(true)] out OkResult ok) {
+        if (OK.AsSpan().Equals(Status, StringComparison.OrdinalIgnoreCase)) {
             ok = OkResult.From(Result.IntoSingle());
             return true;
         }
@@ -60,14 +44,15 @@ public readonly record struct RawResult {
         ok = default;
         return false;
     }
+
     [MethodImpl(MethodImplOptions.AggressiveInlining)]
     public bool TryGetError([NotNullWhen(true)] out ErrorResult err) {
-        if (Status.Equals(OK, StringComparison.OrdinalIgnoreCase)) {
+        if (OK.AsSpan().Equals(Status, StringComparison.OrdinalIgnoreCase)) {
             err = default;
             return false;
         }
 
-        err = new ErrorResult(-1, Status, Detail);
+        err = new ErrorResult(-1, Status!, Detail);
         return true;
     }
 
