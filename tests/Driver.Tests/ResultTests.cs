@@ -24,8 +24,7 @@ public abstract class ResultTests<T>
 
             TestHelper.AssertOk(response);
             ResultValue result = response.FirstValue();
-            var wasSuccessful = result.TryGetValue(out int value);
-            wasSuccessful.Should().BeTrue();
+            result.TryGetValue(out int value).Should().BeTrue();
             value.Should().Be(expectedValue);
         }
     );
@@ -44,8 +43,7 @@ public abstract class ResultTests<T>
 
             TestHelper.AssertOk(response);
             ResultValue result = response.FirstValue();
-            var wasSuccessful = result.TryGetValue(out long value);
-            wasSuccessful.Should().BeTrue();
+            result.TryGetValue(out long value).Should().BeTrue();
             value.Should().Be(expectedValue);
         }
     );
@@ -70,8 +68,7 @@ public abstract class ResultTests<T>
 
             TestHelper.AssertOk(response);
             ResultValue result = response.FirstValue();
-            var wasSuccessful = result.TryGetValue(out float value);
-            wasSuccessful.Should().BeTrue();
+            result.TryGetValue(out float value).Should().BeTrue();
             value.Should().Be(expectedValue);
         }
     );
@@ -96,8 +93,7 @@ public abstract class ResultTests<T>
 
             TestHelper.AssertOk(response);
             ResultValue result = response.FirstValue();
-            var wasSuccessful = result.TryGetValue(out double value);
-            wasSuccessful.Should().BeTrue();
+            result.TryGetValue(out double value).Should().BeTrue();
             value.Should().Be(expectedValue);
         }
     );
@@ -113,8 +109,7 @@ public abstract class ResultTests<T>
 
             TestHelper.AssertOk(response);
             ResultValue result = response.FirstValue();
-            var wasSuccessful = result.TryGetValue(out bool value);
-            wasSuccessful.Should().BeTrue();
+            result.TryGetValue(out bool value).Should().BeTrue();
             value.Should().Be(expectedValue);
         }
     );
