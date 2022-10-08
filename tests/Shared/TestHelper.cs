@@ -44,14 +44,14 @@ public static class TestHelper {
     }
 
     public static void AssertError(
-        in IResponse DriverResponse,
-        [CallerArgumentExpression("DriverResponse")]
+        in DriverResponse rsp,
+        [CallerArgumentExpression("rsp")]
         string caller = "") {
-        if (DriverResponse.HasErrors) {
+        if (rsp.HasErrors) {
             return;
         }
 
-        var errorResponses = DriverResponse.Errors.ToList();
+        var errorResponses = rsp.Errors.ToList();
         var message = $"Expected Error, got {errorResponses.Count} OK responses in {caller}";
 
         Exception ex = new(message);

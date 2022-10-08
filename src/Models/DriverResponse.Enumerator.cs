@@ -31,8 +31,8 @@ public readonly partial struct DriverResponse {
                 return true;
             }
 
-            if (pos < _rsp.Raw.Length) {
-                current = _rsp.Raw[pos];
+            if (pos < _rsp.Results.Length) {
+                current = _rsp.Results[pos];
                 _pos = pos + 1;
                 return true;
             }

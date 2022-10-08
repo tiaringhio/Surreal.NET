@@ -12,7 +12,7 @@ namespace SurrealDB.Models;
 ///     The response from a query to the Surreal database via REST.
 /// </summary>
 [DebuggerDisplay("{ToString(),nq}")]
-public readonly partial struct DriverResponse : IResponse {
+public readonly partial struct DriverResponse : IEnumerable<RawResult> {
     internal static DriverResponse EmptyOk = new(ArraySegment<RawResult>.Empty);
 
     // arraysegment is faster then readonlymemory, tho we do need expicit write protection
@@ -65,13 +65,11 @@ public readonly partial struct DriverResponse : IResponse {
     /// <summary>
     /// Returns the memory occupied by the result data, returns an empty span if empty or single
     /// </summary>
-    private ReadOnlySpan<RawResult> Raw => _raw.AsSpan();
+    public ReadOnlySpan<RawResult> Results => _raw.AsSpan();
 
     public OkIterator Oks => new(GetEnumerator());
-    IEnumerable<OkResult> IResponse.Oks => Oks;
 
     public ErrorIterator Errors => new(GetEnumerator());
-    IEnumerable<ErrorResult> IResponse.Errors => Errors;
     public bool HasErrors => Errors.Any();
     public bool IsEmpty => _raw.Array is null && _single.IsDefault;
 
