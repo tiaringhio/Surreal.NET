@@ -1,3 +1,5 @@
+using SurrealDB.Models.DriverResult;
+
 namespace SurrealDB.Driver.Tests.Queries;
 
 public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, TKey, TValue>
@@ -18,7 +20,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             DriverResponse response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             var resultValue = result.GetObject<TValue>();
             AssertEquivalency(resultValue, expectedResult);
         }
@@ -36,7 +38,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
@@ -54,7 +56,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             var value = result.GetObject<TValue>();
             AssertEquivalency(value, expectedResult);
         }
@@ -85,7 +87,7 @@ public abstract class MathQueryTests<T, TKey, TValue> : InequalityQueryTests<T, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
 
             if (!divisorIsZero) {
                 var value = result.GetObject<TValue>();

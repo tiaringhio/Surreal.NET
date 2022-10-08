@@ -1,3 +1,5 @@
+using SurrealDB.Models.DriverResult;
+
 namespace SurrealDB.Driver.Tests.Roundtrip;
 
 public class RpcRoundTripTests : RoundTripTests<DatabaseRpc> {
@@ -20,7 +22,7 @@ public abstract class RoundTripTests<T>
             var response = await db.Create(thing, Expected);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -34,7 +36,7 @@ public abstract class RoundTripTests<T>
             var response = await db.Select(thing);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -50,7 +52,7 @@ public abstract class RoundTripTests<T>
 
             response.Should().NotBeNull();
             TestHelper.AssertOk(response);
-            response.TryGetFirstOk(out OkResult result).Should().BeTrue();
+            response.TryGetFirstValue(out ResultValue result).Should().BeTrue();
             var returnedDocument = result.GetObject<RoundTripObject>();
             RoundTripObject.AssertAreEqual(Expected, returnedDocument);
         }
@@ -67,7 +69,7 @@ public abstract class RoundTripTests<T>
         var response = await db.Query(sql, param);
 
         TestHelper.AssertOk(response);
-        Assert.True(response.TryGetFirstOk(out OkResult result));
+        Assert.True(response.TryGetFirstValue(out ResultValue result));
         var returnedDocument = result.GetObject<RoundTripObject>();
         RoundTripObject.AssertAreEqual(Expected, returnedDocument);
     });

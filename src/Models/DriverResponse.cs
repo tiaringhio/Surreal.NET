@@ -4,6 +4,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 using SurrealDB.Common;
+using SurrealDB.Models.DriverResult;
 
 namespace SurrealDB.Models;
 
@@ -12,7 +13,7 @@ namespace SurrealDB.Models;
 /// </summary>
 [DebuggerDisplay("{ToString(),nq}")]
 public readonly partial struct DriverResponse : IResponse {
-    internal static DriverResponse EmptyOk = new();
+    internal static DriverResponse EmptyOk = new(ArraySegment<RawResult>.Empty);
 
     // arraysegment is faster then readonlymemory, tho we do need expicit write protection
     private readonly ArraySegment<RawResult> _raw;
@@ -59,7 +60,7 @@ public readonly partial struct DriverResponse : IResponse {
         _single = result;
     }
 
-    public bool IsDefault => MemoryHelper.Compare(in this, default) == 0;
+    public bool IsDefault => _raw.Array is null && _single.IsDefault;
 
     /// <summary>
     /// Returns the memory occupied by the result data, returns an empty span if empty or single

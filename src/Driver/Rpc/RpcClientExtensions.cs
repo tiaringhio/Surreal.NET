@@ -2,7 +2,9 @@ using System.Diagnostics.CodeAnalysis;
 using System.Text.Json;
 
 using SurrealDB.Common;
+using SurrealDB.Json;
 using SurrealDB.Models;
+using SurrealDB.Models.DriverResult;
 using SurrealDB.Ws;
 namespace SurrealDB.Driver.Rpc;
 
@@ -18,10 +20,10 @@ internal static class RpcClientExtensions {
             return new DriverResponse(RawResult.TransportError(rsp.error.code, string.Empty, rsp.error.message ?? ""));
         }
 
-        return UnpackFromStatusDocument(rsp.result);
+        return UnpackFromStatusDocument(in rsp);
     }
 
-    private static DriverResponse UnpackFromStatusDocument(in JsonElement root) {
+    private static DriverResponse UnpackFromStatusDocument(in WsClient.Response rsp) {
         // Some results come as a simple object or an array of objects or even and empty string
         // [ { }, { }, ... ]
         // Others come embedded into a 'status document' that can have multiple result sets
@@ -33,50 +35,52 @@ internal static class RpcClientExtensions {
         //  }
         //]
 
-        if (root.ValueKind != JsonValueKind.Array) {
-            return ToSingleUnknown(root);
+        if (rsp.result.ValueKind != JsonValueKind.Array) {
+            return ToSingleAny(in rsp);
         }
 
-        foreach (var resultStatusDoc in root.EnumerateArray()) {
+        foreach (var resultStatusDoc in rsp.result.EnumerateArray()) {
             if (resultStatusDoc.ValueKind != JsonValueKind.Object) {
                 // if this was a status document, we would expect an object here
-                return ToSingleUnknown(root);
+                return ToSingleAny(in rsp);
             }
 
-            var propertyCount = 0;
-            JsonElement resultProperty = default; // ??
-            foreach (var resultStatusDocProperty in resultStatusDoc.EnumerateObject()) {
-                propertyCount++;
-                if (resultStatusDocProperty.NameEquals("result")) {
-                    resultProperty = resultStatusDocProperty.Value;
-                } else if (!resultStatusDocProperty.NameEquals("status")
-                 && !resultStatusDocProperty.NameEquals("time")) {
-                    // this property is not part of the 'status document',
-                    // at this point we can be confident that it is just a simple array of objects
-                    // so lets just return it
-                    return ToSingleUnknown(in root);
-                }
+            if (resultStatusDoc.TryGetProperty("result", out _)
+             && resultStatusDoc.TryGetProperty("status", out _)
+             && resultStatusDoc.TryGetProperty("time", out _)) {
+                return FromNestedStatus(in rsp);
             }
 
-            if (propertyCount == 3) {
-                // We ended up with 3 properties, so this must be a status document
-                return FromArray(in root);
-            }
+            return ToSingleAny(in rsp);
         }
 
         // if we get here then all the properties had valid status document names
         // but was missing some of them
-        return ToSingleUnknown(root);
+        return ToSingleAny(rsp);
     }
 
-    private static DriverResponse ToSingleUnknown(in JsonElement element) {
-        return new(RawResult.Unknown(element.IntoSingle()));
+    private static DriverResponse ToSingleAny(in WsClient.Response rsp) {
+        JsonElement root = rsp.result;
+        if (root.ValueKind == JsonValueKind.Object) {
+            var okOrErr = root.Deserialize<OkOrErrorResult>(SerializerOptions.Shared);
+            return new(okOrErr.ToResult());
+        }
+
+        if (root.ValueKind == JsonValueKind.Array) {
+            ArrayBuilder<RawResult> results = new();
+            foreach (JsonElement element in root.EnumerateArray()) {
+                results.Append(RawResult.Ok(default, element));
+            }
+            return new(results.AsSegment());
+        }
+
+        return new(RawResult.Unknown(root));
     }
 
-    private static DriverResponse FromArray(in JsonElement element) {
+    private static DriverResponse FromNestedStatus(in WsClient.Response rsp) {
         ArrayBuilder<RawResult> builder = new();
-        foreach (JsonElement e in element.EnumerateArray()) {
-            OkOrErrorResult res = e.Deserialize<OkOrErrorResult>();
+        foreach (JsonElement e in rsp.result.EnumerateArray()) {
+            OkOrErrorResult res = e.Deserialize<OkOrErrorResult>(SerializerOptions.Shared);
             builder.Append(res.ToResult());
         }
 

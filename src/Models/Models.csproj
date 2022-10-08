@@ -2,6 +2,7 @@
 
 	<PropertyGroup>
 		<RootNamespace>SurrealDB.Models</RootNamespace>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 	</PropertyGroup>
 
 	<PropertyGroup Label="Nuget Pack Options">

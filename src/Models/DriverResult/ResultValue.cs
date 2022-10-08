@@ -3,20 +3,21 @@ using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
 using System.Text.Json;
 
+using SurrealDB.Common;
 using SurrealDB.Json;
 
-namespace SurrealDB.Models;
+namespace SurrealDB.Models.DriverResult;
 
 /// <summary>
-///     The result of a successful query to the Surreal database.
+///     The value of a successful query to the Surreal database.
 /// </summary>
 [DebuggerDisplay("{Inner,nq}")]
-public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
+public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<ResultValue> {
     private readonly JsonElement _json;
     private readonly object? _sentinelOrValue;
     private readonly long _int64ValueField;
 
-    public OkResult(
+    public ResultValue(
             JsonElement json,
             object? sentinelOrValue) {
         _json = json;
@@ -24,7 +25,7 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
         _int64ValueField = 0;
     }
 
-    public OkResult(
+    public ResultValue(
             JsonElement json,
             object? sentinelOrValue,
             long int64ValueField) {
@@ -116,7 +117,10 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
     private const long TrueValue = 1;
     private const long FalseValue = 0;
 
-    public static OkResult From(in JsonElement json) {
+    public static ResultValue From(in JsonElement root) {
+        // reduce array of one element to the single element [ $value ] -> $value,
+        // alternatively carry whatever $root is
+        JsonElement json = IntoSingleOrOriginal(root);
         return json.ValueKind switch {
             JsonValueKind.Undefined => new(json, s_noneSentinel),
             JsonValueKind.Object =>  new(json, s_objectSentinel),
@@ -130,7 +134,17 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
         };
     }
 
-    private static OkResult FromNumber(in JsonElement json) {
+    private static unsafe JsonElement IntoSingleOrOriginal(JsonElement root) {
+        if (root.ValueKind != JsonValueKind.Array || root.GetArrayLength() > 1) {
+            return root;
+        }
+
+        static bool Selector(in JsonElement e) => e.ValueKind is not JsonValueKind.Null or JsonValueKind.Undefined;
+        var filter = SequenceHelper.Filter(root.EnumerateArray(), (delegate*<in JsonElement, bool>)&Selector);
+        return SequenceHelper.TrySingle(ref filter, out JsonElement json) ? json : root;
+    }
+
+    private static ResultValue FromNumber(in JsonElement json) {
         if (json.TryGetInt64(out long signed)) {
             return new(json, s_signedIntegerSentinel, signed);
         }
@@ -185,14 +199,14 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
     }
 
     [DoesNotReturn, DebuggerStepThrough,]
-    private static OkResult ThrowUnknownJsonValueKind(JsonElement json) {
+    private static ResultValue ThrowUnknownJsonValueKind(JsonElement json) {
         throw new ArgumentOutOfRangeException(nameof(json), json.ValueKind, "Unknown value kind.");
     }
 
     // Below is the implementation for the comparison and equality logic,
     // as well as operator overloads and conversion logic for IConvertible.
 
-    public bool Equals(in OkResult other) {
+    public bool Equals(in ResultValue other) {
         // Fastest check for inequality, is via the value field.
         if (_int64ValueField != other._int64ValueField) {
             return false;
@@ -206,7 +220,7 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
     }
 
     private bool EqualsUnboxed(
-        in OkResult other,
+        in ResultValue other,
         in Kind kind) {
         return kind switch {
             Kind.Object or Kind.None => EqualityComparer<JsonElement>.Default.Equals(
@@ -220,12 +234,12 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
     }
 
     // The struct is big, do not copy if not necessary!
-    bool IEquatable<OkResult>.Equals(OkResult other) {
+    bool IEquatable<ResultValue>.Equals(ResultValue other) {
         return Equals(in other);
     }
 
     public override bool Equals(object? obj) {
-        return obj is OkResult other && Equals(other);
+        return obj is ResultValue other && Equals(other);
     }
 
     public override int GetHashCode() {
@@ -233,19 +247,19 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
     }
 
     public static bool operator ==(
-        in OkResult left,
-        in OkResult right) {
+        in ResultValue left,
+        in ResultValue right) {
         return left.Equals(in right);
     }
 
     public static bool operator !=(
-        in OkResult left,
-        in OkResult right) {
+        in ResultValue left,
+        in ResultValue right) {
         return !left.Equals(in right);
     }
 
 
-    public int CompareTo(in OkResult other) {
+    public int CompareTo(in ResultValue other) {
         Kind thisKind = GetKind();
         Kind otherKind = other.GetKind();
 
@@ -278,31 +292,31 @@ public readonly struct OkResult : IEquatable<OkResult>, IComparable<OkResult> {
     }
 
     // The struct is big, do not copy if not necessary!
-    int IComparable<OkResult>.CompareTo(OkResult other) {
+    int IComparable<ResultValue>.CompareTo(ResultValue other) {
         return CompareTo(in other);
     }
 
     public static bool operator <(
-        in OkResult left,
-        in OkResult right) {
+        in ResultValue left,
+        in ResultValue right) {
         return left.CompareTo(in right) < 0;
     }
 
     public static bool operator <=(
-        in OkResult left,
-        in OkResult right) {
+        in ResultValue left,
+        in ResultValue right) {
         return left.CompareTo(in right) <= 0;
     }
 
     public static bool operator >(
-        in OkResult left,
-        in OkResult right) {
+        in ResultValue left,
+        in ResultValue right) {
         return left.CompareTo(in right) > 0;
     }
 
     public static bool operator >=(
-        in OkResult left,
-        in OkResult right) {
+        in ResultValue left,
+        in ResultValue right) {
         return left.CompareTo(in right) >= 0;
     }
 

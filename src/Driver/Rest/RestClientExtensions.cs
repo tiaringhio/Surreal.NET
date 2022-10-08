@@ -6,6 +6,7 @@ using System.Text.Json;
 using SurrealDB.Common;
 using SurrealDB.Json;
 using SurrealDB.Models;
+using SurrealDB.Models.DriverResult;
 
 namespace SurrealDB.Driver.Rest;
 
@@ -27,9 +28,9 @@ internal static class RestClientExtensions {
         }
 
         ArrayBuilder<RawResult> builder = new();
-        await foreach (RawResult res in JsonSerializer.DeserializeAsyncEnumerable<RawResult>(stream, SerializerOptions.Shared, ct)) {
+        await foreach (OkOrErrorResult res in JsonSerializer.DeserializeAsyncEnumerable<OkOrErrorResult>(stream, SerializerOptions.Shared, ct)) {
             if (!res.IsDefault) {
-                builder.Append(res);
+                builder.Append(res.ToResult());
             }
         }
 

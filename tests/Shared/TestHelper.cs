@@ -29,7 +29,6 @@ public static class TestHelper {
         DriverResponse rsp,
         [CallerArgumentExpression("rsp")]
         string caller = "") {
-        Assert.False(rsp.IsDefault);
         if (!rsp.HasErrors) {
             return;
         }
@@ -37,7 +36,7 @@ public static class TestHelper {
         var errorResponses = rsp.Errors.ToList();
         var message = $"Expected OK, got {errorResponses.Count} Error responses in {caller}";
         foreach (var errorResponse in errorResponses) {
-            message += $"\n\tCode:{errorResponse.Code} | Status: {errorResponse.Status} | Message: {errorResponse.Message}";
+            message += $"\n\tStatus: {errorResponse.Status} | Message: {errorResponse.Message}";
         }
 
         Exception ex = new(message);

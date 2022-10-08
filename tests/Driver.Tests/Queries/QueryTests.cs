@@ -1,4 +1,5 @@
 using SurrealDB.Json;
+using SurrealDB.Models.DriverResult;
 
 namespace SurrealDB.Driver.Tests.Queries;
 
@@ -21,7 +22,7 @@ public abstract class QueryTests<T, TKey, TValue>
             Thing thing = Thing.From("object", expectedObject.Key!.ToString());
             var response = await db.Create(thing, expectedObject);
 
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
@@ -38,7 +39,7 @@ public abstract class QueryTests<T, TKey, TValue>
             var response = await db.Select(thing);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
@@ -58,7 +59,7 @@ public abstract class QueryTests<T, TKey, TValue>
 
             var selectResponse = await db.Select(thing);
             TestHelper.AssertOk(selectResponse);
-            Assert.True(selectResponse.TryGetFirstOk(out OkResult result));
+            Assert.True(selectResponse.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
             Assert.Null(doc);
         }
@@ -76,7 +77,7 @@ public abstract class QueryTests<T, TKey, TValue>
             var response = await db.Update(thing, expectedObject);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
@@ -100,7 +101,7 @@ public abstract class QueryTests<T, TKey, TValue>
             // Select the altered object, and validate against the expected object.
             var response = await db.Select(thing);
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<ExtendedTestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
@@ -116,7 +117,7 @@ public abstract class QueryTests<T, TKey, TValue>
             var response = await db.Query(sql);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TValue? doc = result.GetObject<TValue>();
             doc.Should().BeEquivalentTo(val1);
         }
@@ -134,7 +135,7 @@ public abstract class QueryTests<T, TKey, TValue>
             var response = await db.Change(thing, new {  Value = value, MergeValue = value });
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<ExtendedTestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
@@ -154,7 +155,7 @@ public abstract class QueryTests<T, TKey, TValue>
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
@@ -175,7 +176,7 @@ public abstract class QueryTests<T, TKey, TValue>
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
             doc.Should().BeEquivalentTo(expectedObject);
         }
@@ -198,7 +199,7 @@ public abstract class QueryTests<T, TKey, TValue>
             Logger.WriteLine("rsp: {0}", response);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             TestObject<TKey, TValue>? doc = result.GetObject<TestObject<TKey, TValue>>();
             Logger.WriteLine("out: {0}", Serialize(doc));
             doc.Should().BeEquivalentTo(expectedObject);
@@ -228,7 +229,7 @@ public abstract class QueryTests<T, TKey, TValue>
             var thing2Sql = "SELECT ->hasOtherThing->object2.* AS field FROM $thing1";
             var thing2Response = await db.Query(thing2Sql, vars);
             TestHelper.AssertOk(thing2Response);
-            Assert.True(thing2Response.TryGetFirstOk(out OkResult thing2Result));
+            Assert.True(thing2Response.TryGetFirstValue(out ResultValue thing2Result));
             Field<TestObject<TKey, TValue>>? thing2Doc = thing2Result.GetObject<Field<TestObject<TKey, TValue>>>();
             Assert.NotNull(thing2Doc);
             thing2Doc!.field.First().Should().BeEquivalentTo(expectedObject);

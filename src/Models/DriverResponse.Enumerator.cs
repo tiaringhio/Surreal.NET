@@ -1,5 +1,7 @@
 using System.Collections;
 
+using SurrealDB.Models.DriverResult;
+
 namespace SurrealDB.Models;
 
 public readonly partial struct DriverResponse {

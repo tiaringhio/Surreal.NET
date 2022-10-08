@@ -1,3 +1,5 @@
+using SurrealDB.Models.DriverResult;
+
 namespace SurrealDB.Driver.Tests.Queries;
 
 public abstract class EqualityQueryTests<T, TKey, TValue> : QueryTests<T, TKey, TValue>
@@ -15,7 +17,7 @@ public abstract class EqualityQueryTests<T, TKey, TValue> : QueryTests<T, TKey, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }
@@ -33,7 +35,7 @@ public abstract class EqualityQueryTests<T, TKey, TValue> : QueryTests<T, TKey, 
             var response = await db.Query(sql, param);
 
             TestHelper.AssertOk(response);
-            Assert.True(response.TryGetFirstOk(out OkResult result));
+            Assert.True(response.TryGetFirstValue(out ResultValue result));
             var resultValue = result.GetObject<bool>();
             Assert.Equal(resultValue, expectedResult);
         }

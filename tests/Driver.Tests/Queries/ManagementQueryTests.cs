@@ -1,5 +1,8 @@
 
 // ReSharper disable All
+
+using SurrealDB.Models.DriverResult;
+
 #pragma warning disable CS0169
 
 namespace SurrealDB.Driver.Tests.Queries;
@@ -64,7 +67,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOk(out OkResult result));
+                Assert.True(response.TryGetFirstValue(out ResultValue result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOtherObject);
             }
@@ -76,7 +79,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOk(out OkResult result));
+                Assert.True(response.TryGetFirstValue(out ResultValue result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOriginalObject);
             }
@@ -106,7 +109,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOk(out OkResult result));
+                Assert.True(response.TryGetFirstValue(out ResultValue result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOtherObject);
             }
@@ -118,7 +121,7 @@ public abstract class ManagementQueryTests<T>
                 var response = await db.Select(thing);
 
                 TestHelper.AssertOk(response);
-                Assert.True(response.TryGetFirstOk(out OkResult result));
+                Assert.True(response.TryGetFirstValue(out ResultValue result));
                 TestObject<int, string>? doc = result.GetObject<TestObject<int, string>>();
                 doc.Should().BeEquivalentTo(expectedOriginalObject);
             }

@@ -86,7 +86,7 @@ public sealed class DatabaseRest : IDatabase {
 
     public async Task<DriverResponse> Info(CancellationToken ct = default) {
         string authSql = "SELECT * FROM $auth;";
-        return await Query(authSql, null);
+        return await Query(authSql, null, ct);
     }
 
     public Task<DriverResponse> Use(
@@ -107,9 +107,9 @@ public sealed class DatabaseRest : IDatabase {
     public async Task<DriverResponse> Signin<TRequest>(
         TRequest auth,
         CancellationToken ct = default) where TRequest : IAuth {
-
+        ThrowIfInvalidConnection();
         HttpResponseMessage rsp = await _client.PostAsync("signin", ToJsonContent(auth), ct);
-        return await rsp.ToSurrealFromAuthResponse();
+        return await rsp.ToSurrealFromAuthResponse(ct);
     }
 
     public Task<DriverResponse> Invalidate(CancellationToken ct = default) {
@@ -151,9 +151,10 @@ public sealed class DatabaseRest : IDatabase {
     public async Task<DriverResponse> Select(
         Thing thing,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         HttpRequestMessage requestMessage = ToRequestMessage(HttpMethod.Get, BuildRequestUri(thing));
         HttpResponseMessage rsp = await _client.SendAsync(requestMessage, ct);
-        return await rsp.ToSurreal();
+        return await rsp.ToSurreal(ct);
     }
 
     public async Task<DriverResponse> Create(
@@ -172,6 +173,7 @@ public sealed class DatabaseRest : IDatabase {
     }
 
     public async Task<DriverResponse> Change(Thing thing, object data, CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         HttpRequestMessage req = ToRequestMessage(HttpMethod.Patch, BuildRequestUri(thing), ToJson(data));
         HttpResponseMessage rsp = await _client.SendAsync(req, ct);
         return await rsp.ToSurreal();
@@ -187,6 +189,7 @@ public sealed class DatabaseRest : IDatabase {
     public async Task<DriverResponse> Delete(
         Thing thing,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         HttpRequestMessage requestMessage = ToRequestMessage(HttpMethod.Delete, BuildRequestUri(thing));
         HttpResponseMessage rsp = await _client.SendAsync(requestMessage, ct);
         return await rsp.ToSurreal();
@@ -248,6 +251,7 @@ public sealed class DatabaseRest : IDatabase {
     public async Task<DriverResponse> Signup(
         HttpContent auth,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         HttpResponseMessage rsp = await _client.PostAsync("signup", auth, ct);
         return await rsp.ToSurrealFromAuthResponse(ct);
     }
@@ -256,6 +260,7 @@ public sealed class DatabaseRest : IDatabase {
     public async Task<DriverResponse> Query(
         HttpContent sql,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         HttpResponseMessage rsp = await _client.PostAsync("sql", sql, ct);
         return await rsp.ToSurreal(ct);
     }
@@ -264,6 +269,7 @@ public sealed class DatabaseRest : IDatabase {
         Thing thing,
         HttpContent data,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         HttpResponseMessage rsp = await _client.PostAsync(BuildRequestUri(thing), data, ct);
         return await rsp.ToSurreal(ct);
     }
@@ -272,6 +278,7 @@ public sealed class DatabaseRest : IDatabase {
         Thing thing,
         HttpContent data,
         CancellationToken ct = default) {
+        ThrowIfInvalidConnection();
         HttpResponseMessage rsp = await _client.PutAsync(BuildRequestUri(thing), data, ct);
         return await rsp.ToSurreal(ct);
     }
