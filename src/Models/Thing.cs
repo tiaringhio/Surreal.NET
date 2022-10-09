@@ -206,17 +206,17 @@ public readonly record struct Thing {
 
             // HACK: Workaround for the Rest Create endpoint treating integers as strings
             // REMOVE WHEN FIXED https://github.com/surrealdb/surrealdb/issues/1281
-            // var allNumberChars = true;
-            // for (int i = rec; i < len; i++) {
-            //     char ch = text[i];
-            //     if (char.IsLetter(ch) || ch == '_') {
-            //         allNumberChars = false;
-            //         break;
-            //     }
-            // }
-            // if (allNumberChars) {
-            //     return true;
-            // }
+            var allNumberChars = true;
+            for (int i = rec; i < len; i++) {
+                char ch = text[i];
+                if (char.IsLetter(ch) || ch == '_') {
+                    allNumberChars = false;
+                    break;
+                }
+            }
+            if (allNumberChars) {
+                return true;
+            }
             // END HACK
 
             for (int i = rec; i < len; i++) {
