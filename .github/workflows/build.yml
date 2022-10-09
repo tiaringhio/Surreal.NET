@@ -36,11 +36,16 @@ jobs:
 
       - name: Initialize SurrealDB
         run: |
-          mkdir -p ~/.local/bin
-          curl -sSf https://install.surrealdb.com -o surealdb-install.sh
-          chmod +x surealdb-install.sh
-          surealdb-install.sh ~/.local/bin --${{ matrix.channel }}
+          mkdir -p ~/.local/bin || exit 1
+          mkdir -p ~/tmp || exit 1
+          pushd ~/tmp || exit 1
+
+          curl -sSf https://install.surrealdb.com -o ./surealdb-install.sh
+          chmod +x ./surealdb-install.sh
+          ./surealdb-install.sh ~/.local/bin --${{ matrix.channel }}
           export PATH="$HOME/.local/bin/:$PATH"
+
+          popd
 
       - name: Initialize .NET SDK
         run: |
