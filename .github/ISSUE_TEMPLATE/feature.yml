@@ -1,4 +1,4 @@
-name: Feature request
+name: feature_request
 description: File a feature request
 title: "Feature: "
 labels: ["feature", "triage"]
