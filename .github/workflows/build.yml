@@ -47,6 +47,8 @@ jobs:
 
           popd
 
+          surreal version || exit 1
+
       - name: Initialize .NET SDK
         run: |
           curl https://dot.net/v1/dotnet-install.sh -o ~/dotnet-install.sh
