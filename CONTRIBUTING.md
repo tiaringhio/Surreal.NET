@@ -7,28 +7,29 @@ Two steps you must follow to contribute to this repository:
 - Every Pull Request must have a title AND description.
 - Make sure you follow for Writing Commit messages and PR Titles
 
-## Structure
+# Structure
 
 All functional changes are associated with two channels: **stable** and **nightly**.
 
-### Stable
+## Stable
 
 The **stable** channel is associated with the `/master` branch, which is contains very soon to be released changes; it is a release candidate branch.
 
-`/hotfix/*` branches are bug fixes for the release candidate and are merged into master.
+`/hotfix/**` branches are bug fixes for the release candidate and are merged into master.
 
-### Develop
+## Nightly
 
-The develop channel is associated with the `/develop` branch, which contains the current - possibly messy - state of development. Some may know this as **trunk**, or **nightly**.
-**PRs originate and are merged into this branch.**
+The nightly channel is associated with the `/develop` branch, which contains the current - possibly messy - state of development. Some may know this as **trunk**, or **dev**.
 
-`/featue/*` branches are working branches; this is where the commits go.
+**Pull requests originate and are merged into this branch.**
 
-### Documentation
+`/feature/**` branches are working branches; this is where the commits go.
+
+## Documentation
 
 Work on the external documentation does not need to strictly conform to the stable, nightly structure.
 
-`/doc/*` branches are associated with the documentation. These branches are merged into `/master`.
+`/doc/**` branches are associated with the documentation. These branches are merged into `/master`.
 
 ## Testing
 
@@ -37,16 +38,15 @@ Tests are always run against the latest version of SurrealDB. Currently SurrealD
 The following branches are tested against the **stable** SurrealDB version:
 
 - `/master`: The release candidate.
-- `/hotfix/*`: Bugfixes for the release candidate.
+- `/hotfix/**`: Bugfixes for the release candidate.
 
 The following branches are tested against the **nightly** SurrealDB version:
 
 - `/develop`: The nightly branch.
-- `/feature/*`: Working branches.
+- `/feature/**`: Working branches.
 
----
 
-## Unit tests
+# Unit tests
 
 If possible a functional change should have its functionality tested, in regards to expected behavior as well as error behavior.
 
