@@ -56,6 +56,21 @@ public abstract class GeneralQueryTests<T>
     );
 
     [Fact]
+    public async Task SimpleArrayResultQueryTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            List<int> expectedObject = new() { 1, 2, 3 };
+            string sql = "SELECT * FROM [1, 2, 3]";
+
+            var response = await db.Query(sql, null);
+
+            TestHelper.AssertOk(response);
+            ResultValue result = response.FirstValue();
+            List<int>? doc = result.GetObject<List<int>>();
+            doc.Should().Equal(expectedObject);
+        }
+    );
+
+    [Fact]
     public async Task CountAndGroupQueryTest() => await DbHandle<T>.WithDatabase(
         async db => {
             string sql = @"SELECT
