@@ -16,7 +16,8 @@ public abstract class GuidQueryTests<T> : EqualityQueryTests<T, Guid, Guid>
     private static IEnumerable<Guid> TestValues {
         get {
             yield return Guid.NewGuid();
-            //yield return Guid.Empty; // Re-enable when https://github.com/surrealdb/surrealdb/issues/1364 is fixed
+            yield return Guid.Parse("7909681d-37e5-4373-b868-30fe3430b439");
+            yield return Guid.Empty;
         }
     }
 
