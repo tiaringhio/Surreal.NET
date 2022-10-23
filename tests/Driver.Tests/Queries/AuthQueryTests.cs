@@ -31,9 +31,6 @@ public abstract class AuthQueryTests<T>
             var signinObject = new RootAuth(TestHelper.User, TestHelper.Pass);
             var response = await db.Signin(signinObject);
             TestHelper.AssertOk(response);
-            ResultValue result = response.FirstValue();
-            string? signinJwt = result.GetObject<string>();
-            signinJwt.Should().BeNullOrEmpty();
         }
     );
 
