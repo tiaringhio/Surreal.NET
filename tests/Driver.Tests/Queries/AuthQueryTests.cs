@@ -25,6 +25,8 @@ public abstract class AuthQueryTests<T>
         Logger = logger;
     }
 
+#region Root Auth
+
     [Fact]
     public async Task SignInRootAuthTest() => await DbHandle<T>.WithDatabase(
         async db => {
@@ -33,6 +35,19 @@ public abstract class AuthQueryTests<T>
             TestHelper.AssertOk(response);
         }
     );
+
+    [Fact]
+    public async Task SignInRootAuthErrorTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var signinObject = new RootAuth(TestHelper.User, "WrongPassword");
+            var response = await db.Signin(signinObject);
+            TestHelper.AssertError(response);
+        }
+    );
+
+#endregion Root Auth
+
+#region Namespace User Auth
 
     [Fact]
     public async Task SignInNamespaceUserTest() => await DbHandle<T>.WithDatabase(
@@ -113,6 +128,22 @@ public abstract class AuthQueryTests<T>
     );
 
     [Fact]
+    public async Task SignInNamespaceUserErrorTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var user = "DatabaseUser";
+            var password = "TestPassword";
+
+            var signinObject = new NamespaceAuth(user, password, TestHelper.Namespace);
+            var signinResponse = await db.Signin(signinObject);
+            TestHelper.AssertError(signinResponse);
+        }
+    );
+    
+#endregion Namespace User Auth
+
+#region Database User Auth
+
+    [Fact]
     public async Task SignInDatabaseUserTest() => await DbHandle<T>.WithDatabase(
         async db => {
             var user = "DatabaseUser";
@@ -191,6 +222,22 @@ public abstract class AuthQueryTests<T>
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Query(tokenSql, null));
         }
     );
+
+    [Fact]
+    public async Task SignInDatabaseUserErrorTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var user = "DatabaseUser";
+            var password = "TestPassword";
+
+            var signinObject = new DatabaseAuth(user, password, TestHelper.Namespace, TestHelper.Database);
+            var signinResponse = await db.Signin(signinObject);
+            TestHelper.AssertError(signinResponse);
+        }
+    );
+    
+#endregion Database User Auth
+
+#region Scoped User Auth
 
     [Fact]
     public async Task SignUpAndSignInScopedUserTest() => await DbHandle<T>.WithDatabase(
@@ -400,4 +447,19 @@ public abstract class AuthQueryTests<T>
             await Assert.ThrowsAsync<InvalidOperationException>(async ()=> await db.Info());
         }
     );
+
+    [Fact]
+    public async Task SignInScopedUserErrorTest() => await DbHandle<T>.WithDatabase(
+        async db => {
+            var email = "TestUser@example.com";
+            var password = "TestPassword";
+            var scope = "account";
+
+            var signinObject = new ScopeAuth(email, password, TestHelper.Namespace, TestHelper.Database, scope);
+            var signinResponse = await db.Signin(signinObject);
+            TestHelper.AssertError(signinResponse);
+        }
+    );
+
+#endregion Scoped User Auth
 }
