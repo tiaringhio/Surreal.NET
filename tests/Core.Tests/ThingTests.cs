@@ -64,14 +64,14 @@ public class ThingTests {
     public static List<object[]> ComplexStringKeys => Keys.SelectMany(s => ComplexChars.Select(c => string.Format(s, c))).Select(e => new object[]{e}).ToList();
     public static List<object[]> NumberKeys => Numbers.Select(e => new []{e, e.GetType()}).ToList();
     public static List<object[]> ObjectKeys => Objects.Select(e => new []{e.key, e.expectedKey, e.shouldBeEscaped, e.key.GetType()}).ToList();
-    
+
     [Fact]
     public void TableStringNoKeyThing() {
         var table = "TableName";
 
         var thing = new Thing(table);
         Logger.WriteLine("Thing: {0}", thing);
-        
+
         thing.ToString().Should().BeEquivalentTo(table);
         thing.Table.ToString().Should().BeEquivalentTo(table);
         thing.TableAndSeparator.ToString().Should().BeEquivalentTo(table);
@@ -80,7 +80,7 @@ public class ThingTests {
         thing.HasKey.Should().BeFalse();
         thing.ToUri().Should().BeEquivalentTo(table);
     }
-    
+
     [Theory]
     [MemberData(nameof(StandardStringKeys))]
     public void TableAndStringKeyThing(string key) {
@@ -89,7 +89,7 @@ public class ThingTests {
 
         var thing = new Thing(table, key);
         Logger.WriteLine("Thing: {0}", thing);
-        
+
         thing.ToString().Should().BeEquivalentTo(expectedThing);
         thing.Table.ToString().Should().BeEquivalentTo(table);
         thing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
@@ -98,7 +98,7 @@ public class ThingTests {
         thing.HasKey.Should().BeTrue();
         thing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
-    
+
     [Theory]
     [MemberData(nameof(StandardStringKeys))]
     public void TableAndStringKeyFromStringThing(string key) {
@@ -116,7 +116,7 @@ public class ThingTests {
         thing.HasKey.Should().BeTrue();
         thing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
-    
+
     [Theory]
     [MemberData(nameof(ComplexStringKeys))]
     public void TableAndStringKeyWithComplexCharacterThing(string key) {
@@ -135,7 +135,7 @@ public class ThingTests {
         thing.HasKey.Should().BeTrue();
         thing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
-    
+
     [Theory]
     [MemberData(nameof(ComplexStringKeys))]
     public void TableAndStringKeyAlreadyEscapedThing(string key) {
@@ -145,7 +145,7 @@ public class ThingTests {
 
         var thing = new Thing(table, escapedKey);
         Logger.WriteLine("Thing: {0}", thing);
-        
+
         thing.ToString().Should().BeEquivalentTo(expectedThing);
         thing.Table.ToString().Should().BeEquivalentTo(table);
         thing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
@@ -154,7 +154,7 @@ public class ThingTests {
         thing.HasKey.Should().BeTrue();
         thing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key)}");
     }
-    
+
     [Theory]
     [MemberData(nameof(NumberKeys))]
     public void TableAndNumberKeyThing(object key, Type type) {
@@ -163,16 +163,16 @@ public class ThingTests {
 
         var thing = new Thing(table, key);
         Logger.WriteLine("Thing: {0} ({1})", thing, type);
-        
+
         thing.ToString().Should().BeEquivalentTo(expectedThing);
         thing.Table.ToString().Should().BeEquivalentTo(table);
         thing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");
         thing.Key.ToString().Should().BeEquivalentTo(key.ToString());
         thing.IsKeyEscaped.Should().BeFalse();
         thing.HasKey.Should().BeTrue();
-        thing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key.ToString())}");
+        thing.ToUri().Should().BeEquivalentTo($"{table}/{Uri.EscapeDataString(key.ToString()!)}");
     }
-    
+
     [Theory]
     [MemberData(nameof(ObjectKeys))]
     public void TableAndObjectKeyThing(object key, string unescapedKey, bool shouldBeEscaped, Type type) {
@@ -182,7 +182,7 @@ public class ThingTests {
 
         var thing = new Thing(table, key);
         Logger.WriteLine("Thing: {0} ({1})", thing, type);
-        
+
         thing.ToString().Should().BeEquivalentTo(expectedThing);
         thing.Table.ToString().Should().BeEquivalentTo(table);
         thing.TableAndSeparator.ToString().Should().BeEquivalentTo($"{table}:");

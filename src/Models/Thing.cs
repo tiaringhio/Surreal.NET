@@ -25,10 +25,9 @@ public readonly record struct Thing {
     private readonly int _split;
     private readonly string _inner;
 
-    public Thing(string thing) {
-        _split = thing.IndexOf(CHAR_SEP);
-
-        _inner = thing;
+    public Thing(string? thing) {
+        _split = thing is null ? -1 : thing.IndexOf(CHAR_SEP);
+        _inner = thing ?? "";
     }
 
     public Thing(
@@ -48,7 +47,7 @@ public readonly record struct Thing {
             _inner = table;
             return;
         }
-        
+
         string keyStr = JsonSerializer.Serialize(key, SerializerOptions.Shared);
         if (keyStr[0] == '"' && keyStr[keyStr.Length - 1] == '"') {
             // This key is being represented in JSON as a string (rather than a number, object or array)
@@ -56,10 +55,10 @@ public readonly record struct Thing {
             keyStr = keyStr.Substring(1, keyStr.Length - 2);
             keyStr = EscapeComplexCharactersIfRequired(keyStr);
         }
-        
+
         _inner = $"{table}{CHAR_SEP}{keyStr}";
     }
-    
+
     /// <summary>
     /// Returns the Table part of the Thing
     /// </summary>
@@ -105,7 +104,7 @@ public readonly record struct Thing {
 
         return key[0] == CHAR_PRE && key[key.Length - 1] == CHAR_SUF;
     }
-    
+
     private static string EscapeKey(in ReadOnlySpan<char> key) {
         return $"{CHAR_PRE}{key.ToString()}{CHAR_SUF}";
     }
@@ -141,13 +140,13 @@ public readonly record struct Thing {
             return true;
         }
     }
-    
+
     [Pure]
     private bool GetKeyOffset(out int offset) {
         offset = _split + 1;
         return HasKey;
     }
-    
+
     public static implicit operator Thing(in string? thing) {
         if (thing == null) {
             return default;
@@ -194,11 +193,11 @@ public readonly record struct Thing {
 
     public sealed class ThingConverter : JsonConverter<Thing> {
         public override Thing Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            return new (reader.GetString());
+            return new(reader.GetString());
         }
 
         public override Thing ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) {
-            return new (reader.GetString());
+            return new(reader.GetString());
         }
 
         public override void Write(Utf8JsonWriter writer, Thing value, JsonSerializerOptions options) {
