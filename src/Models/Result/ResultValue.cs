@@ -1,3 +1,4 @@
+using System.Collections;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Runtime.CompilerServices;
@@ -35,7 +36,7 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
     }
 
     public JsonElement Inner => _json;
-    
+
     public bool IsNullOrUndefined => _json.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined ||
         (_json.ValueKind is JsonValueKind.Array && _json.GetArrayLength() > 0 && _json.EnumerateArray().All(e => e.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined));
     public bool IsEmpty => _json.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined || (_json.ValueKind is JsonValueKind.Array && _json.GetArrayLength() == 0);
@@ -48,23 +49,79 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
         return obj;
     }
 
-    public IEnumerable<T> AsEnumerable<T>() {
-        if (IsNullOrUndefined) {
-            yield break;
-        }
+    public ArrayIterator<T> AsEnumerable<T>() => new(_json);
 
-        if (_json.ValueKind != JsonValueKind.Array) {
-            var v = _json.Deserialize<T>(SerializerOptions.Shared);
-            yield return v!;
-        } else {
-            var en = _json.EnumerateArray();
-            while (en.MoveNext()) {
-                T? v = en.Current.Deserialize<T>(SerializerOptions.Shared);
-                if (!EqualityComparer<T>.Default.Equals(default!, v!)) {
-                    yield return v!;
-                }
+    public struct ArrayIterator<T> : IEnumerator<T>, IEnumerable<T>, IReadOnlyCollection<T> {
+        private readonly JsonElement _json;
+        private JsonElement.ArrayEnumerator _en;
+        /// <summary>
+        /// >=0 => enumerator is valid
+        /// -1 => no enumerator
+        /// -2 => no enumerator, no more elements
+        /// </summary>
+        private int _state;
+
+        internal ArrayIterator(JsonElement json) {
+            _json = json;
+            if (json.ValueKind == JsonValueKind.Array) {
+                _en = json.EnumerateArray();
+                _state = 0;
+            } else {
+                _en = default;
+                _state = -1;
             }
         }
+
+        public int Position => _state >= 0 ? _state : 1 - _state;
+
+        public int Count => _state >= 0 ? _json.GetArrayLength() : 1;
+
+        public bool MoveNext() {
+            if (_state >= 0) {
+                bool next = _en.MoveNext();
+                _state += next ? 1 : 0;
+                return next;
+            }
+            if (_state == -1) {
+                _state = -2;
+                return true;
+            }
+            return false;
+        }
+
+        public ArrayIterator<T> GetEnumerator() => new(_json);
+
+        IEnumerator<T> IEnumerable<T>.GetEnumerator() {
+            return GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() {
+            return GetEnumerator();
+        }
+
+        public void Reset() {
+            if (_state >= 0) {
+                _en = _json.EnumerateArray();
+                _state = 0;
+            }
+            _state = -1;
+        }
+
+        public void Dispose() {
+            if (_state >= 0) {
+                _en.Dispose();
+                _state = 0;
+            }
+            _state = -2;
+        }
+
+        public T Current => _state switch {
+            >= 0 => _en.Current.Deserialize<T>(SerializerOptions.Shared)!,
+            -1 => _json.Deserialize<T>(SerializerOptions.Shared)!,
+            _ => default!
+        };
+
+        object? IEnumerator.Current => Current;
     }
 
     public bool TryGetValue([NotNullWhen(true)] out string? value) {
@@ -132,7 +189,7 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
         JsonElement json = IntoSingleOrOriginal(root);
         return json.ValueKind switch {
             JsonValueKind.Undefined => new(json, s_noneSentinel),
-            JsonValueKind.Object =>  new(json, s_objectSentinel),
+            JsonValueKind.Object => new(json, s_objectSentinel),
             JsonValueKind.Array => new(json, s_arraySentinel),
             JsonValueKind.String => new(json, json.GetString()),
             JsonValueKind.Number => FromNumber(json),
