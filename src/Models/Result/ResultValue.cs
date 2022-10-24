@@ -51,45 +51,49 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
 
     public ArrayIterator<T> AsEnumerable<T>() => new(_json);
 
-    public struct ArrayIterator<T> : IEnumerator<T>, IEnumerable<T>, IReadOnlyCollection<T> {
+    public struct ArrayIterator<T> : IEnumerator<T>, IReadOnlyCollection<T> {
         private readonly JsonElement _json;
         private JsonElement.ArrayEnumerator _en;
-        /// <summary>
-        /// >=0 => enumerator is valid
-        /// -1 => no enumerator
-        /// -2 => no enumerator, no more elements
-        /// </summary>
-        private int _state;
+        private nint _state;
 
         internal ArrayIterator(JsonElement json) {
             _json = json;
             if (json.ValueKind == JsonValueKind.Array) {
                 _en = json.EnumerateArray();
-                _state = 0;
             } else {
                 _en = default;
-                _state = -1;
             }
+            _state = -1;
         }
 
-        public int Position => _state >= 0 ? _state : 1 - _state;
+        public readonly bool IsArray => _json.ValueKind == JsonValueKind.Array;
 
-        public int Count => _state >= 0 ? _json.GetArrayLength() : 1;
+        public readonly nint Position => IsArray ? _state : 2 - _state;
+
+        public readonly int Count => IsArray ? _json.GetArrayLength() : 1;
+
+        public readonly T Current => _state switch {
+            >= 0 => _en.Current.Deserialize<T>(SerializerOptions.Shared) ?? ThrowDeserializeNull(),
+            -2 => _json.Deserialize<T>(SerializerOptions.Shared) ?? ThrowDeserializeNull(),
+            _ => default!
+        };
+
+        readonly object? IEnumerator.Current => Current;
 
         public bool MoveNext() {
-            if (_state >= 0) {
+            nint state = _state;
+            if (IsArray) {
                 bool next = _en.MoveNext();
-                _state += next ? 1 : 0;
+                _state = state + (next ? 1 : 0);
+                return next;
+            } else {
+                bool next = state == -1;
+                _state = state - (next ? 1 : 0);
                 return next;
             }
-            if (_state == -1) {
-                _state = -2;
-                return true;
-            }
-            return false;
         }
 
-        public ArrayIterator<T> GetEnumerator() => new(_json);
+        public readonly ArrayIterator<T> GetEnumerator() => new(_json);
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator() {
             return GetEnumerator();
@@ -100,28 +104,21 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
         }
 
         public void Reset() {
-            if (_state >= 0) {
-                _en = _json.EnumerateArray();
-                _state = 0;
-            }
+            _en.Reset();
             _state = -1;
         }
 
         public void Dispose() {
             if (_state >= 0) {
                 _en.Dispose();
-                _state = 0;
+                _en = default;
             }
             _state = -2;
         }
 
-        public T Current => _state switch {
-            >= 0 => _en.Current.Deserialize<T>(SerializerOptions.Shared)!,
-            -1 => _json.Deserialize<T>(SerializerOptions.Shared)!,
-            _ => default!
-        };
-
-        object? IEnumerator.Current => Current;
+        private static T ThrowDeserializeNull() {
+            throw new InvalidOperationException("Object deserialized to null");
+        }
     }
 
     public bool TryGetValue([NotNullWhen(true)] out string? value) {

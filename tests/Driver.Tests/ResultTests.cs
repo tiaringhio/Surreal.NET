@@ -161,7 +161,6 @@ public abstract class ResultTests<T>
             result.IsEmpty.Should().Be(!expectedValue.Any());
             result.IsNullOrUndefined.Should().BeFalse();
             var items = result.AsEnumerable<int>();
-            items.Should().NotBeNull();
             items.Should().BeEquivalentTo(expectedValue);
         }
     );
@@ -171,7 +170,7 @@ public abstract class ResultTests<T>
         async db => {
             string sql = "select * from NONE";
             var response = await db.Query(sql);
-            
+
             TestHelper.AssertOk(response);
             ResultValue result = response.FirstValue();
             result.IsNullOrUndefined.Should().BeTrue();
