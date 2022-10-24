@@ -51,7 +51,7 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
 
     public ArrayIterator<T> AsEnumerable<T>() => new(_json);
 
-    public struct ArrayIterator<T> : IEnumerator<T>, IReadOnlyCollection<T> {
+    public struct ArrayIterator<T> : IEnumerator<T?>, IReadOnlyCollection<T> {
         private readonly JsonElement _json;
         private JsonElement.ArrayEnumerator _en;
         private nint _state;
@@ -68,14 +68,16 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
 
         public readonly bool IsArray => _json.ValueKind == JsonValueKind.Array;
 
+        public readonly bool IsElementNull => _json.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null;
+
         public readonly nint Position => IsArray ? _state : 2 - _state;
 
-        public readonly int Count => IsArray ? _json.GetArrayLength() : 1;
+        public readonly int Count => IsElementNull ? 0 : IsArray ? _json.GetArrayLength() : 1;
 
-        public readonly T Current => _state switch {
-            >= 0 => _en.Current.Deserialize<T>(SerializerOptions.Shared) ?? ThrowDeserializeNull(),
-            -2 => _json.Deserialize<T>(SerializerOptions.Shared) ?? ThrowDeserializeNull(),
-            _ => default!
+        public readonly T? Current => _state switch {
+            >= 0 => _en.Current.Deserialize<T>(SerializerOptions.Shared),
+            -2 => _json.Deserialize<T>(SerializerOptions.Shared),
+            _ => default
         };
 
         readonly object? IEnumerator.Current => Current;
@@ -87,7 +89,7 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
                 _state = state + (next ? 1 : 0);
                 return next;
             } else {
-                bool next = state == -1;
+                bool next = state == -1 && !IsElementNull;
                 _state = state - (next ? 1 : 0);
                 return next;
             }
@@ -114,10 +116,6 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
                 _en = default;
             }
             _state = -2;
-        }
-
-        private static T ThrowDeserializeNull() {
-            throw new InvalidOperationException("Object deserialized to null");
         }
     }
 

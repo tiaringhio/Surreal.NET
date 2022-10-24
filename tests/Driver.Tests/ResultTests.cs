@@ -181,7 +181,7 @@ public abstract class ResultTests<T>
             result.TryGetValue(out float _).Should().BeFalse();
             result.TryGetValue(out double _).Should().BeFalse();
             result.TryGetValue(out bool _).Should().BeFalse();
-            result.AsEnumerable<object>().Should().BeEmpty();
+            result.AsEnumerable<object>().First().Should().Be(null);
             result.AsObject<object>().Should().BeNull();
         }
     );
