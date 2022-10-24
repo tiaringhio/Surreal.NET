@@ -35,25 +35,34 @@ public readonly struct ResultValue : IEquatable<ResultValue>, IComparable<Result
     }
 
     public JsonElement Inner => _json;
+    
+    public bool IsNullOrUndefined => _json.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined ||
+        (_json.ValueKind is JsonValueKind.Array && _json.GetArrayLength() > 0 && _json.EnumerateArray().All(e => e.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined));
+    public bool IsEmpty => _json.ValueKind is JsonValueKind.Null or JsonValueKind.Undefined || (_json.ValueKind is JsonValueKind.Array && _json.GetArrayLength() == 0);
 
-    public T? GetObject<T>() {
-        if (_json.ValueKind is JsonValueKind.Undefined or JsonValueKind.Null) {
+    public T? AsObject<T>() {
+        if (IsNullOrUndefined) {
             return default;
         }
         var obj = _json.Deserialize<T>(SerializerOptions.Shared);
         return obj;
     }
 
-    public IEnumerable<T> GetArray<T>() {
-        if (_json.ValueKind != JsonValueKind.Array || _json.GetArrayLength() <= 0) {
+    public IEnumerable<T> AsEnumerable<T>() {
+        if (IsNullOrUndefined) {
             yield break;
         }
 
-        var en = _json.EnumerateArray();
-        while (en.MoveNext()) {
-            T? v = en.Current.Deserialize<T>(SerializerOptions.Shared);
-            if (!EqualityComparer<T>.Default.Equals(default!, v!)) {
-                yield return v!;
+        if (_json.ValueKind != JsonValueKind.Array) {
+            var v = _json.Deserialize<T>(SerializerOptions.Shared);
+            yield return v!;
+        } else {
+            var en = _json.EnumerateArray();
+            while (en.MoveNext()) {
+                T? v = en.Current.Deserialize<T>(SerializerOptions.Shared);
+                if (!EqualityComparer<T>.Default.Equals(default!, v!)) {
+                    yield return v!;
+                }
             }
         }
     }
